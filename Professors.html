@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professors</title>
+    <link rel="stylesheet" href="./src/bootstrap/bootstrap.min.css">
+</head>
+<body>
+    <div class="container d-flex justify-content-center">
+        <div class="card w-50 mx-auto">
+            <div class="card-header">
+                Professors
+            </div>
+            <div class="card-body">
+                <form id="professorForm">
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="first_name">
+                        <label>First Name</label>
+                    </div>
+
+
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="last_name">
+                        <label>Last Name</label>
+                    </div>
+
+
+                    <div class="mb-3">
+                        <label>Email</label>
+                        <input type="email" class="form-control" id="email">
+                    </div>
+
+
+                    <div class="mb-3">
+                        <label>Contact Number</label>
+                        <input type="text" class="form-control" id="contact_number">
+                    </div>
+
+
+                    <div class="mb-3">
+                        <label>Department</label>
+                        <select class="form-select" id="department_id" required>
+                            <option selected disabled value="">Choose...</option>
+                            <!-- TODO: populate dynamically from the departments table -->
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-success">
+                        Submit
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="src/jquery-4.0.0.min.js"></script>
+    <script src="js/Professors.js"></script>
+</body>
+</html>
