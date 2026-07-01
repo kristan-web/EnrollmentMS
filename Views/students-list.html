@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Students</title>
+    <link rel="stylesheet" href="../src/bootstrap/bootstrap.min.css">
+</head>
+<body>
+    <div class="container my-4">
+        <div class="card">
+            <div class="card-header">
+                Students
+            </div>
+            <div class="card-body">
+
+                <!-- Filters -->
+                <div class="row g-2 mb-3">
+
+                    <div class="col-md-4">
+                        <input type="text" class="form-control" id="keyword" placeholder="Search by name, LRN, or student number">
+                    </div>
+
+                    <div class="col-md-2">
+                        <select class="form-select" id="track_filter">
+                            <option value="">All Tracks</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2">
+                        <select class="form-select" id="strand_filter">
+                            <option value="">All Strands</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2">
+                        <select class="form-select" id="grade_level_filter">
+                            <option value="">All Grade Levels</option>
+                            <option value="11">Grade 11</option>
+                            <option value="12">Grade 12</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2">
+                        <select class="form-select" id="section_filter">
+                            <option value="">All Sections</option>
+                        </select>
+                    </div>
+
+                </div>
+
+                <div class="mb-2">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" id="clearFilters">
+                        Clear Filters
+                    </button>
+                </div>
+
+                <!-- Results -->
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>LRN</th>
+                                <th>Student No.</th>
+                                <th>Name</th>
+                                <th>Grade Level</th>
+                                <th>Track</th>
+                                <th>Strand</th>
+                                <th>Section</th>
+                                <th>Contact No.</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentsTableBody">
+                            <tr>
+                                <td colspan="8" class="text-center text-muted">Loading students...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="../src/jquery-4.0.0.min.js"></script>
+    <script src="../js/StudentsList.js"></script>
+</body>
+</html>
