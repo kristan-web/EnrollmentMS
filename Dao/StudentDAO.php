@@ -175,6 +175,7 @@ class StudentDAO {
             cs.section_id,
             cs.section_name,
             cs.school_year,
+            e.semester,
             st.strand_id,
             st.strand_code,
             st.strand_name,

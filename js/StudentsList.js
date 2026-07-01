@@ -174,7 +174,7 @@ function loadStudents() {
         error: function () {
 
             $("#studentsTableBody").html(
-                '<tr><td colspan="8" class="text-center text-danger">Failed to load students.</td></tr>'
+                '<tr><td colspan="9" class="text-center text-danger">Failed to load students.</td></tr>'
             );
 
         }
@@ -188,7 +188,7 @@ function renderStudents(students) {
     if (!students || students.length === 0) {
 
         $("#studentsTableBody").html(
-            '<tr><td colspan="8" class="text-center text-muted">No students found.</td></tr>'
+            '<tr><td colspan="9" class="text-center text-muted">No students found.</td></tr>'
         );
 
         return;
@@ -209,6 +209,11 @@ function renderStudents(students) {
                 <td>${student.strand_name ?? "—"}</td>
                 <td>${student.section_name ?? "—"}</td>
                 <td>${student.contact_number ?? ""}</td>
+                <td>
+                    <a href="student-edit.html?id=${student.student_id}" class="btn btn-sm btn-outline-primary">
+                        Edit
+                    </a>
+                </td>
             </tr>
         `;
 
