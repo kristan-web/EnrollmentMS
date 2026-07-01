@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enrollment System - Login Page</title>
+    <link rel="stylesheet" href="../css/LoginPage.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Jersey+20&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="wrapper">
+        <div class="header">
+            <img src="../src/images/web-logo.png" alt="logo">
+            <h1>WELCOME BACK ADMIN</h1>
+        </div>
+
+        <div class="wrapper-body">
+            <p>Enter Your Login Details Below</p>
+            <form id="login-form">
+                <div class="input-group">
+                    <input type="email" name="email" class="form-input" placeholder=" " id="email-input">
+                    <img src="../src/images/email-icon.png" alt="email-Icon">
+                    <label for="email-input">Email:</label>
+                </div>
+
+                <div class="input-group">
+                    <input type="password" placeholder=" " class="form-input" id="password-input" name="password">
+                    <img src="../src/images/password-icon.png" alt="password-Icon">
+                    <label for="password-input">Password:</label>
+                </div>
+
+                <a href="#" id="forgot-password-btn">Forgot password?</a>
+
+                <button type="submit" class="form-btn">LOGIN</button>
+            </form>
+            <p id="error"></p>
+        </div>  
+    </div>
+    <script src="../js/Users.js"></script>
+</body>
+</html>
