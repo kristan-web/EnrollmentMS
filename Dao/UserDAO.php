@@ -23,6 +23,27 @@ class UserDAO{
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-}
+    public function CreateUser(Users $user){
+        $query = "INSERT INTO users (email, password_hash, full_name, role) values (:email, :password_hash, :full_name, :role)";
 
+        $stmt =  $this->conn->prepare($query);
+
+        $stmt->bindValue(":email", $user->getEmail());
+        $stmt->bindValue(":password_hash", $user->getPassword());
+        $stmt->bindValue(":full_name", $user->getFullname());
+        $stmt->bindValue(":role", $user->getRole());
+
+        return $stmt->execute();
+    }
+
+    public function ChangePassword(Users $user){
+        $query = "UPDATE users SET password_hash = :newpassword";
+
+        $stmt = $this->conn->prepare($query);
+
+        $stmt->bindValue(":newpassword", $user->getPassword());
+
+        return $stmt->execute();
+    }
+}
 ?>

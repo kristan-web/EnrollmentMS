@@ -1,39 +1,174 @@
-//Change message.push to banner
-//Change alert validation to banner before redirection
+// Account Creation Form
+const accountCreation = document.getElementById('accountCreation');
 
-const email = document.getElementById('email-input');
-const password = document.getElementById('password-input');
-const form = document.getElementById('login-form');
-const errorElement = document.getElementById('error');
+// Reset Account Creation Fields
+function resetAccountCreationField(){
+    const emailCreation = document.getElementById('emailCreation');
+    const passwordCreation = document.getElementById('passwordCreation');
+    const confpassCreation = document.getElementById('confpassCreation');
+    const fullnameCreation = document.getElementById('fullnameCreation');
 
-form.addEventListener('submit', async (e) => {
-    e.preventDefault();
+    emailCreation.value = '';
+    passwordCreation.value = '';
+    confpassCreation.value = '';
+    fullnameCreation.value = '';
+}
 
-    let messages = [];
-    if(email.value === '' || email.value == null){
-        messages.push('Email is required');
-    }
+// Reset Change Password Fields
 
-    if(password.value === '' || password.value == null){
-        messages.push('Password is required');
-    }
 
-    if(messages.length > 0){
-        errorElement.innerText = messages.join(', ');
-    }
+// Only process this if accountCreation form exists
+if(accountCreation){
+    // Account Creation Elements
+    const emailCreation = document.getElementById('emailCreation');
+    const passwordCreation = document.getElementById('passwordCreation');
+    const confpassCreation = document.getElementById('confpassCreation');
+    const fullnameCreation = document.getElementById('fullnameCreation');
 
-    const formData = new FormData(form);
+    // Add event listener to form
+    accountCreation.addEventListener('submit', async (e) =>{
+        // Prevent default submission
+        e.preventDefault();
 
-    const response = await fetch('../Controllers/user_controllers.php', {
-        method: 'POST',
-        body: formData
+        // Check if any of the field is empty
+        if(emailCreation.value === ''  || passwordCreation.value === '' || confpassCreation.value === '' || fullnameCreation.value === ''){
+            alert('All fields are required.');
+            return;
+        }
+
+        // Check if password and confirm password matches
+        if(passwordCreation.value == confpassCreation.value){
+            // Check if password <= 7 or >= 20
+            if(passwordCreation.value.length <= 7 || passwordCreation.value.length >= 20){
+                alert('Password must be longer than 7 and shorter than 20 characters');
+                return;
+            }
+
+            // If password requirements are met
+            else{
+                const data = new FormData(accountCreation);
+
+                const response = await fetch('../Controllers/user_controllers.php', {
+                    method: 'POST',
+                    body: data
+                });
+
+                const status = await response.json();
+
+                // If account is created successfully
+                if(status.success){
+                    alert(status.message);
+                    resetAccountCreationField();
+                    return;
+                }
+                // If email exists
+                else{
+                    alert(status.message);
+                    return;
+                }
+            }
+        }
+        // If passwords do not match
+        else{
+            alert('Passwords do not match');
+            return;
+        }
     });
+}
 
-    const result = await response.json();
+// Login Form
+const loginForm = document.getElementById('loginForm')
 
-    alert(result.message);
+// Only process this if loginForm exists
+if(loginForm){
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
 
-    if (result.success) {
-        window.location.href = 'dashboard.html';
-    }
-});
+        // Login Form Elements
+        const emailLogin = document.getElementById('emailLogin');
+        const passwordLogin = document.getElementById('passwordLogin');
+
+        // Check if any of the field is empty
+        if(emailLogin.value == '' || passwordLogin.value == ''){
+            alert('All fields are required');
+            return;
+        }
+        else{
+            const data = new FormData(loginForm);
+
+            const response = await fetch('../Controllers/user_controllers.php', {
+                method: 'POST',
+                body: data
+            })
+
+            const status = await response.json();
+
+            // If account is verified
+            if(status.success){
+                alert(status.message);
+                return;
+            }
+            // If account not found
+            else{
+                alert(status.message);
+                return;
+            }
+        }
+    });
+}
+
+// Change Password Form
+const changePassword = document.getElementById('changePassword');
+
+if(changePassword){
+    changePassword.addEventListener('submit', async (e) =>{
+        e.preventDefault();
+
+        // Change Password Elements
+        const emailReset = document.getElementById('emailReset');
+        const passwordReset = document.getElementById('passwordReset');
+        const newpassReset = document.getElementById('newpassReset');
+        const confpassReset = document.getElementById('confpassReset');
+        
+        // Check if any of the field is empty
+        if(emailReset.value.trim() === '' || passwordReset.value.trim() === '' || newpassReset.value.trim() === '' || confpassReset.value.trim() === ''){
+            alert('All fields are required');
+            return;
+        }
+        else{
+            // If new pass and confirm password matches
+            if(newpassReset.value.trim() === confpassReset.value.trim()){
+                // Password is <= 7 or >= 20
+                if(newpassReset.value.length <= 7 || newpassReset >= 20){
+                    alert('Password should be longer than 7 and shorter than 20 characters');
+                    return;
+                }
+                else{    
+                    const data = new FormData(changePassword);
+
+                    const response = await fetch('../Controllers/user_controllers.php', {
+                        method: 'POST',
+                        body: data
+                    })
+
+                    const status = await response.json();
+
+                    // Password successfully changed
+                    if(status.success){
+                        alert(status.message);
+                        return;
+                    }
+
+                    // Password change failed
+                    alert(status.message);
+                    return;
+                }
+            }
+            // New password and Confirm password did not match
+            else{
+                alert('Passwords did not match');
+                return
+            }
+        }
+    });
+}
