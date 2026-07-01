@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enrollment System - Account Module</title>
+</head>
+<body>
+    <form id="accountCreation">
+        <h1>Account Creation</h1>
+        <input type="hidden" name="form_type" value="creation">
+        <input type="email" placeholder="email" id="emailCreation" name="emailCreation">
+        <input type="password" placeholder="password" id="passwordCreation" name="passwordCreation">
+        <input type="password" placeholder="confirm password" id="confpassCreation" name="confpassCreation">
+        <input type="text" placeholder="Fullname" id="fullnameCreation" name="fullnameCreation">
+        <button type="submit" id="creationBtn">Create Account</button>
+    </form>
+
+    <form id="changePassword">
+        <h1>Change Password</h1>
+        <input type="hidden" name="form_type" value="reset">
+        <input type="email" placeholder="email" id="emailReset" name="emailReset">
+        <input type="password" placeholder="password" id="passwordReset" name="passwordReset">
+        <input type="password" placeholder="new password" id="newpassReset" name="newpassReset">
+        <input type="password" placeholder="confirm password" id="confpassReset" name="confpassReset">
+        <button type="submit" id="resetBtn">Change Password</button>
+    </form>
+
+    <form id="loginForm">
+        <h1>Login Form</h1>
+        <input type="hidden" name="form_type" value="login">
+        <input type="email" name="emailLogin" id="emailLogin" placeholder="email">
+        <input type="password" name="passwordLogin" id="passwordLogin" placeholder="password">
+        <button type="submit">Login</button>
+    </form>
+
+    <script src="../js/Users.js"></script>
+</body>
+</html>

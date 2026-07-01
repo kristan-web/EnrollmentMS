@@ -2,7 +2,6 @@
 
 class Users{
     private $user_id;
-    private $username;
     private $password_hash;
     private $full_name;
     private $email;
@@ -13,10 +12,6 @@ class Users{
 
     public function getUserId(){
         return $this->user_id;
-    }
-
-    public function getUsername(){
-        return $this->username;
     }
 
     public function getPassword(){
@@ -37,10 +32,6 @@ class Users{
     }
 
     //Setters
-
-    public function setUsername($username){
-        $this->username = $username;
-    }
 
     public function setPassword($password_hash){
         $this->password_hash = $password_hash;
