@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Student</title>
+    <link rel="stylesheet" href="../src/bootstrap/bootstrap.min.css">
+</head>
+<body>
+    <div class="container d-flex justify-content-center">
+        <div class="card w-50 mx-auto my-4">
+            <div class="card-header">
+                Edit Student
+            </div>
+            <div class="card-body">
+                <form id="studentEditForm">
+
+                    <input type="hidden" id="student_id">
+
+                    <h6 class="text-muted mb-2">Learner Information</h6>
+
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="lrn" maxlength="12" placeholder="LRN">
+                        <label>LRN (Learner Reference Number)</label>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="student_number" placeholder="Student Number" disabled>
+                        <label>Student Number</label>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="first_name">
+                        <label>First Name</label>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="middle_name">
+                        <label>Middle Name</label>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="last_name">
+                        <label>Last Name</label>
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Gender</label>
+                        <select class="form-select" id="gender">
+                            <option value="">Choose...</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Birthday</label>
+                        <input type="date" class="form-control" id="birthdate">
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Address</label>
+                        <input type="text" class="form-control" id="address">
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Contact Number</label>
+                        <input type="text" class="form-control" id="contact_number">
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Email</label>
+                        <input type="email" class="form-control" id="email">
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Grade Level</label>
+                        <select class="form-select" id="grade_level">
+                            <option value="">Choose...</option>
+                            <option value="11">Grade 11</option>
+                            <option value="12">Grade 12</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Status</label>
+                        <select class="form-select" id="status">
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                            <option value="Graduated">Graduated</option>
+                            <option value="Dropped">Dropped</option>
+                        </select>
+                    </div>
+
+                    <hr>
+                    <h6 class="text-muted mb-2">Parent Information</h6>
+
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="father_name">
+                        <label>Father's Name</label>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="father_contact_number">
+                        <label>Father's Contact Number</label>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="father_occupation">
+                        <label>Father's Occupation</label>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="mother_name">
+                        <label>Mother's Name</label>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="mother_contact_number">
+                        <label>Mother's Contact Number</label>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="mother_occupation">
+                        <label>Mother's Occupation</label>
+                    </div>
+
+                    <hr>
+                    <h6 class="text-muted mb-2">Guardian Information <small>(if different from parents)</small></h6>
+
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="guardian_name">
+                        <label>Guardian's Name</label>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="guardian_relationship">
+                        <label>Guardian's Relationship to Student</label>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="guardian_contact_number">
+                        <label>Guardian's Contact Number</label>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="guardian_address">
+                        <label>Guardian's Address</label>
+                    </div>
+
+                    <hr>
+                    <h6 class="text-muted mb-2">Emergency Contact <span class="text-danger">*</span></h6>
+
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="emergency_contact_name" required>
+                        <label>Emergency Contact Name</label>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="emergency_contact_relationship" required>
+                        <label>Relationship to Student</label>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="emergency_contact_number" required>
+                        <label>Emergency Contact Number</label>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-success">
+                            Save Changes
+                        </button>
+                        <a href="students-list.html" class="btn btn-outline-secondary">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="../src/jquery-4.0.0.min.js"></script>
+    <script src="../js/StudentEdit.js"></script>
+</body>
+</html>

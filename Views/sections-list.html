@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Class Sections</title>
+    <link rel="stylesheet" href="../src/bootstrap/bootstrap.min.css">
+</head>
+<body>
+    <div class="container my-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                Class Sections
+                <button type="button" class="btn btn-primary btn-sm" onclick="openAddSectionModal()">
+                    + Add Section
+                </button>
+            </div>
+            <div class="card-body">
+
+                <!-- Filters -->
+                <div class="row g-2 mb-3">
+
+                    <div class="col-md-4">
+                        <input type="text" class="form-control" id="keyword" placeholder="Search by section name or school year">
+                    </div>
+
+                    <div class="col-md-3">
+                        <select class="form-select" id="strand_filter">
+                            <option value="">All Strands</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2">
+                        <select class="form-select" id="grade_level_filter">
+                            <option value="">All Grade Levels</option>
+                            <option value="11">Grade 11</option>
+                            <option value="12">Grade 12</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <select class="form-select" id="status_filter">
+                            <option value="">All (excl. Cancelled)</option>
+                            <option value="Open">Open</option>
+                            <option value="Closed">Closed</option>
+                            <option value="Cancelled">Cancelled</option>
+                        </select>
+                    </div>
+
+                </div>
+
+                <div class="mb-2">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" id="clearFilters">
+                        Clear Filters
+                    </button>
+                </div>
+
+                <!-- Results -->
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>Section Name</th>
+                                <th>Track / Strand</th>
+                                <th>Grade Level</th>
+                                <th>School Year</th>
+                                <th>Adviser</th>
+                                <th>Max Slots</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sectionsTableBody">
+                            <tr>
+                                <td colspan="8" class="text-center text-muted">Loading sections...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Add / Edit Modal -->
+    <div class="modal fade" id="sectionModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <form id="sectionForm">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="sectionModalLabel">Add Class Section</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+
+                    <div class="modal-body">
+
+                        <input type="hidden" id="section_id">
+
+                        <div class="mb-3">
+                            <label class="form-label">Strand</label>
+                            <select class="form-select" id="strand_id" required>
+                                <option value="">Select Strand</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Grade Level</label>
+                            <select class="form-select" id="grade_level" required>
+                                <option value="">Select Grade Level</option>
+                                <option value="11">Grade 11</option>
+                                <option value="12">Grade 12</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Section Name</label>
+                            <input type="text" class="form-control" id="section_name" placeholder="e.g., STEM 11 - Newton" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">School Year</label>
+                            <input type="text" class="form-control" id="school_year" placeholder="e.g., 2026-2027" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Homeroom Adviser</label>
+                            <select class="form-select" id="adviser_id">
+                                <option value="">No adviser assigned yet</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Max Slots</label>
+                            <input type="number" class="form-control" id="max_slots" min="1" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Status</label>
+                            <select class="form-select" id="status" required>
+                                <option value="Open">Open</option>
+                                <option value="Closed">Closed</option>
+                                <option value="Cancelled">Cancelled</option>
+                            </select>
+                        </div>
+
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save Section</button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="../src/jquery-4.0.0.min.js"></script>
+    <script src="../src/bootstrap/bootstrap.bundle.min.js"></script>
+    <script src="../js/SectionsList.js"></script>
+    <script src="../js/Sections.js"></script>
+</body>
+</html>
