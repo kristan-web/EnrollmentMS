@@ -1,4 +1,5 @@
-const STUDENTS_URL = "../Controllers/students_controllers.php";
+const STUDENTS_GET_URL = "../Controllers/students_get_controller.php";
+const STUDENTS_UPDATE_URL = "../Controllers/students_update_controller.php";
 
 function getStudentIdFromUrl() {
 
@@ -11,22 +12,23 @@ $(document).ready(function () {
 
     const studentId = getStudentIdFromUrl();
 
-    // Works whether the page has #studentForm (add) or #studentEditForm (edit)
-    const $form = $("#studentEditForm").length ? $("#studentEditForm") : $("#studentForm");
+    if (!studentId) {
 
-    if (studentId) {
-
-        // Edit mode
-        $("#student_id").val(studentId);
-        loadStudent(studentId);
+        alert("No student selected to edit.");
+        window.location.href = "students-list.html";
+        return;
 
     }
 
-    $form.on("submit", function (e) {
+    $("#student_id").val(studentId);
+
+    loadStudent(studentId);
+
+    $("#studentEditForm").on("submit", function (e) {
 
         e.preventDefault();
 
-        saveStudent(studentId, $form);
+        saveStudent();
 
     });
 
@@ -36,9 +38,9 @@ $(document).ready(function () {
 function loadStudent(id) {
 
     $.ajax({
-        url: STUDENTS_URL,
+        url: STUDENTS_GET_URL,
         type: "GET",
-        data: { action: "get", id: id },
+        data: { id: id },
         dataType: "json",
         success: function (student) {
 
@@ -97,9 +99,10 @@ function populateForm(student) {
 }
 
 
-function saveStudent(studentId, $form) {
+function saveStudent() {
 
     let studentData = {
+        student_id: $("#student_id").val(),
         lrn: $("#lrn").val(),
         first_name: $("#first_name").val(),
         middle_name: $("#middle_name").val(),
@@ -110,6 +113,7 @@ function saveStudent(studentId, $form) {
         contact_number: $("#contact_number").val(),
         email: $("#email").val(),
         grade_level: $("#grade_level").val(),
+        status: $("#status").val(),
 
         father_name: $("#father_name").val(),
         father_contact_number: $("#father_contact_number").val(),
@@ -128,48 +132,24 @@ function saveStudent(studentId, $form) {
         emergency_contact_number: $("#emergency_contact_number").val()
     };
 
-    if (studentId) {
-
-        // Edit mode
-        studentData.action = "update";
-        studentData.student_id = studentId;
-        studentData.status = $("#status").val();
-
-    } else {
-
-        // Add mode
-        studentData.action = "create";
-        studentData.student_number = $("#student_number").val();
-
-    }
-
     $.ajax({
-        url: STUDENTS_URL,
+        url: STUDENTS_UPDATE_URL,
         type: "POST",
         data: studentData,
-        dataType: "json",
         success: function (response) {
 
-            alert(response.message);
+            alert(response);
 
-            if (response.success) {
+            if (response.indexOf("SUCCESS") !== -1) {
 
-                if (studentId) {
-
-                    window.location.href = "students-list.html";
-
-                } else {
-
-                    $form[0].reset();
-
-                }
+                window.location.href = "students-list.html";
 
             }
 
         },
         error: function () {
 
-            alert("Failed to save student.");
+            alert("Failed to save changes.");
 
         }
     });
