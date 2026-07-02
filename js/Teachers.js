@@ -1,16 +1,87 @@
-const TEACHERS_CREATE_URL = "../Controllers/teachers_controllers.php";
+const TEACHERS_URL = "../Controllers/teachers_controllers.php";
+
+function getTeacherIdFromUrl() {
+
+    const params = new URLSearchParams(window.location.search);
+    return params.get("id");
+
+}
 
 $(document).ready(function () {
 
-    $("#teacherForm").on("submit", function (e) {
+    const teacherId = getTeacherIdFromUrl();
+
+    // Works whether the page has #teacherForm (add) or #teacherEditForm (edit)
+    const $form = $("#teacherEditForm").length ? $("#teacherEditForm") : $("#teacherForm");
+    const isEditForm = $form.is("#teacherEditForm");
+
+    if (isEditForm) {
+
+        if (!teacherId) {
+
+            alert("No teacher selected to edit.");
+            window.location.href = "teachers-list.html";
+            return;
+
+        }
+
+        $("#teacher_id").val(teacherId);
+
+        loadTeacher(teacherId);
+
+    }
+
+    $form.on("submit", function (e) {
 
         e.preventDefault();
 
-        submitTeacher();
+        saveTeacher(teacherId, $form);
 
     });
 
 });
+
+
+function loadTeacher(id) {
+
+    $.ajax({
+        url: TEACHERS_URL,
+        type: "GET",
+        data: { action: "get", id: id },
+        dataType: "json",
+        success: function (teacher) {
+
+            if (teacher.error) {
+
+                alert(teacher.error);
+                window.location.href = "teachers-list.html";
+                return;
+
+            }
+
+            populateForm(teacher);
+
+        },
+        error: function () {
+
+            alert("Failed to load teacher information.");
+
+        }
+    });
+
+}
+
+
+function populateForm(teacher) {
+
+    $("#first_name").val(teacher.first_name);
+    $("#last_name").val(teacher.last_name);
+    $("#email").val(teacher.email);
+    $("#contact_number").val(teacher.contact_number);
+    $("#specialization").val(teacher.specialization);
+    $("#status").val(teacher.status);
+
+}
 
 
 function validateTeacherForm(data) {
@@ -49,7 +120,7 @@ function showFormAlert(messages) {
 }
 
 
-function submitTeacher() {
+function saveTeacher(teacherId, $form) {
 
     let teacherData = {
         first_name: $("#first_name").val().trim(),
@@ -70,8 +141,22 @@ function submitTeacher() {
 
     }
 
+    if (teacherId) {
+
+        // Edit mode
+        teacherData.action = "update";
+        teacherData.teacher_id = teacherId;
+        teacherData.status = $("#status").val();
+
+    } else {
+
+        // Add mode
+        teacherData.action = "create";
+
+    }
+
     $.ajax({
-        url: TEACHERS_CREATE_URL,
+        url: TEACHERS_URL,
         type: "POST",
         data: teacherData,
         success: function (response) {
@@ -80,7 +165,15 @@ function submitTeacher() {
 
             if (response.indexOf("SUCCESS") !== -1) {
 
-                $("#teacherForm")[0].reset();
+                if (teacherId) {
+
+                    window.location.href = "teachers-list.html";
+
+                } else {
+
+                    $form[0].reset();
+
+                }
 
             }
 

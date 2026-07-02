@@ -1,6 +1,6 @@
-const FILTERS_URL = "../Controllers/teachers_filters_controller.php";
-const TEACHERS_LIST_URL = "../Controllers/teachers_list_controller.php";
-const TEACHERS_DELETE_URL = "../Controllers/teachers_delete_controller.php";
+const FILTERS_URL = "../Controllers/teachers_controllers.php";
+const TEACHERS_LIST_URL = "../Controllers/teachers_controllers.php";
+const TEACHERS_DELETE_URL = "../Controllers/teachers_controllers.php";
 
 let searchDebounce = null;
 
@@ -49,7 +49,7 @@ $(document).ready(function () {
         $.ajax({
             url: TEACHERS_DELETE_URL,
             type: "POST",
-            data: { id: teacherId },
+            data: { id: teacherId , action: "delete"},
             success: function (response) {
 
                 alert(response);
