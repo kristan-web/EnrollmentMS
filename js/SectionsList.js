@@ -8,8 +8,9 @@ let sectionTeachers = [];
 function loadLookups() {
 
     $.ajax({
-        url: "../Controllers/sections_lookup_controller.php",
+        url: "../Controllers/sections_controllers.php",
         type: "GET",
+        data: { action: "lookup" },
         dataType: "json",
         success: function(response) {
 
@@ -47,6 +48,7 @@ function loadLookups() {
 function loadSections() {
 
     let params = {
+        action: "list",
         keyword: document.getElementById("keyword").value,
         strand_id: document.getElementById("strand_filter").value,
         grade_level: document.getElementById("grade_level_filter").value,
@@ -54,7 +56,7 @@ function loadSections() {
     };
 
     $.ajax({
-        url: "../Controllers/sections_list_controller.php",
+        url: "../Controllers/sections_controllers.php",
         type: "GET",
         data: params,
         dataType: "json",
@@ -149,7 +151,7 @@ function deleteSection(id) {
     }
 
     $.ajax({
-        url: "../Controllers/sections_delete_controller.php",
+        url: "../Controllers/sections_controllers.php",
         type: "POST",
         data: { section_id: id, action: "delete" },
         success: function(response) {
@@ -166,7 +168,7 @@ function deleteSection(id) {
 function restoreSection(id) {
 
     $.ajax({
-        url: "../Controllers/sections_delete_controller.php",
+        url: "../Controllers/sections_controllers.php",
         type: "POST",
         data: { section_id: id, action: "restore" },
         success: function(response) {

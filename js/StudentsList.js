@@ -1,5 +1,5 @@
 const FILTERS_URL = "../Controllers/filters_controller.php";
-const STUDENTS_LIST_URL = "../Controllers/students_list_controller.php";
+const STUDENTS_LIST_URL = "../Controllers/students_controllers.php";
 
 let searchDebounce = null;
 
