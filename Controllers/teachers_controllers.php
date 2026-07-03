@@ -1,144 +1,160 @@
 <?php
+// teachers_controllers.php - Updated with proper error handling and JSON responses
+// This file handles all teacher CRUD operations via REST-like API
+
+// Enable error reporting for development, but handle gracefully
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// Set JSON content type for GET requests
+if ($_SERVER["REQUEST_METHOD"] === "GET") {
+    header("Content-Type: application/json");
+}
 
 require_once "../Dao/TeacherDAO.php";
 require_once "../Models/teachers_model.php";
 
 $method = $_SERVER["REQUEST_METHOD"];
-$dao    = new TeacherDAO();
+$dao = new TeacherDAO();
 
-if ($method == "GET") {
-
+// ============ HELPERS ============
+function sendJsonResponse($data, $statusCode = 200) {
+    http_response_code($statusCode);
     header("Content-Type: application/json");
-
-    // action=get     -> single teacher by id
-    // action=filters -> distinct specializations for the filter dropdown
-    // action=list (default) -> filtered list of teachers
-    $action = isset($_GET["action"]) ? $_GET["action"] : (isset($_GET["id"]) ? "get" : "list");
-
-    if ($action == "get") {
-
-        $id = isset($_GET["id"]) ? $_GET["id"] : null;
-
-        if (empty($id)) {
-            echo json_encode(["error" => "Missing teacher id"]);
-            exit;
-        }
-
-        $teacher = $dao->getById($id);
-
-        if ($teacher) {
-            echo json_encode($teacher);
-        } else {
-            echo json_encode(["error" => "Teacher not found"]);
-        }
-
-    } else if ($action == "filters") {
-
-        echo json_encode($dao->getSpecializations());
-
-    } else if ($action == "list") {
-
-        $filters = [
-            "keyword"        => isset($_GET["keyword"]) ? $_GET["keyword"] : null,
-            "specialization" => isset($_GET["specialization"]) ? $_GET["specialization"] : null,
-        ];
-
-        echo json_encode($dao->search($filters));
-
-    } else {
-
-        echo json_encode(["error" => "Invalid action"]);
-
-    }
-
-} else if ($method == "POST") {
-
-    // action=delete -> soft delete a teacher
-    // action=update -> update existing teacher (requires teacher_id)
-    // action=create (default) -> insert new teacher
-    $action = isset($_POST["action"]) ? $_POST["action"] : (!empty($_POST["teacher_id"]) ? "update" : "create");
-
-    if ($action == "delete") {
-
-        $id = isset($_POST["id"]) ? $_POST["id"] : (isset($_POST["teacher_id"]) ? $_POST["teacher_id"] : null);
-
-        if (empty($id)) {
-            echo "DELETE FAILED: missing teacher id";
-            exit;
-        }
-
-        if ($dao->delete($id)) {
-            echo "DELETE SUCCESS";
-        } else {
-            echo "DELETE FAILED";
-        }
-
-    } else if ($action == "update") {
-
-        if (empty($_POST["teacher_id"])) {
-            echo "UPDATE FAILED: missing teacher_id";
-            exit;
-        }
-
-        $errors = Teacher::validate($_POST, true);
-
-        if (!empty($errors)) {
-            echo "UPDATE FAILED: " . implode(" ", $errors);
-            exit;
-        }
-
-        $teacher = new Teacher();
-
-        $teacher->setTeacherId($_POST["teacher_id"]);
-        $teacher->setFirstName(trim($_POST["first_name"]));
-        $teacher->setLastName(trim($_POST["last_name"]));
-        $teacher->setEmail(trim($_POST["email"]));
-        $teacher->setContactNumber(trim($_POST["contact_number"]));
-        $teacher->setSpecialization(trim($_POST["specialization"]));
-        $teacher->setStatus($_POST["status"]);
-
-        if ($dao->update($teacher)) {
-            echo "UPDATE SUCCESS";
-        } else {
-            echo "UPDATE FAILED";
-        }
-
-    } else if ($action == "create") {
-
-        $errors = Teacher::validate($_POST, false);
-
-        if (!empty($errors)) {
-            echo "INSERT FAILED: " . implode(" ", $errors);
-            exit;
-        }
-
-        $teacher = new Teacher();
-
-        $teacher->setFirstName(trim($_POST["first_name"]));
-        $teacher->setLastName(trim($_POST["last_name"]));
-        $teacher->setEmail(trim($_POST["email"]));
-        $teacher->setContactNumber(trim($_POST["contact_number"]));
-        $teacher->setSpecialization(trim($_POST["specialization"]));
-
-        // default value
-        $teacher->setStatus("Active");
-
-        if ($dao->insert($teacher)) {
-            echo "INSERT SUCCESS";
-        } else {
-            echo "INSERT FAILED";
-        }
-
-    } else {
-
-        echo "Invalid action";
-
-    }
-
-} else {
-
-    echo "Method not allowed";
-
+    echo json_encode($data);
+    exit;
 }
 
-?>
+function sendTextResponse($message, $isSuccess = true) {
+    echo $isSuccess ? "SUCCESS: " . $message : "ERROR: " . $message;
+    exit;
+}
+
+function getPostData() {
+    // Handle both form data and JSON
+    if ($_SERVER["CONTENT_TYPE"] === "application/json") {
+        $json = file_get_contents("php://input");
+        return json_decode($json, true) ?? [];
+    }
+    return $_POST;
+}
+
+// ============ GET REQUESTS ============
+if ($method === "GET") {
+    $action = isset($_GET["action"]) ? $_GET["action"] : "list";
+
+    switch ($action) {
+        case "get":
+            $id = isset($_GET["id"]) ? $_GET["id"] : null;
+            if (empty($id)) {
+                sendJsonResponse(["error" => "Missing teacher ID"], 400);
+            }
+
+            $teacher = $dao->getById($id);
+            if ($teacher) {
+                sendJsonResponse($teacher);
+            } else {
+                sendJsonResponse(["error" => "Teacher not found"], 404);
+            }
+            break;
+
+        case "filters":
+            sendJsonResponse($dao->getSpecializations());
+            break;
+
+        case "list":
+        default:
+            $filters = [
+                "keyword" => isset($_GET["keyword"]) ? trim($_GET["keyword"]) : null,
+                "specialization" => isset($_GET["specialization"]) ? trim($_GET["specialization"]) : null,
+            ];
+            // Remove empty filters
+            $filters = array_filter($filters, function($v) { return $v !== null && $v !== ""; });
+            sendJsonResponse($dao->search($filters));
+            break;
+    }
+}
+
+// ============ POST REQUESTS ============
+if ($method === "POST") {
+    $postData = getPostData();
+
+    // Determine action: explicit action parameter, or infer from presence of teacher_id
+    $action = isset($postData["action"]) ? $postData["action"] : null;
+
+    if (!$action) {
+        if (isset($postData["teacher_id"]) && !empty($postData["teacher_id"])) {
+            $action = "update";
+        } else {
+            $action = "create";
+        }
+    }
+
+    switch ($action) {
+        case "delete":
+            $id = $postData["id"] ?? $postData["teacher_id"] ?? null;
+            if (empty($id)) {
+                sendTextResponse("Missing teacher ID for deletion", false);
+            }
+
+            if ($dao->delete($id)) {
+                sendTextResponse("Teacher deleted successfully", true);
+            } else {
+                sendTextResponse("Failed to delete teacher", false);
+            }
+            break;
+
+        case "update":
+            if (empty($postData["teacher_id"])) {
+                sendTextResponse("Missing teacher_id for update", false);
+            }
+
+            $errors = Teacher::validate($postData, true);
+            if (!empty($errors)) {
+                sendTextResponse(implode("; ", $errors), false);
+            }
+
+            $teacher = new Teacher();
+            $teacher->setTeacherId($postData["teacher_id"]);
+            $teacher->setFirstName(trim($postData["first_name"]));
+            $teacher->setLastName(trim($postData["last_name"]));
+            $teacher->setEmail(trim($postData["email"]));
+            $teacher->setContactNumber(trim($postData["contact_number"]));
+            $teacher->setSpecialization(trim($postData["specialization"]));
+            $teacher->setStatus($postData["status"] ?? "Active");
+
+            if ($dao->update($teacher)) {
+                sendTextResponse("Teacher updated successfully", true);
+            } else {
+                sendTextResponse("Failed to update teacher", false);
+            }
+            break;
+
+        case "create":
+        default:
+            $errors = Teacher::validate($postData, false);
+            if (!empty($errors)) {
+                sendTextResponse(implode("; ", $errors), false);
+            }
+
+            $teacher = new Teacher();
+            $teacher->setFirstName(trim($postData["first_name"]));
+            $teacher->setLastName(trim($postData["last_name"]));
+            $teacher->setEmail(trim($postData["email"]));
+            $teacher->setContactNumber(trim($postData["contact_number"]));
+            $teacher->setSpecialization(trim($postData["specialization"]));
+            $teacher->setStatus("Active");
+
+            if ($dao->insert($teacher)) {
+                sendTextResponse("Teacher created successfully", true);
+            } else {
+                sendTextResponse("Failed to create teacher", false);
+            }
+            break;
+    }
+}
+
+// ============ OTHER METHODS ============
+header("HTTP/1.1 405 Method Not Allowed");
+echo "Method not allowed";
+exit;

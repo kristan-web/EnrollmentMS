@@ -1,3 +1,4 @@
+<!-- teacher.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -30,7 +31,7 @@
       </button>
 
       <ul class="nav__submenu is-open" id="dashMenu">
-        <li><a href="data-entry.html" class="is-active">
+        <li><a href="data-entry.html">
           <span class="submenu__icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
           </span>
@@ -128,25 +129,30 @@
       </div>
       <div class="modal__body">
         <form id="teacherForm" class="settings-form" novalidate>
+          <input type="hidden" name="id" id="editId" />
           <label class="field">
             <span>First Name</span>
-            <input type="text" name="firstName" required />
+            <input type="text" name="firstName" id="firstName" required />
+            <small class="field-error" id="firstNameError"></small>
           </label>
           <label class="field">
             <span>Last Name</span>
-            <input type="text" name="lastName" required />
+            <input type="text" name="lastName" id="lastName" required />
+            <small class="field-error" id="lastNameError"></small>
           </label>
           <label class="field">
             <span>Email</span>
-            <input type="email" name="email" placeholder="name@school.edu.ph" />
+            <input type="email" name="email" id="email" placeholder="name@school.edu.ph" />
+            <small class="field-error" id="emailError"></small>
           </label>
           <label class="field">
             <span>Contact Number</span>
-            <input type="tel" name="contact" placeholder="09XXXXXXXXX" />
+            <input type="tel" name="contact" id="contact" placeholder="09XXXXXXXXX" />
+            <small class="field-error" id="contactError"></small>
           </label>
           <label class="field">
             <span>Specialization</span>
-            <input type="text" name="specialization" list="specializations" placeholder="e.g. Mathematics" />
+            <input type="text" name="specialization" id="specialization" list="specializations" placeholder="e.g. Mathematics" />
             <datalist id="specializations">
               <option>Mathematics</option>
               <option>Science</option>
@@ -157,11 +163,12 @@
               <option>TLE / ICT</option>
               <option>Values Education</option>
             </datalist>
+            <small class="field-error" id="specializationError"></small>
           </label>
           <p class="form-msg" id="teacherMsg" role="status"></p>
           <div class="form-actions">
             <button type="button" class="btn btn--ghost" id="cancelTeacherBtn">Cancel</button>
-            <button type="submit" class="btn btn--primary">Save Teacher</button>
+            <button type="submit" class="btn btn--primary" id="saveTeacherBtn">Save Teacher</button>
           </div>
         </form>
       </div>
