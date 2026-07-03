@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Subject</title>
+    <link rel="stylesheet" href="../src/bootstrap/bootstrap.min.css">
+</head>
+<body>
+    <div class="container d-flex justify-content-center">
+        <div class="card w-50 mx-auto my-4">
+            <div class="card-header">
+                Edit Subject
+            </div>
+            <div class="card-body">
+
+                <div id="formAlert" class="alert alert-danger d-none"></div>
+
+                <form id="subjectEditForm">
+
+                    <input type="hidden" id="subject_id">
+
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="subject_code" maxlength="20" required>
+                        <label>Subject Code</label>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="subject_name" maxlength="150" required>
+                        <label>Subject Name</label>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <select class="form-select" id="subject_type" required>
+                            <option value="">Loading...</option>
+                        </select>
+                        <label>Subject Type</label>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-floating mb-3">
+                                <select class="form-select" id="grade_level" required>
+                                    <option value="">Loading...</option>
+                                </select>
+                                <label>Grade Level</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating mb-3">
+                                <select class="form-select" id="semester" required>
+                                    <option value="">Loading...</option>
+                                </select>
+                                <label>Semester</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input type="number" step="0.1" min="0.5" max="20" class="form-control" id="units" required>
+                        <label>Units</label>
+                    </div>
+
+                    <div class="form-floating mb-3" id="strandFieldWrapper">
+                        <select class="form-select" id="strand_id">
+                            <option value="">Loading...</option>
+                        </select>
+                        <label>Strand</label>
+                        <div class="form-text">Not applicable for Core subjects (shared by all strands).</div>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <textarea class="form-control" id="description" maxlength="1000" style="height: 100px"></textarea>
+                        <label>Description (optional)</label>
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Status</label>
+                        <select class="form-select" id="status">
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                        </select>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-success">
+                            Save Changes
+                        </button>
+                        <a href="subjects-list.html" class="btn btn-outline-secondary">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="../src/jquery-4.0.0.min.js"></script>
+    <script src="../js/Subjects.js"></script>
+</body>
+</html>
