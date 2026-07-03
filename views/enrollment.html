@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Enrollment &middot; Enrollment Management System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/css/dashboard.css" />
+</head>
+<body>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar__brand">
+      <div class="sidebar__logo">
+        <img src="../assets/img/logo.png" alt="Enrollment Management System crest" />
+      </div>
+      <p class="sidebar__title">Admission</p>
+    </div>
+
+    <nav class="sidebar__nav">
+      <button class="nav__group-toggle" id="dashToggle" aria-expanded="true" aria-controls="dashMenu">
+        <span class="nav__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        </span>
+        <span class="nav__label">Dashboard</span>
+        <span class="nav__chevron" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </span>
+      </button>
+
+      <ul class="nav__submenu is-open" id="dashMenu">
+        <li><a href="data-entry.html">
+          <span class="submenu__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+          </span>
+          <span>Data entry</span>
+        </a></li>
+        <li><a href="transaction.html" class="is-active">
+          <span class="submenu__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m17 2 4 4-4 4"/><path d="M3 6h18"/><path d="m7 22-4-4 4-4"/><path d="M21 18H3"/></svg>
+          </span>
+          <span>Transaction</span>
+        </a></li>
+        <li><a href="settings.html">
+          <span class="submenu__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+          </span>
+          <span>Settings</span>
+        </a></li>
+        <li><a href="maintenance.html">
+          <span class="submenu__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76Z"/></svg>
+          </span>
+          <span>Maintenance</span>
+        </a></li>
+        <li><a href="records.html">
+          <span class="submenu__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>
+          </span>
+          <span>Records &amp; reports</span>
+        </a></li>
+      </ul>
+    </nav>
+
+    <a class="sidebar__logout" href="../index.html">
+      <span class="nav__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
+      </span>
+      <span>Logout</span>
+    </a>
+  </aside>
+
+  <div class="main">
+    <button class="hamburger" id="hamburger" aria-label="Toggle navigation" aria-expanded="true">
+      <span class="hamburger__box" aria-hidden="true">
+        <span class="hamburger__bar"></span>
+        <span class="hamburger__bar"></span>
+        <span class="hamburger__bar"></span>
+      </span>
+    </button>
+
+    <h1 class="main__title">Enrollment</h1>
+
+    <section class="content">
+      <div class="toolbar">
+        <div class="search-box">
+          <svg class="search-box__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="search" id="searchInput" class="search" placeholder="Search by name or student no..." />
+          <button type="button" class="search-clear" aria-label="Clear search" hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          </button>
+        </div>
+        <button class="btn btn--ghost" id="printBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg>
+          Print
+        </button>
+        <button class="btn btn--primary" id="enrollBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+          Enroll Student
+        </button>
+      </div>
+
+      <div class="panel">
+        <div class="table-wrap">
+          <table class="data-table data-table--wide">
+            <thead>
+              <tr>
+                <th>Student No.</th>
+                <th>Full Name</th>
+                <th>A.Y</th>
+                <th>Term</th>
+                <th>Type</th>
+                <th>Strand</th>
+                <th>Grade</th>
+                <th>Section</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th class="no-print">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="masterRows"></tbody>
+          </table>
+        </div>
+        <p class="empty" id="emptyState" hidden>No enrollments yet. Click "Enroll Student" to begin.</p>
+      </div>
+    </section>
+
+    <footer class="main__footer">&copy; 2026 Enrollment Management System</footer>
+  </div>
+
+  <div class="modal-overlay" id="enrollModal" hidden>
+    <div class="modal modal--wide" role="dialog" aria-modal="true" aria-labelledby="enrollTitle">
+      <div class="modal__head">
+        <h2 id="enrollTitle">Enroll Student</h2>
+        <button class="modal__close" id="closeEnrollModal" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal__body">
+        <h3 class="form-section">1 &middot; Find Student</h3>
+        <div class="input-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="search" id="studentSearch" placeholder="Type the student's name..." autocomplete="off" />
+        </div>
+        <div class="search-results" id="studentResults" hidden></div>
+        <div class="selected-student" id="selectedStudentChip" hidden>
+          <span class="selected-student__avatar" id="chipInitials"></span>
+          <span class="selected-student__info">
+            <strong id="chipName"></strong>
+            <em id="chipMeta"></em>
+          </span>
+          <button type="button" class="modal__close" id="clearStudentBtn" aria-label="Clear selection">&times;</button>
+        </div>
+
+        <h3 class="form-section">2 &middot; Enrollment Details</h3>
+        <div class="form-grid">
+          <label class="field">
+            <span>School Year (A.Y)</span>
+            <select id="schoolYear">
+              <option>2025-2026</option>
+              <option selected>2026-2027</option>
+              <option>2027-2028</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Term</span>
+            <select id="term">
+              <option>1st Semester</option>
+              <option>2nd Semester</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Strand</span>
+            <select id="strand">
+              <option value="" disabled selected>Select strand</option>
+              <option>STEM</option>
+              <option>ABM</option>
+              <option>HUMSS</option>
+              <option>GAS</option>
+              <option>TVL</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Grade Level</span>
+            <select id="gradeLevel">
+              <option value="" disabled selected>Select grade</option>
+              <option value="11">Grade 11</option>
+              <option value="12">Grade 12</option>
+            </select>
+          </label>
+        </div>
+
+        <h3 class="form-section">3 &middot; Choose Section</h3>
+        <p class="enroll-hint" id="sectionHint">Select a strand and grade level to view available sections.</p>
+        <div class="table-wrap">
+          <table class="data-table" id="sectionsTable" hidden>
+            <thead>
+              <tr>
+                <th>Section</th>
+                <th>Currently Enrolled</th>
+                <th>Max Capacity</th>
+                <th>Availability</th>
+              </tr>
+            </thead>
+            <tbody id="sectionRows"></tbody>
+          </table>
+        </div>
+
+        <p class="form-msg" id="enrollMsg" role="status"></p>
+        <div class="form-actions">
+          <button type="button" class="btn btn--ghost" id="cancelEnrollBtn">Cancel</button>
+          <button type="button" class="btn btn--primary" id="confirmEnrollBtn" disabled>Enroll Student</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="confirmModal" hidden>
+    <div class="modal modal--small" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+      <div class="modal__head">
+        <h2 id="confirmTitle"></h2>
+        <button class="modal__close" id="closeConfirmModal" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal__body">
+        <p class="archive-name" id="confirmName"></p>
+        <p class="archive-note" id="confirmNote"></p>
+        <div class="form-actions">
+          <button type="button" class="btn btn--ghost" id="cancelConfirmBtn">Cancel</button>
+          <button type="button" class="btn btn--danger" id="confirmActionBtn"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../controllers/dashboard.js"></script>
+  <script src="../controllers/enrollment.js"></script>
+</body>
+</html>
