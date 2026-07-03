@@ -7,14 +7,23 @@ const PAGE_SIZE = 10;
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const DAY_LETTERS = { Mon: "M", Tue: "T", Wed: "W", Thu: "Th", Fri: "F", Sat: "S" };
+const HOUR_PX = 56;
+const PALETTE_SIZE = 8;
 
 const searchInput = document.getElementById("searchInput");
 const termFilter = document.getElementById("termFilter");
 const sectionFilter = document.getElementById("sectionFilter");
+const viewTabs = document.getElementById("viewTabs");
 const addSchedBtn = document.getElementById("addSchedBtn");
 const printPreviewBtn = document.getElementById("printPreviewBtn");
+const listPanel = document.getElementById("listPanel");
 const schedRows = document.getElementById("schedRows");
 const emptyState = document.getElementById("emptyState");
+
+const timetablePanel = document.getElementById("timetablePanel");
+const timetableMeta = document.getElementById("timetableMeta");
+const timetableEmpty = document.getElementById("timetableEmpty");
+const timetableWrap = document.getElementById("timetableWrap");
 
 const pagination = document.getElementById("pagination");
 const pageInfo = document.getElementById("pageInfo");
@@ -44,6 +53,7 @@ let schedules = load();
 let editingId = null;
 let deletingId = null;
 let currentPage = 1;
+let viewMode = "list";
 
 function loadJson(key) {
   try {
@@ -54,7 +64,7 @@ function loadJson(key) {
 }
 
 function load() {
-  return loadJson(SCHEDULES_KEY);
+  return loadJson(SCHEDULES_KEY).map((e) => ({ teacherId: "", room: "", ...e }));
 }
 
 function persist() {
@@ -79,13 +89,17 @@ function subjects() {
   return loadJson(SUBJECTS_KEY);
 }
 
+function teachers() {
+  return loadJson(TEACHERS_KEY);
+}
+
 function teacherName(t) {
   return `${t.lastName}, ${t.firstName}`;
 }
 
 function adviserName(sec) {
   if (!sec || !sec.adviserId) return "—";
-  const t = loadJson(TEACHERS_KEY).find((x) => x.id === sec.adviserId);
+  const t = teachers().find((x) => x.id === sec.adviserId);
   return t ? teacherName(t) : "—";
 }
 
@@ -94,11 +108,22 @@ function activeSchoolYear() {
   return sy ? sy.year : "";
 }
 
+function toMin(t) {
+  const [h, m] = (t || "0:0").split(":").map(Number);
+  return h * 60 + m;
+}
+
 function fmtTime(t) {
   const [h, m] = (t || "0:0").split(":").map(Number);
   const suffix = h >= 12 ? "PM" : "AM";
   const hour = h % 12 || 12;
   return `${hour}:${String(m).padStart(2, "0")} ${suffix}`;
+}
+
+function fmtHour(min) {
+  const h = Math.floor(min / 60);
+  const suffix = h >= 12 ? "PM" : "AM";
+  return `${h % 12 || 12} ${suffix}`;
 }
 
 function shortDays(days) {
@@ -121,10 +146,73 @@ function sharesDay(a, b) {
   return a.days.some((d) => b.days.includes(d));
 }
 
+function normRoom(room) {
+  return (room || "").trim().toLowerCase();
+}
+
 function setMsg(text, type) {
   schedMsg.textContent = text;
   schedMsg.classList.remove("is-error", "is-success");
   if (type) schedMsg.classList.add(type);
+}
+
+function subjectColor(subjectId) {
+  const idx = subjects().findIndex((s) => s.id === subjectId);
+  return "c" + (idx >= 0 ? idx % PALETTE_SIZE : PALETTE_SIZE - 1);
+}
+
+function findConflicts(candidate) {
+  const secList = sections();
+  const subList = subjects();
+  const out = [];
+  for (const other of schedules) {
+    if (other.id === editingId) continue;
+    if (other.term !== candidate.term) continue;
+    if (!sharesDay(other, candidate)) continue;
+    if (!overlaps(other, candidate)) continue;
+
+    let kind = "";
+    if (other.sectionId === candidate.sectionId) kind = "Section";
+    else if (candidate.teacherId && other.teacherId === candidate.teacherId) kind = "Teacher";
+    else if (normRoom(candidate.room) && normRoom(other.room) === normRoom(candidate.room)) kind = "Room";
+    if (!kind) continue;
+
+    const sub = subList.find((s) => s.id === other.subjectId);
+    const sec = secList.find((s) => s.id === other.sectionId);
+    out.push(
+      `${kind} conflict: ${sub ? sub.code : "a subject"} in ${sec ? sec.name : "another section"} (${shortDays(other.days)} ${fmtTime(other.from)} – ${fmtTime(other.to)})`
+    );
+  }
+  return out;
+}
+
+function gatherCandidate() {
+  const data = new FormData(schedForm);
+  return {
+    term: data.get("term") || "",
+    sectionId: data.get("sectionId") || "",
+    subjectId: data.get("subjectId") || "",
+    teacherId: data.get("teacherId") || "",
+    room: (data.get("room") || "").trim(),
+    days: data.getAll("days"),
+    from: data.get("from") || "",
+    to: data.get("to") || ""
+  };
+}
+
+function liveCheck() {
+  if (schedModal.hidden) return;
+  const c = gatherCandidate();
+  if (!c.term || !c.sectionId || !c.days.length || !c.from || !c.to || c.from >= c.to) {
+    setMsg("");
+    return;
+  }
+  const conflicts = findConflicts(c);
+  if (conflicts.length) {
+    setMsg("Heads up — " + conflicts.join(" • "), "is-error");
+  } else {
+    setMsg("No conflicts for this slot.", "is-success");
+  }
 }
 
 function pageList(current, pages) {
@@ -172,30 +260,31 @@ function fillSectionFilter() {
   sectionFilter.innerHTML = '<option value="">All Sections</option>' + opts;
 }
 
-function render() {
+function renderList() {
   const q = searchInput.value.trim().toLowerCase();
   const term = termFilter.value;
   const sectionId = sectionFilter.value;
   const secList = sections();
   const subList = subjects();
-  const teachers = loadJson(TEACHERS_KEY);
+  const teacherList = teachers();
 
   const enriched = schedules.map((entry) => {
     const sec = secList.find((s) => s.id === entry.sectionId);
     const sub = subList.find((s) => s.id === entry.subjectId);
-    const adviser = sec && sec.adviserId ? teachers.find((t) => t.id === sec.adviserId) : null;
-    return { entry, sec, sub, adviser };
+    const teacher = entry.teacherId ? teacherList.find((t) => t.id === entry.teacherId) : null;
+    return { entry, sec, sub, teacher };
   });
 
   const list = enriched
-    .filter(({ entry, sec, sub, adviser }) => {
+    .filter(({ entry, sec, sub, teacher }) => {
       if (term && entry.term !== term) return false;
       if (sectionId && entry.sectionId !== sectionId) return false;
       if (!q) return true;
       return (
         (sub && (sub.code.toLowerCase().includes(q) || sub.title.toLowerCase().includes(q))) ||
         (sec && (sec.name.toLowerCase().includes(q) || (sec.strand || "").toLowerCase().includes(q))) ||
-        (adviser && teacherName(adviser).toLowerCase().includes(q))
+        (teacher && teacherName(teacher).toLowerCase().includes(q)) ||
+        (entry.room || "").toLowerCase().includes(q)
       );
     })
     .sort((a, b) => {
@@ -213,7 +302,7 @@ function render() {
   const start = (currentPage - 1) * PAGE_SIZE;
   const pageItems = list.slice(start, start + PAGE_SIZE);
 
-  schedRows.innerHTML = pageItems.map(({ entry, sec, sub, adviser }) => `<tr>
+  schedRows.innerHTML = pageItems.map(({ entry, sec, sub, teacher }) => `<tr>
     <td>${sub ? `<span class="badge ${sub.type === "Core" ? "badge--core" : "badge--specialized"}">${esc(sub.type)}</span>` : "—"}</td>
     <td>${sec ? esc(sec.strand || "—") : "—"}</td>
     <td>
@@ -221,9 +310,12 @@ function render() {
       <span class="cell-sub">${esc(shortTerm(entry.term))}</span>
     </td>
     <td>${sec ? esc(sec.name) : "—"}</td>
-    <td>${adviser ? esc(teacherName(adviser)) : "—"}</td>
     <td>
       ${sub ? `<span class="chip">${esc(sub.code)}</span><span class="cell-sub">${esc(sub.title)}</span>` : "—"}
+    </td>
+    <td>
+      <span class="cell-name">${teacher ? esc(teacherName(teacher)) : "—"}</span>
+      <span class="cell-sub">${entry.room ? esc(entry.room) : "No room"}</span>
     </td>
     <td><span class="chip" title="${esc(fullDays(entry.days))}">${esc(shortDays(entry.days))}</span></td>
     <td>${esc(fmtTime(entry.from))} – ${esc(fmtTime(entry.to))}</td>
@@ -241,6 +333,146 @@ function render() {
     : 'No schedules yet. Click "Add Schedule" to get started.';
 
   renderPagination(total, pages, start, pageItems.length);
+}
+
+function layoutDay(entries, day) {
+  const items = entries
+    .filter((e) => e.days.includes(day))
+    .sort((a, b) => toMin(a.from) - toMin(b.from) || toMin(a.to) - toMin(b.to))
+    .map((e) => ({ e, lane: 0, lanes: 1 }));
+
+  const placed = [];
+  let cluster = [];
+  let clusterEnd = -Infinity;
+
+  const flush = () => {
+    const laneEnds = [];
+    for (const it of cluster) {
+      let lane = laneEnds.findIndex((end) => end <= toMin(it.e.from));
+      if (lane === -1) {
+        lane = laneEnds.length;
+        laneEnds.push(0);
+      }
+      laneEnds[lane] = toMin(it.e.to);
+      it.lane = lane;
+    }
+    for (const it of cluster) {
+      it.lanes = laneEnds.length;
+      placed.push(it);
+    }
+    cluster = [];
+  };
+
+  for (const it of items) {
+    if (cluster.length && toMin(it.e.from) >= clusterEnd) {
+      flush();
+      clusterEnd = -Infinity;
+    }
+    cluster.push(it);
+    clusterEnd = Math.max(clusterEnd, toMin(it.e.to));
+  }
+  if (cluster.length) flush();
+  return placed;
+}
+
+function renderTimetable() {
+  const secList = sections().slice().sort((a, b) => a.name.localeCompare(b.name));
+  if (!secList.length) {
+    timetableMeta.innerHTML = "";
+    timetableWrap.innerHTML = "";
+    timetableEmpty.hidden = false;
+    timetableEmpty.textContent = "No sections yet. Add sections in Maintenance first.";
+    return;
+  }
+  if (!sectionFilter.value) sectionFilter.value = secList[0].id;
+  if (!termFilter.value) termFilter.value = "1st Semester";
+
+  const sec = secList.find((s) => s.id === sectionFilter.value) || secList[0];
+  const term = termFilter.value;
+  const subList = subjects();
+  const teacherList = teachers();
+  const entries = schedules.filter((e) => e.sectionId === sec.id && e.term === term);
+
+  const usedSubjects = [...new Set(entries.map((e) => e.subjectId))]
+    .map((id) => subList.find((s) => s.id === id))
+    .filter(Boolean)
+    .sort((a, b) => a.code.localeCompare(b.code));
+
+  timetableMeta.innerHTML = `
+    <div class="timetable-meta__info">
+      <strong>${esc(sec.name)} · ${esc(term)}</strong>
+      <span>Grade ${esc(sec.grade)}${sec.strand ? " · " + esc(sec.strand) : ""} · Adviser: ${esc(adviserName(sec))}</span>
+    </div>
+    <div class="legend">
+      ${usedSubjects.map((s) => `<span class="legend-chip"><i class="${subjectColor(s.id)}"></i>${esc(s.code)}</span>`).join("")}
+    </div>`;
+
+  timetableEmpty.hidden = entries.length > 0;
+  if (!entries.length) {
+    timetableEmpty.textContent = `No schedule entries for ${sec.name} in the ${term} yet.`;
+  }
+
+  let startMin = 7 * 60;
+  let endMin = 17 * 60;
+  if (entries.length) {
+    startMin = Math.floor(Math.min(...entries.map((e) => toMin(e.from))) / 60) * 60;
+    endMin = Math.ceil(Math.max(...entries.map((e) => toMin(e.to))) / 60) * 60;
+    if (endMin - startMin < 120) endMin = startMin + 120;
+  }
+  const totalMin = endMin - startMin;
+  const colHeight = (totalMin / 60) * HOUR_PX;
+
+  const axisMarks = [];
+  for (let m = startMin; m <= endMin; m += 60) {
+    axisMarks.push(`<span style="top:${((m - startMin) / 60) * HOUR_PX}px">${fmtHour(m)}</span>`);
+  }
+
+  const cols = DAYS.map((day) => {
+    const blocks = layoutDay(entries, day).map(({ e, lane, lanes }) => {
+      const sub = subList.find((s) => s.id === e.subjectId);
+      const teacher = e.teacherId ? teacherList.find((t) => t.id === e.teacherId) : null;
+      const top = ((toMin(e.from) - startMin) / 60) * HOUR_PX;
+      const height = ((toMin(e.to) - toMin(e.from)) / 60) * HOUR_PX;
+      const left = (lane / lanes) * 100;
+      const width = 100 / lanes;
+      const detail = [teacher ? teacherName(teacher) : "", e.room || ""].filter(Boolean).join(" · ");
+      const title = `${sub ? sub.code + " — " + sub.title : "Subject"}\n${fmtTime(e.from)} – ${fmtTime(e.to)}${detail ? "\n" + detail : ""}`;
+      return `<div class="sched-block ${subjectColor(e.subjectId)}" data-id="${esc(e.id)}" title="${esc(title)}"
+        style="top:${top}px;height:${Math.max(height - 3, 20)}px;left:calc(${left}% + 3px);width:calc(${width}% - 6px)">
+        <strong>${sub ? esc(sub.code) : "—"}</strong>
+        <em>${esc(fmtTime(e.from))} – ${esc(fmtTime(e.to))}</em>
+        ${detail ? `<em>${esc(detail)}</em>` : ""}
+      </div>`;
+    }).join("");
+    return `<div class="tt-col" style="height:${colHeight}px">${blocks}</div>`;
+  }).join("");
+
+  timetableWrap.innerHTML = `
+    <div class="timetable">
+      <div class="tt-head"></div>
+      ${DAYS.map((d) => `<div class="tt-head">${d}</div>`).join("")}
+      <div class="tt-axis" style="height:${colHeight}px">${axisMarks.join("")}</div>
+      ${cols}
+    </div>`;
+}
+
+function render() {
+  if (viewMode === "list") {
+    renderList();
+  } else {
+    renderTimetable();
+  }
+}
+
+function setView(mode) {
+  viewMode = mode;
+  viewTabs.querySelectorAll(".tab").forEach((tab) => {
+    tab.classList.toggle("is-active", tab.dataset.view === mode);
+  });
+  listPanel.hidden = mode !== "list";
+  timetablePanel.hidden = mode !== "grid";
+  searchInput.closest(".search-box").style.visibility = mode === "list" ? "visible" : "hidden";
+  render();
 }
 
 function fillModalSections(selected) {
@@ -275,6 +507,14 @@ function fillModalSubjects(selected) {
   if (select.value !== (selected || "")) select.selectedIndex = 0;
 }
 
+function fillModalTeachers(selected) {
+  const select = schedForm.elements.teacherId;
+  const list = teachers().slice().sort((a, b) => teacherName(a).localeCompare(teacherName(b)));
+  select.innerHTML = '<option value="">Unassigned</option>' +
+    list.map((t) => `<option value="${esc(t.id)}">${esc(teacherName(t))}${t.specialization ? " · " + esc(t.specialization) : ""}</option>`).join("");
+  select.value = selected || "";
+}
+
 function setDays(days) {
   schedForm.querySelectorAll('input[name="days"]').forEach((box) => {
     box.checked = days.includes(box.value);
@@ -288,8 +528,10 @@ function openSchedModal(entry) {
   setMsg("");
   fillModalSections(entry ? entry.sectionId : "");
   fillModalSubjects(entry ? entry.subjectId : "");
+  fillModalTeachers(entry ? entry.teacherId : "");
   if (entry) {
     schedForm.elements.term.value = entry.term;
+    schedForm.elements.room.value = entry.room || "";
     setDays(entry.days);
     schedForm.elements.from.value = entry.from;
     schedForm.elements.to.value = entry.to;
@@ -297,19 +539,14 @@ function openSchedModal(entry) {
     schedForm.elements.term.selectedIndex = 0;
     schedForm.elements.from.value = "07:30";
     schedForm.elements.to.value = "08:30";
+    if (viewMode === "grid" && sectionFilter.value) {
+      fillModalSections(sectionFilter.value);
+      fillModalSubjects("");
+      if (termFilter.value) schedForm.elements.term.value = termFilter.value;
+    }
   }
   schedModal.hidden = false;
   schedForm.elements.term.focus();
-}
-
-function findConflict(candidate) {
-  return schedules.find((other) => {
-    if (other.id === editingId) return false;
-    if (other.sectionId !== candidate.sectionId) return false;
-    if (other.term !== candidate.term) return false;
-    if (!sharesDay(other, candidate)) return false;
-    return overlaps(other, candidate);
-  });
 }
 
 function buildSheet() {
@@ -319,6 +556,7 @@ function buildSheet() {
     return '<p class="empty">No section selected. Add sections and schedules first.</p>';
   }
   const subList = subjects();
+  const teacherList = teachers();
   const entries = schedules
     .filter((e) => e.sectionId === sec.id && e.term === term)
     .sort((a, b) => a.from.localeCompare(b.from) || DAYS.indexOf(a.days[0]) - DAYS.indexOf(b.days[0]));
@@ -342,6 +580,7 @@ function buildSheet() {
     let totalUnits = 0;
     const rows = entries.map((e) => {
       const sub = subList.find((s) => s.id === e.subjectId);
+      const teacher = e.teacherId ? teacherList.find((t) => t.id === e.teacherId) : null;
       if (sub && !seen.has(sub.id)) {
         seen.add(sub.id);
         totalUnits += Number(sub.units) || 0;
@@ -349,10 +588,10 @@ function buildSheet() {
       return `<tr>
         <td>${sub ? esc(sub.code) : "—"}</td>
         <td>${sub ? esc(sub.title) : "—"}</td>
-        <td>${sub ? esc(sub.type) : "—"}</td>
         <td>${sub ? esc(sub.units) : "—"}</td>
         <td>${esc(fullDays(e.days))}</td>
-        <td>${esc(fmtTime(e.from))} – ${esc(fmtTime(e.to))}</td>
+        <td>${esc(fmtTime(e.from))} – ${esc(fmtTime(e.to))}${e.room ? " · " + esc(e.room) : ""}</td>
+        <td>${teacher ? esc(teacherName(teacher)) : "—"}</td>
       </tr>`;
     }).join("");
     body = `<table class="sheet-table">
@@ -360,18 +599,18 @@ function buildSheet() {
         <tr>
           <th>Subject Code</th>
           <th>Descriptive Title</th>
-          <th>Type</th>
           <th>Unit(s)</th>
           <th>Day(s)</th>
-          <th>Time</th>
+          <th>Time / Room</th>
+          <th>Teacher</th>
         </tr>
       </thead>
       <tbody>${rows}</tbody>
       <tfoot>
         <tr>
-          <td colspan="3">Total Units</td>
+          <td colspan="2">Total Units</td>
           <td>${totalUnits}</td>
-          <td colspan="2"></td>
+          <td colspan="3"></td>
         </tr>
       </tfoot>
     </table>`;
@@ -409,6 +648,11 @@ function hideModals() {
   document.body.classList.remove("print-sheet");
 }
 
+viewTabs.addEventListener("click", (e) => {
+  const tab = e.target.closest(".tab[data-view]");
+  if (tab) setView(tab.dataset.view);
+});
+
 searchInput.addEventListener("input", () => {
   currentPage = 1;
   render();
@@ -428,6 +672,8 @@ cancelDeleteBtn.addEventListener("click", hideModals);
 closePrintModal.addEventListener("click", hideModals);
 
 schedForm.elements.sectionId.addEventListener("change", () => fillModalSubjects(""));
+schedForm.addEventListener("change", liveCheck);
+schedForm.elements.room.addEventListener("input", liveCheck);
 
 [printSection, printTerm].forEach((el) => el.addEventListener("change", refreshSheet));
 
@@ -447,6 +693,13 @@ pageControls.addEventListener("click", (e) => {
   render();
 });
 
+timetableWrap.addEventListener("click", (e) => {
+  const block = e.target.closest(".sched-block[data-id]");
+  if (!block) return;
+  const entry = schedules.find((x) => x.id === block.dataset.id);
+  if (entry) openSchedModal(entry);
+});
+
 [schedModal, deleteModal, printModal].forEach((overlay) => {
   overlay.addEventListener("click", (e) => {
     if (e.target === overlay) hideModals();
@@ -459,50 +712,31 @@ document.addEventListener("keydown", (e) => {
 
 schedForm.addEventListener("submit", (e) => {
   e.preventDefault();
-  const data = new FormData(schedForm);
-  const term = data.get("term") || "";
-  const sectionId = data.get("sectionId") || "";
-  const subjectId = data.get("subjectId") || "";
-  const days = data.getAll("days");
-  const from = data.get("from") || "";
-  const to = data.get("to") || "";
+  const c = gatherCandidate();
 
-  if (!term || !sectionId || !subjectId) {
+  if (!c.term || !c.sectionId || !c.subjectId) {
     return setMsg("Term, section, and subject are required.", "is-error");
   }
-  if (!days.length) {
+  if (!c.days.length) {
     return setMsg("Pick at least one day.", "is-error");
   }
-  if (!from || !to) {
+  if (!c.from || !c.to) {
     return setMsg("Both start and end times are required.", "is-error");
   }
-  if (from >= to) {
+  if (c.from >= c.to) {
     return setMsg("End time must be after start time.", "is-error");
   }
 
-  const candidate = { sectionId, term, days, from, to };
-  const conflict = findConflict(candidate);
-  if (conflict) {
-    const sub = subjects().find((s) => s.id === conflict.subjectId);
-    return setMsg(
-      `Conflict: ${sub ? sub.code : "another subject"} is already scheduled ${shortDays(conflict.days)} ${fmtTime(conflict.from)} – ${fmtTime(conflict.to)} for this section.`,
-      "is-error"
-    );
+  const conflicts = findConflicts(c);
+  if (conflicts.length) {
+    return setMsg(conflicts.join(" • "), "is-error");
   }
 
   if (editingId) {
     const entry = schedules.find((x) => x.id === editingId);
-    Object.assign(entry, { term, sectionId, subjectId, days, from, to });
+    Object.assign(entry, c);
   } else {
-    schedules.push({
-      id: Date.now().toString(36),
-      term,
-      sectionId,
-      subjectId,
-      days,
-      from,
-      to
-    });
+    schedules.push({ id: Date.now().toString(36), ...c });
   }
   persist();
   hideModals();
@@ -534,4 +768,8 @@ confirmDeleteBtn.addEventListener("click", () => {
 });
 
 fillSectionFilter();
-render();
+if (window.location.hash === "#timetable") {
+  setView("grid");
+} else {
+  render();
+}

@@ -88,10 +88,14 @@
           <span aria-current="page">Schedule</span>
         </nav>
         <h1 class="page-head__title">Schedule</h1>
-        <p class="page-head__desc">Assign subjects to sections with days and time slots per term. Time conflicts are checked automatically, and each section's class program can be printed.</p>
+        <p class="page-head__desc">Assign subjects to sections with teachers, rooms, days, and time slots per term. Section, teacher, and room conflicts are detected automatically, and each section's class program can be viewed as a weekly timetable or printed.</p>
       </header>
 
       <div class="toolbar">
+        <div class="tabs" id="viewTabs">
+          <button class="tab is-active" data-view="list">List</button>
+          <button class="tab" data-view="grid">Timetable</button>
+        </div>
         <select class="filter-select" id="termFilter">
           <option value="">All Terms</option>
           <option value="1st Semester">1st Semester</option>
@@ -102,7 +106,7 @@
         </select>
         <div class="search-box">
           <svg class="search-box__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-          <input type="search" id="searchInput" class="search" placeholder="Search by subject, section, or adviser..." />
+          <input type="search" id="searchInput" class="search" placeholder="Search by subject, section, teacher, or room..." />
           <button type="button" class="search-clear" aria-label="Clear search" hidden>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
           </button>
@@ -117,7 +121,7 @@
         </button>
       </div>
 
-      <div class="panel">
+      <div class="panel" id="listPanel">
         <div class="table-wrap">
           <table class="data-table">
             <thead>
@@ -126,8 +130,8 @@
                 <th>Strand</th>
                 <th>Grade / Term</th>
                 <th>Section</th>
-                <th>Adviser</th>
-                <th>Subject Code</th>
+                <th>Subject</th>
+                <th>Teacher / Room</th>
                 <th>Day(s)</th>
                 <th>Time (From – To)</th>
                 <th>Actions</th>
@@ -141,6 +145,12 @@
           <span class="pagination__info" id="pageInfo"></span>
           <div class="pagination__controls" id="pageControls"></div>
         </div>
+      </div>
+
+      <div class="panel" id="timetablePanel" hidden>
+        <div class="timetable-meta" id="timetableMeta"></div>
+        <p class="empty" id="timetableEmpty" hidden></p>
+        <div class="timetable-wrap" id="timetableWrap"></div>
       </div>
     </section>
 
@@ -177,6 +187,18 @@
               <option value="" disabled selected>Select a section first</option>
             </select>
           </label>
+          <div class="form-row">
+            <label class="field">
+              <span>Teacher</span>
+              <select name="teacherId">
+                <option value="">Unassigned</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Room</span>
+              <input type="text" name="room" placeholder="e.g. Rm 101" autocomplete="off" />
+            </label>
+          </div>
           <div class="field">
             <span>Day(s)</span>
             <div class="day-picker" id="dayPicker">
