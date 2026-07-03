@@ -50,7 +50,7 @@ function bindStrength(input, meter) {
 }
 
 const updateCreateStrength = bindStrength(
-  createForm.elements.password,
+  createForm.elements.passwordCreation,
   document.getElementById("createStrength")
 );
 const updateChangeStrength = bindStrength(
