@@ -97,6 +97,18 @@
           <option value="11">Grade 11</option>
           <option value="12">Grade 12</option>
         </select>
+        <select class="filter-select" id="yearFilter">
+          <option value="">All School Years</option>
+          <option value="2025-2026">2025-2026</option>
+          <option value="2026-2027" selected>2026-2027</option>
+          <option value="2027-2028">2027-2028</option>
+        </select>
+        <select class="filter-select" id="statusFilter">
+          <option value="">Open &amp; Closed</option>
+          <option value="Open">Open only</option>
+          <option value="Closed">Closed only</option>
+          <option value="Cancelled">Cancelled</option>
+        </select>
         <div class="search-box">
           <svg class="search-box__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
           <input type="search" id="searchInput" class="search" placeholder="Search by section, strand, or adviser..." />
@@ -118,6 +130,7 @@
                 <th>Year Level</th>
                 <th>Section</th>
                 <th>Adviser</th>
+                <th>Status</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -169,6 +182,23 @@
               <input type="number" name="capacity" min="1" max="100" placeholder="40" required />
             </label>
           </div>
+          <div class="form-row">
+            <label class="field">
+              <span>School Year (A.Y)</span>
+              <select name="schoolYear" required>
+                <option value="2025-2026">2025-2026</option>
+                <option value="2026-2027" selected>2026-2027</option>
+                <option value="2027-2028">2027-2028</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Status</span>
+              <select name="status" required>
+                <option value="Open" selected>Open</option>
+                <option value="Closed">Closed</option>
+              </select>
+            </label>
+          </div>
           <label class="field">
             <span>Adviser</span>
             <select name="adviserId">
@@ -188,15 +218,15 @@
   <div class="modal-overlay" id="deleteModal" hidden>
     <div class="modal modal--small" role="dialog" aria-modal="true" aria-labelledby="deleteTitle">
       <div class="modal__head">
-        <h2 id="deleteTitle">Delete Section</h2>
+        <h2 id="deleteTitle">Cancel Section</h2>
         <button class="modal__close" id="closeDeleteModal" aria-label="Close">&times;</button>
       </div>
       <div class="modal__body">
         <p class="archive-name" id="deleteName"></p>
-        <p class="archive-note" id="deleteNote">This permanently removes the section. This cannot be undone.</p>
+        <p class="archive-note" id="deleteNote">The section will be marked Cancelled and hidden from the active list. You can restore it later from the Status filter.</p>
         <div class="form-actions">
           <button type="button" class="btn btn--ghost" id="cancelDeleteBtn">Cancel</button>
-          <button type="button" class="btn btn--danger" id="confirmDeleteBtn">Delete</button>
+          <button type="button" class="btn btn--danger" id="confirmDeleteBtn">Cancel Section</button>
         </div>
       </div>
     </div>

@@ -10,7 +10,6 @@ class Section {
     private $school_year;
     private $max_slots;
     private $status;
-
     private $created_at;
 
 
@@ -23,7 +22,7 @@ class Section {
         $section_name = null,
         $school_year = null,
         $max_slots = null,
-        $status = null
+        $status = "Open"
     ){
 
         $this->strand_id = $strand_id;
@@ -35,7 +34,6 @@ class Section {
         $this->status = $status;
 
     }
-
 
 
     // Getters
@@ -72,6 +70,10 @@ class Section {
         return $this->status;
     }
 
+    public function getCreatedAt(){
+        return $this->created_at;
+    }
+
 
     // Setters
 
@@ -105,6 +107,75 @@ class Section {
 
     public function setStatus($status){
         $this->status = $status;
+    }
+
+    public function setCreatedAt($created_at){
+        $this->created_at = $created_at;
+    }
+
+
+    // List of allowed values, used for both validation and dropdowns.
+    // Note: "Cancelled" is intentionally left out - that status is only ever
+    // set via the delete/restore actions, never picked directly on the form.
+
+    public static function allowedGradeLevels(){
+
+        return ["11", "12"];
+
+    }
+
+    public static function allowedFormStatuses(){
+
+        return ["Open", "Closed"];
+
+    }
+
+
+    // Shared validation used by the create/update controller.
+    // $data is expected to be an array (e.g. $_POST).
+    // Returns an array of human-readable error messages (empty = valid).
+
+    public static function validate($data) {
+
+        $errors = [];
+
+        $strand_id    = $data["strand_id"] ?? "";
+        $grade_level  = $data["grade_level"] ?? "";
+        $section_name = trim($data["section_name"] ?? "");
+        $school_year  = trim($data["school_year"] ?? "");
+        $max_slots    = $data["max_slots"] ?? "";
+        $status       = $data["status"] ?? "";
+
+        if ($strand_id === "" || $strand_id === null) {
+            $errors[] = "Please select a strand.";
+        }
+
+        if (!in_array($grade_level, self::allowedGradeLevels(), true)) {
+            $errors[] = "Please select a valid year level.";
+        }
+
+        if ($section_name === "") {
+            $errors[] = "Section name is required.";
+        } elseif (strlen($section_name) > 50) {
+            $errors[] = "Section name must be 50 characters or fewer.";
+        }
+
+        if ($school_year === "") {
+            $errors[] = "School year is required.";
+        } elseif (!preg_match("/^\d{4}-\d{4}$/", $school_year)) {
+            $errors[] = "School year must be in the format YYYY-YYYY.";
+        }
+
+        if ($max_slots === "" || !ctype_digit((string) $max_slots) || (int) $max_slots < 1 || (int) $max_slots > 100) {
+            $errors[] = "Capacity must be a whole number between 1 and 100.";
+        }
+
+        if (!in_array($status, self::allowedFormStatuses(), true)) {
+            $errors[] = "Status must be one of: " . implode(", ", self::allowedFormStatuses()) . ".";
+        }
+
+        return $errors;
+
     }
 
 }

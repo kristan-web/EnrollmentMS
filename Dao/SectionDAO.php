@@ -82,7 +82,12 @@ class SectionDAO {
             t.track_id,
             t.track_name,
             te.first_name AS adviser_first_name,
-            te.last_name AS adviser_last_name
+            te.last_name AS adviser_last_name,
+            (
+                SELECT COUNT(*) FROM enrollments e
+                WHERE e.section_id = cs.section_id
+                AND e.status = 'Enrolled'
+            ) AS enrolled_count
 
         FROM class_sections cs
 
@@ -138,7 +143,12 @@ class SectionDAO {
             t.track_id,
             t.track_name,
             te.first_name AS adviser_first_name,
-            te.last_name AS adviser_last_name
+            te.last_name AS adviser_last_name,
+            (
+                SELECT COUNT(*) FROM enrollments e
+                WHERE e.section_id = cs.section_id
+                AND e.status = 'Enrolled'
+            ) AS enrolled_count
 
         FROM class_sections cs
 
@@ -470,6 +480,73 @@ class SectionDAO {
 
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    }
+
+
+
+
+    // DUPLICATE NAME CHECK
+    // Section names only need to be unique within the same school year -
+    // "STEM 11-A" can exist in both 2025-2026 and 2026-2027.
+    // $excludeId is passed on edit so a section doesn't collide with itself.
+
+    public function isNameTaken($name, $schoolYear, $excludeId = null) {
+
+        $query = "
+
+        SELECT COUNT(*) FROM class_sections
+
+        WHERE section_name = :name
+        AND school_year = :school_year
+        AND status <> 'Cancelled'
+
+        ";
+
+        if ($excludeId) {
+            $query .= " AND section_id <> :exclude_id ";
+        }
+
+        $stmt = $this->conn->prepare($query);
+
+        $stmt->bindValue(":name", $name);
+        $stmt->bindValue(":school_year", $schoolYear);
+
+        if ($excludeId) {
+            $stmt->bindValue(":exclude_id", $excludeId);
+        }
+
+        $stmt->execute();
+
+        return $stmt->fetchColumn() > 0;
+
+    }
+
+
+
+
+    // CURRENT ENROLLED COUNT FOR ONE SECTION
+    // Used to block lowering max_slots below the number of students already
+    // enrolled in that section.
+
+    public function getEnrolledCount($sectionId) {
+
+        $query = "
+
+        SELECT COUNT(*) FROM enrollments
+
+        WHERE section_id = :id
+        AND status = 'Enrolled'
+
+        ";
+
+        $stmt = $this->conn->prepare($query);
+
+        $stmt->bindValue(":id", $sectionId);
+
+        $stmt->execute();
+
+        return (int) $stmt->fetchColumn();
 
     }
 

@@ -1,6 +1,4 @@
-const STUDENTS_KEY = "ems_students";
-const SECTIONS_KEY = "ems_sections";
-const ENROLL_KEY = "ems_enrollments";
+const ENROLLMENT_URL = "../Controllers/enrollment_controllers.php";
 
 const searchInput = document.getElementById("searchInput");
 const printBtn = document.getElementById("printBtn");
@@ -36,22 +34,11 @@ const confirmActionBtn = document.getElementById("confirmActionBtn");
 const closeConfirmModal = document.getElementById("closeConfirmModal");
 const cancelConfirmBtn = document.getElementById("cancelConfirmBtn");
 
-function loadJson(key) {
-  try {
-    return JSON.parse(localStorage.getItem(key)) || [];
-  } catch {
-    return [];
-  }
-}
-
-function persist(key, value) {
-  localStorage.setItem(key, JSON.stringify(value));
-}
-
-let students = loadJson(STUDENTS_KEY);
-let sections = loadJson(SECTIONS_KEY);
-let enrollments = loadJson(ENROLL_KEY);
-
+// Cache of the current masterlist rows and section options, purely for
+// wiring up click handlers (e.g. "which enrollment did Drop get clicked on").
+// The database is always the source of truth - this is refreshed after
+// every fetch, never written to directly.
+let masterlist = [];
 let selectedStudent = null;
 let selectedSectionId = null;
 let pendingAction = null;
@@ -67,18 +54,15 @@ function esc(value) {
 }
 
 function fullName(s) {
-  return `${s.lastName}, ${s.firstName}${s.middleName ? " " + s.middleName : ""}`;
+  return `${s.last_name}, ${s.first_name}${s.middle_name ? " " + s.middle_name : ""}`;
 }
 
-function enrolledCount(sectionId) {
-  return enrollments.filter((e) => e.sectionId === sectionId && e.status === "Enrolled").length;
-}
-
-function ensureStudentNo(student, schoolYear) {
-  if (student.studentNo) return;
-  const used = students.filter((s) => s.studentNo).length;
-  student.studentNo = `${schoolYear.slice(0, 4)}-${String(used + 1).padStart(4, "0")}`;
-  persist(STUDENTS_KEY, students);
+function debounce(fn, delay) {
+  let timer = null;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), delay);
+  };
 }
 
 function setMsg(text, type) {
@@ -87,70 +71,99 @@ function setMsg(text, type) {
   if (type) enrollMsg.classList.add(type);
 }
 
-function renderMasterlist() {
-  const q = searchInput.value.trim().toLowerCase();
-  const list = enrollments.filter((e) => {
-    if (!q) return true;
-    const st = students.find((s) => s.id === e.studentId);
-    if (!st) return false;
-    return fullName(st).toLowerCase().includes(q) || (st.studentNo || "").toLowerCase().includes(q);
-  });
+// ---------- API helpers ----------
 
-  masterRows.innerHTML = list.map((e) => {
-    const st = students.find((s) => s.id === e.studentId) || {};
-    const sec = sections.find((s) => s.id === e.sectionId) || {};
+async function apiGet(params) {
+  const url = `${ENROLLMENT_URL}?${new URLSearchParams(params).toString()}`;
+  const res = await fetch(url);
+  return res.json();
+}
+
+async function apiPost(params) {
+  const res = await fetch(ENROLLMENT_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams(params).toString()
+  });
+  return res.text();
+}
+
+// ---------- Masterlist ----------
+
+async function loadMasterlist() {
+  const q = searchInput.value.trim();
+  try {
+    masterlist = await apiGet({ action: "list", keyword: q });
+  } catch {
+    masterlist = [];
+  }
+  renderMasterlist(q);
+}
+
+function renderMasterlist(q) {
+  masterRows.innerHTML = masterlist.map((e) => {
     const dropped = e.status === "Dropped";
     const actions = `
-      ${dropped ? "" : `<button class="btn btn--ghost btn--sm" data-action="drop" data-id="${e.id}">Drop</button>`}
-      <button class="btn btn--danger btn--sm" data-action="delete" data-id="${e.id}">Delete</button>`;
+      ${dropped ? "" : `<button class="btn btn--ghost btn--sm" data-action="drop" data-id="${e.enrollment_id}">Drop</button>`}
+      <button class="btn btn--danger btn--sm" data-action="delete" data-id="${e.enrollment_id}">Delete</button>`;
     return `<tr>
-      <td>${esc(st.studentNo || "—")}</td>
-      <td><span class="cell-name">${st.lastName ? esc(fullName(st)) : "—"}</span></td>
-      <td>${esc(e.schoolYear)}</td>
+      <td>${esc(e.student_number || "—")}</td>
+      <td><span class="cell-name">${esc(fullName(e))}</span></td>
+      <td>${esc(e.school_year)}</td>
       <td>${esc(e.semester)}</td>
-      <td>${esc(st.studentType || "—")}</td>
-      <td>${esc(sec.strand || "—")}</td>
-      <td>${sec.grade ? "Grade " + esc(sec.grade) : "—"}</td>
-      <td>${esc(sec.name || "—")}</td>
-      <td>${esc(e.dateEnrolled)}</td>
+      <td>${esc(e.strand_code || "—")}</td>
+      <td>${e.grade_level ? "Grade " + esc(e.grade_level) : "—"}</td>
+      <td>${esc(e.section_name || "—")}</td>
+      <td>${esc(e.date_enrolled)}</td>
       <td><span class="badge badge--${dropped ? "archived" : "active"}">${esc(e.status)}</span></td>
       <td class="no-print"><div class="row-actions">${actions}</div></td>
     </tr>`;
   }).join("");
 
-  emptyState.hidden = list.length > 0;
+  emptyState.hidden = masterlist.length > 0;
   emptyState.textContent = q ? "No enrollments match your search." : 'No enrollments yet. Click "Enroll Student" to begin.';
 }
 
-function renderStudentResults() {
-  const q = studentSearch.value.trim().toLowerCase();
+// ---------- Step 1: Find student ----------
+
+let lastStudentMatches = [];
+
+async function renderStudentResults() {
+  const q = studentSearch.value.trim();
   if (!q) {
     studentResults.hidden = true;
     studentResults.innerHTML = "";
     return;
   }
-  const matches = students
-    .filter((s) => s.status !== "archived" && fullName(s).toLowerCase().includes(q))
-    .slice(0, 6);
+
+  let matches = [];
+  try {
+    matches = await apiGet({ action: "search_students", keyword: q });
+  } catch {
+    matches = [];
+  }
+  lastStudentMatches = matches;
 
   studentResults.innerHTML = matches.length
     ? matches.map((s) => `
-      <button type="button" class="result-item" data-id="${s.id}">
+      <button type="button" class="result-item" data-id="${s.student_id}">
         <strong>${esc(fullName(s))}</strong>
-        <em>${esc(s.studentType || "No type")} &middot; ${esc(s.gender || "—")}${s.studentNo ? " &middot; " + esc(s.studentNo) : ""}</em>
+        <em>${esc(s.gender || "—")}${s.student_number ? " &middot; " + esc(s.student_number) : ""}</em>
       </button>`).join("")
     : '<p class="result-empty">No matching student. Add them in Data Entry &rsaquo; Student first.</p>';
   studentResults.hidden = false;
 }
+
+const onStudentSearchInput = debounce(renderStudentResults, 250);
 
 function selectStudent(s) {
   selectedStudent = s;
   studentSearch.value = "";
   studentResults.hidden = true;
   studentResults.innerHTML = "";
-  chipInitials.textContent = `${(s.firstName || "?")[0]}${(s.lastName || "?")[0]}`.toUpperCase();
+  chipInitials.textContent = `${(s.first_name || "?")[0]}${(s.last_name || "?")[0]}`.toUpperCase();
   chipName.textContent = fullName(s);
-  chipMeta.textContent = `${s.studentType || "No type"} · ${s.gender || "—"}`;
+  chipMeta.textContent = `${s.gender || "—"}${s.student_number ? " · " + s.student_number : ""}`;
   selectedStudentChip.hidden = false;
   updateEnrollButton();
 }
@@ -161,9 +174,12 @@ function clearStudent() {
   updateEnrollButton();
 }
 
-function renderSections() {
+// ---------- Step 3: Sections ----------
+
+async function renderSections() {
   const strand = strandSel.value;
   const grade = gradeSel.value;
+  const schoolYear = schoolYearSel.value;
   selectedSectionId = null;
   updateEnrollButton();
 
@@ -174,21 +190,54 @@ function renderSections() {
     return;
   }
 
-  const list = sections.filter((s) => s.strand === strand && s.grade === grade);
+  sectionHint.hidden = false;
+  sectionHint.textContent = "Loading sections...";
+  sectionsTable.hidden = true;
+
+  let list = [];
+  try {
+    list = await apiGet({ action: "sections", strand, grade, school_year: schoolYear });
+    if (list && list.error) list = [];
+  } catch {
+    list = [];
+  }
+
+  if (!list.length) {
+    sectionsTable.hidden = true;
+    sectionHint.hidden = false;
+    sectionHint.textContent = "No open sections for this strand, grade level, and school year yet.";
+    return;
+  }
+
   sectionRows.innerHTML = list.map((s) => {
-    const count = enrolledCount(s.id);
-    const slots = s.capacity - count;
+    const count = Number(s.enrolled_count);
+    const slots = s.max_slots - count;
     const full = slots <= 0;
-    return `<tr class="sec-row${full ? " is-full" : ""}" data-id="${s.id}" title="${full ? "Section is full" : "Click to select this section"}">
-      <td><span class="cell-name">${esc(s.name)}</span></td>
+    return `<tr class="sec-row${full ? " is-full" : ""}" data-id="${s.section_id}" title="${full ? "Section is full" : "Click to select this section"}">
+      <td><span class="cell-name">${esc(s.section_name)}</span></td>
       <td>${count}</td>
-      <td>${s.capacity}</td>
+      <td>${s.max_slots}</td>
       <td><span class="badge ${full ? "badge--archived" : "badge--active"}">${full ? "Full" : slots + " slots"}</span></td>
     </tr>`;
   }).join("");
 
   sectionsTable.hidden = false;
   sectionHint.hidden = true;
+}
+
+let strandsList = [];
+
+// Loads strand options from the strands table. Called each time the modal
+// opens so a strand added elsewhere in the app shows up without a page reload.
+async function loadStrands() {
+  try {
+    strandsList = await apiGet({ action: "strands" });
+  } catch {
+    strandsList = [];
+  }
+  strandSel.innerHTML =
+    '<option value="" disabled selected>Select strand</option>' +
+    strandsList.map((s) => `<option value="${esc(s.strand_code)}">${esc(s.strand_name)} (${esc(s.strand_code)})</option>`).join("");
 }
 
 function updateEnrollButton() {
@@ -204,7 +253,9 @@ function resetEnrollModal() {
   schoolYearSel.value = "2026-2027";
   termSel.selectedIndex = 0;
   setMsg("");
-  renderSections();
+  sectionsTable.hidden = true;
+  sectionHint.hidden = false;
+  sectionHint.textContent = "Select a strand and grade level to view available sections.";
 }
 
 function openConfirm(title, name, note, actionLabel, onConfirm) {
@@ -222,11 +273,13 @@ function hideModals() {
   pendingAction = null;
 }
 
-searchInput.addEventListener("input", renderMasterlist);
+// ---------- Event wiring ----------
+
+searchInput.addEventListener("input", debounce(loadMasterlist, 250));
 printBtn.addEventListener("click", () => window.print());
 
-enrollBtn.addEventListener("click", () => {
-  students = loadJson(STUDENTS_KEY);
+enrollBtn.addEventListener("click", async () => {
+  await loadStrands();
   resetEnrollModal();
   enrollModal.hidden = false;
   studentSearch.focus();
@@ -247,12 +300,12 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") hideModals();
 });
 
-studentSearch.addEventListener("input", renderStudentResults);
+studentSearch.addEventListener("input", onStudentSearchInput);
 
 studentResults.addEventListener("click", (e) => {
   const item = e.target.closest(".result-item");
   if (!item) return;
-  const s = students.find((x) => x.id === item.dataset.id);
+  const s = lastStudentMatches.find((x) => String(x.student_id) === item.dataset.id);
   if (s) selectStudent(s);
 });
 
@@ -260,6 +313,7 @@ clearStudentBtn.addEventListener("click", clearStudent);
 
 strandSel.addEventListener("change", renderSections);
 gradeSel.addEventListener("change", renderSections);
+schoolYearSel.addEventListener("change", renderSections);
 
 sectionRows.addEventListener("click", (e) => {
   const row = e.target.closest(".sec-row");
@@ -270,49 +324,34 @@ sectionRows.addEventListener("click", (e) => {
   updateEnrollButton();
 });
 
-confirmEnrollBtn.addEventListener("click", () => {
+confirmEnrollBtn.addEventListener("click", async () => {
   if (!selectedStudent || !selectedSectionId) return;
-  const schoolYear = schoolYearSel.value;
-  const semester = termSel.value;
 
-  const duplicate = enrollments.some((e) =>
-    e.studentId === selectedStudent.id &&
-    e.schoolYear === schoolYear &&
-    e.semester === semester &&
-    e.status === "Enrolled"
-  );
-  if (duplicate) {
-    return setMsg(`${fullName(selectedStudent)} is already enrolled for ${semester}, A.Y ${schoolYear}.`, "is-error");
-  }
+  confirmEnrollBtn.disabled = true;
 
-  const section = sections.find((s) => s.id === selectedSectionId);
-  if (enrolledCount(section.id) >= section.capacity) {
-    renderSections();
-    return setMsg(`${section.name} is already full.`, "is-error");
-  }
-
-  ensureStudentNo(selectedStudent, schoolYear);
-  enrollments.push({
-    id: Date.now().toString(36),
-    studentId: selectedStudent.id,
-    sectionId: section.id,
-    schoolYear,
-    semester,
-    dateEnrolled: new Date().toISOString().slice(0, 10),
-    status: "Enrolled"
+  const response = await apiPost({
+    action: "create",
+    student_id: selectedStudent.student_id,
+    section_id: selectedSectionId,
+    school_year: schoolYearSel.value,
+    semester: termSel.value
   });
-  persist(ENROLL_KEY, enrollments);
-  hideModals();
-  renderMasterlist();
+
+  if (response.indexOf("SUCCESS") !== -1) {
+    hideModals();
+    loadMasterlist();
+  } else {
+    confirmEnrollBtn.disabled = false;
+    setMsg(response.replace(/^INSERT FAILED:\s*/, ""), "is-error");
+  }
 });
 
 masterRows.addEventListener("click", (e) => {
   const btn = e.target.closest("button[data-action]");
   if (!btn) return;
-  const en = enrollments.find((x) => x.id === btn.dataset.id);
+  const en = masterlist.find((x) => String(x.enrollment_id) === btn.dataset.id);
   if (!en) return;
-  const st = students.find((s) => s.id === en.studentId);
-  const name = st ? fullName(st) : "this enrollment";
+  const name = fullName(en);
 
   if (btn.dataset.action === "drop") {
     openConfirm(
@@ -320,10 +359,9 @@ masterRows.addEventListener("click", (e) => {
       name,
       "The student will be marked as Dropped and their slot in the section will be freed. The record stays in the masterlist.",
       "Drop",
-      () => {
-        en.status = "Dropped";
-        persist(ENROLL_KEY, enrollments);
-        renderMasterlist();
+      async () => {
+        await apiPost({ action: "drop", enrollment_id: en.enrollment_id });
+        loadMasterlist();
       }
     );
   } else if (btn.dataset.action === "delete") {
@@ -332,18 +370,17 @@ masterRows.addEventListener("click", (e) => {
       name,
       "This permanently removes the enrollment record from the masterlist. This cannot be undone.",
       "Delete",
-      () => {
-        enrollments = enrollments.filter((x) => x.id !== en.id);
-        persist(ENROLL_KEY, enrollments);
-        renderMasterlist();
+      async () => {
+        await apiPost({ action: "delete", enrollment_id: en.enrollment_id });
+        loadMasterlist();
       }
     );
   }
 });
 
-confirmActionBtn.addEventListener("click", () => {
-  if (pendingAction) pendingAction();
+confirmActionBtn.addEventListener("click", async () => {
+  if (pendingAction) await pendingAction();
   hideModals();
 });
 
-renderMasterlist();
+loadMasterlist();

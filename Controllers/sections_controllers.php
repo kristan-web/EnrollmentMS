@@ -83,24 +83,51 @@ if ($method == "GET") {
 
     } else if ($action == "create" || $action == "update") {
 
+        $errors = Section::validate($_POST);
+
+        if (!empty($errors)) {
+            echo ($action == "update" ? "UPDATE FAILED: " : "INSERT FAILED: ") . implode(" ", $errors);
+            exit;
+        }
+
+        $sectionName = trim($_POST["section_name"]);
+        $schoolYear  = trim($_POST["school_year"]);
+        $excludeId   = ($action == "update" && !empty($_POST["section_id"])) ? $_POST["section_id"] : null;
+
+        if ($dao->isNameTaken($sectionName, $schoolYear, $excludeId)) {
+            echo ($action == "update" ? "UPDATE FAILED" : "INSERT FAILED") . ": A section named \"$sectionName\" already exists for $schoolYear.";
+            exit;
+        }
+
+        if ($action == "update") {
+
+            if (empty($_POST["section_id"])) {
+                echo "UPDATE FAILED: missing section_id";
+                exit;
+            }
+
+            $enrolled = $dao->getEnrolledCount($_POST["section_id"]);
+
+            if ((int) $_POST["max_slots"] < $enrolled) {
+                echo "UPDATE FAILED: $enrolled student" . ($enrolled === 1 ? " is" : "s are") . " currently enrolled — capacity cannot be lower than that.";
+                exit;
+            }
+
+        }
+
         $section = new Section();
 
         $section->setStrandId($_POST["strand_id"]);
         $section->setAdviserId(!empty($_POST["adviser_id"]) ? $_POST["adviser_id"] : null);
         $section->setGradeLevel($_POST["grade_level"]);
-        $section->setSectionName($_POST["section_name"]);
-        $section->setSchoolYear($_POST["school_year"]);
+        $section->setSectionName($sectionName);
+        $section->setSchoolYear($schoolYear);
         $section->setMaxSlots($_POST["max_slots"]);
         $section->setStatus($_POST["status"]);
 
         try {
 
             if ($action == "update") {
-
-                if (empty($_POST["section_id"])) {
-                    echo "UPDATE FAILED: missing section_id";
-                    exit;
-                }
 
                 $section->setSectionId($_POST["section_id"]);
 
