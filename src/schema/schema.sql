@@ -200,3 +200,8 @@ ALTER TABLE `subjects`
 
 ALTER TABLE `users`
     DROP COLUMN `username`;
+
+-- Add archive tracking columns to students table
+ALTER TABLE `students`
+    ADD COLUMN `archive_reason` VARCHAR(100) DEFAULT NULL AFTER `status`,
+    ADD COLUMN `archived_at` DATETIME DEFAULT NULL AFTER `archive_reason`;
