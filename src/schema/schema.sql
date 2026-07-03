@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS `users` (
     `user_id` INT AUTO_INCREMENT PRIMARY KEY,
     `username` VARCHAR(50) NOT NULL UNIQUE,
     `password_hash` VARCHAR(255) NOT NULL,
-    `full_name` VARCHAR(100) NOT NULL,
+    `full_name` VARCHAR(100) NOT NULL,  
     `email` VARCHAR(100) NOT NULL UNIQUE,
     `role` ENUM('Admin', 'Staff') NOT NULL DEFAULT 'Admin',
     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -193,3 +193,10 @@ INSERT INTO `strands` (`track_id`, `strand_code`, `strand_name`, `description`) 
 (1, 'GAS', 'General Academic Strand', 'For students who are undecided or want a broader set of electives'),
 (2, 'ICT', 'Information and Communications Technology', 'Focuses on computer systems servicing, programming, and animation'),
 (2, 'HE', 'Home Economics', 'Focuses on cookery, food & beverage services, and tourism-related skills');
+
+
+ALTER TABLE `subjects`
+    ADD COLUMN `status` ENUM('Active', 'Inactive') NOT NULL DEFAULT 'Active' AFTER `description`;
+
+ALTER TABLE `users`
+    DROP COLUMN `username`;

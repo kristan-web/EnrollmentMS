@@ -96,7 +96,7 @@ if(loginForm){
         else{
             const data = new FormData(loginForm);
 
-            const response = await fetch('../Controllers/user_controllers.php', {
+            const response = await fetch('Controllers/user_controllers.php', {
                 method: 'POST',
                 body: data
             })
@@ -105,7 +105,7 @@ if(loginForm){
 
             // If account is verified
             if(status.success){
-                alert(status.message);
+                window.location.href = 'Views/dashboard.html';
                 return;
             }
             // If account not found
