@@ -1,3 +1,38 @@
+// Utility function to show alert
+function showAlert(message, type = 'error', containerId = null) {
+    const alertContainer = document.getElementById(containerId || 'alert');
+    if (!alertContainer) {
+        // Fallback to browser alert if custom alert not found
+        alert(message);
+        return;
+    }
+
+    const alertTitle = document.getElementById('alertTitle');
+    const alertText = document.getElementById('alertText');
+    const alertIcon = alertContainer.querySelector('.alert__icon svg');
+
+    // Reset classes
+    alertContainer.classList.remove('alert--success', 'alert--error');
+    alertContainer.hidden = false;
+
+    if (type === 'success') {
+        alertContainer.classList.add('alert--success');
+        if (alertTitle) alertTitle.textContent = 'Success!';
+        // Change icon to checkmark
+        if (alertIcon) {
+            alertIcon.innerHTML = '<circle cx="12" cy="12" r="9"/><path d="m9 12 2 2 4-4"/>';
+        }
+    } else {
+        alertContainer.classList.add('alert--error');
+        if (alertTitle) alertTitle.textContent = 'Something Went Wrong';
+        if (alertIcon) {
+            alertIcon.innerHTML = '<circle cx="12" cy="12" r="9"/><path d="m6 6 12 12"/>';
+        }
+    }
+
+    if (alertText) alertText.textContent = message;
+}
+
 // Account Creation Form
 const accountCreation = document.getElementById('accountCreation');
 
@@ -14,9 +49,6 @@ function resetAccountCreationField(){
     fullnameCreation.value = '';
 }
 
-// Reset Change Password Fields
-
-
 // Only process this if accountCreation form exists
 if(accountCreation){
     // Account Creation Elements
@@ -31,16 +63,16 @@ if(accountCreation){
         e.preventDefault();
 
         // Check if any of the field is empty
-        if(emailCreation.value === ''  || passwordCreation.value === '' || confpassCreation.value === '' || fullnameCreation.value === ''){
-            alert('All fields are required.');
+        if(emailCreation.value.trim() === ''  || passwordCreation.value.trim() === '' || confpassCreation.value.trim() === '' || fullnameCreation.value.trim() === ''){
+            showAlert('All fields are required.', 'error');
             return;
         }
 
         // Check if password and confirm password matches
-        if(passwordCreation.value == confpassCreation.value){
+        if(passwordCreation.value === confpassCreation.value){
             // Check if password <= 7 or >= 20
             if(passwordCreation.value.length <= 7 || passwordCreation.value.length >= 20){
-                alert('Password must be longer than 7 and shorter than 20 characters');
+                showAlert('Password must be longer than 7 and shorter than 20 characters', 'error');
                 return;
             }
 
@@ -48,36 +80,42 @@ if(accountCreation){
             else{
                 const data = new FormData(accountCreation);
 
-                const response = await fetch('../Controllers/user_controllers.php', {
-                    method: 'POST',
-                    body: data
-                });
+                try {
+                    // Path: from Views folder to Controllers folder
+                    const response = await fetch('../Controllers/user_controllers.php', {
+                        method: 'POST',
+                        body: data
+                    });
 
-                const status = await response.json();
+                    const status = await response.json();
 
-                // If account is created successfully
-                if(status.success){
-                    alert(status.message);
-                    resetAccountCreationField();
-                    return;
-                }
-                // If email exists
-                else{
-                    alert(status.message);
-                    return;
+                    // If account is created successfully
+                    if(status.success){
+                        showAlert(status.message, 'success');
+                        resetAccountCreationField();
+                        return;
+                    }
+                    // If email exists
+                    else{
+                        showAlert(status.message, 'error');
+                        return;
+                    }
+                } catch (error) {
+                    showAlert('Network error. Please try again.', 'error');
+                    console.error('Error:', error);
                 }
             }
         }
         // If passwords do not match
         else{
-            alert('Passwords do not match');
+            showAlert('Passwords do not match', 'error');
             return;
         }
     });
 }
 
 // Login Form
-const loginForm = document.getElementById('loginForm')
+const loginForm = document.getElementById('loginForm');
 
 // Only process this if loginForm exists
 if(loginForm){
@@ -89,29 +127,38 @@ if(loginForm){
         const passwordLogin = document.getElementById('passwordLogin');
 
         // Check if any of the field is empty
-        if(emailLogin.value == '' || passwordLogin.value == ''){
-            alert('All fields are required');
+        if(emailLogin.value.trim() === '' || passwordLogin.value.trim() === ''){
+            showAlert('All fields are required', 'error');
             return;
         }
         else{
             const data = new FormData(loginForm);
 
-            const response = await fetch('Controllers/user_controllers.php', {
-                method: 'POST',
-                body: data
-            })
+            try {
+                // Path: from root directory to Controllers folder
+                const response = await fetch('Controllers/user_controllers.php', {
+                    method: 'POST',
+                    body: data
+                });
 
-            const status = await response.json();
+                const status = await response.json();
 
-            // If account is verified
-            if(status.success){
-                window.location.href = 'Views/dashboard.html';
-                return;
-            }
-            // If account not found
-            else{
-                alert(status.message);
-                return;
+                // If account is verified
+                if(status.success){
+                    showAlert('Login successful! Redirecting...', 'success');
+                    setTimeout(() => {
+                        window.location.href = 'Views/dashboard.html';
+                    }, 1000);
+                    return;
+                }
+                // If account not found
+                else{
+                    showAlert(status.message, 'error');
+                    return;
+                }
+            } catch (error) {
+                showAlert('Network error. Please try again.', 'error');
+                console.error('Error:', error);
             }
         }
     });
@@ -132,42 +179,54 @@ if(changePassword){
         
         // Check if any of the field is empty
         if(emailReset.value.trim() === '' || passwordReset.value.trim() === '' || newpassReset.value.trim() === '' || confpassReset.value.trim() === ''){
-            alert('All fields are required');
+            showAlert('All fields are required', 'error');
             return;
         }
         else{
             // If new pass and confirm password matches
             if(newpassReset.value.trim() === confpassReset.value.trim()){
                 // Password is <= 7 or >= 20
-                if(newpassReset.value.length <= 7 || newpassReset >= 20){
-                    alert('Password should be longer than 7 and shorter than 20 characters');
+                if(newpassReset.value.length <= 7 || newpassReset.value.length >= 20){
+                    showAlert('Password should be longer than 7 and shorter than 20 characters', 'error');
                     return;
                 }
                 else{    
                     const data = new FormData(changePassword);
 
-                    const response = await fetch('../Controllers/user_controllers.php', {
-                        method: 'POST',
-                        body: data
-                    })
+                    try {
+                        // Path: from Views folder to Controllers folder
+                        const response = await fetch('../Controllers/user_controllers.php', {
+                            method: 'POST',
+                            body: data
+                        });
 
-                    const status = await response.json();
+                        const status = await response.json();
 
-                    // Password successfully changed
-                    if(status.success){
-                        alert(status.message);
-                        return;
+                        // Password successfully changed
+                        if(status.success){
+                            showAlert(status.message, 'success');
+                            // Reset fields
+                            emailReset.value = '';
+                            passwordReset.value = '';
+                            newpassReset.value = '';
+                            confpassReset.value = '';
+                            return;
+                        }
+                        // Password change failed
+                        else{
+                            showAlert(status.message, 'error');
+                            return;
+                        }
+                    } catch (error) {
+                        showAlert('Network error. Please try again.', 'error');
+                        console.error('Error:', error);
                     }
-
-                    // Password change failed
-                    alert(status.message);
-                    return;
                 }
             }
             // New password and Confirm password did not match
             else{
-                alert('Passwords did not match');
-                return
+                showAlert('Passwords did not match', 'error');
+                return;
             }
         }
     });

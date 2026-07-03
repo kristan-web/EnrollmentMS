@@ -2,6 +2,9 @@
     include_once '../Models/users_model.php';
     include_once '../Dao/UserDAO.php';
 
+    // Set JSON response header
+    header('Content-Type: application/json');
+
     if($_SERVER['REQUEST_METHOD'] == "POST"){
         // Account Creation Form
         if($_POST['form_type'] == 'creation'){
@@ -38,6 +41,11 @@
                     echo json_encode([
                         "success" => true,
                         "message" => "Account created successfully"
+                    ]);
+                } else {
+                    echo json_encode([
+                        "success" => false,
+                        "message" => "Failed to create account. Please try again."
                     ]);
                 }
             }
@@ -117,20 +125,23 @@
                     else{
                         echo json_encode([
                             "success" => false,
-                            "message" => "Password change failed"
+                            "message" => "Password change failed. Please try again."
                         ]);
                     }
                 }
-
                 // If user input password does not match database password
                 else{
                     echo json_encode([
-                            "success" => false,
-                            "message" => "Incorrect email or password"
-                        ]);
+                        "success" => false,
+                        "message" => "Incorrect email or password"
+                    ]);
                 }
+            } else {
+                echo json_encode([
+                    "success" => false,
+                    "message" => "Account not found with this email"
+                ]);
             }
         }
     }
 ?>
-

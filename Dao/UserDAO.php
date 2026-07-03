@@ -37,11 +37,13 @@ class UserDAO{
     }
 
     public function ChangePassword(Users $user){
-        $query = "UPDATE users SET password_hash = :newpassword";
+        // FIXED: Added WHERE clause to update the correct user
+        $query = "UPDATE users SET password_hash = :newpassword WHERE email = :email";
 
         $stmt = $this->conn->prepare($query);
 
         $stmt->bindValue(":newpassword", $user->getPassword());
+        $stmt->bindValue(":email", $user->getEmail());
 
         return $stmt->execute();
     }

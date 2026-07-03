@@ -91,6 +91,17 @@
         <p class="page-head__desc">Create administrator accounts and keep credentials up to date. Accounts are stored locally in this browser.</p>
       </header>
 
+      <!-- Alert Component -->
+      <div class="alert" id="alert" role="alert" hidden>
+        <span class="alert__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m6 6 12 12"/></svg>
+        </span>
+        <div class="alert__body">
+          <p class="alert__title" id="alertTitle">Something Went Wrong</p>
+          <p class="alert__text" id="alertText">A server error occurred. Please try again later.</p>
+        </div>
+      </div>
+
       <div class="settings-grid">
         <div class="settings-card">
           <div class="settings-card__banner">
@@ -219,7 +230,6 @@
   </div>
 
   <script src="../js/dashboard.js"></script>
-  <!-- <script src="../js/user-settings.js"></script> -->
   <script src="../js/Users.js"></script>
 </body>
 </html>
