@@ -1,4 +1,5 @@
-const TEACHERS_KEY = "ems_teachers";
+// teacher.js - Complete CRUD with backend API integration
+const API_BASE = "../Controllers/teachers_controllers.php";
 
 const searchInput = document.getElementById("searchInput");
 const addTeacherBtn = document.getElementById("addTeacherBtn");
@@ -11,6 +12,15 @@ const teacherMsg = document.getElementById("teacherMsg");
 const modalTitle = document.getElementById("modalTitle");
 const closeTeacherModal = document.getElementById("closeTeacherModal");
 const cancelTeacherBtn = document.getElementById("cancelTeacherBtn");
+const saveTeacherBtn = document.getElementById("saveTeacherBtn");
+const editId = document.getElementById("editId");
+
+// Form field references for validation
+const firstName = document.getElementById("firstName");
+const lastName = document.getElementById("lastName");
+const email = document.getElementById("email");
+const contact = document.getElementById("contact");
+const specialization = document.getElementById("specialization");
 
 const deleteModal = document.getElementById("deleteModal");
 const deleteName = document.getElementById("deleteName");
@@ -18,22 +28,68 @@ const closeDeleteModal = document.getElementById("closeDeleteModal");
 const cancelDeleteBtn = document.getElementById("cancelDeleteBtn");
 const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
 
-let teachers = load();
 let editingId = null;
 let deletingId = null;
 
-function load() {
+// ============ LOAD TEACHERS FROM API ============
+async function loadTeachers() {
+  const q = searchInput.value.trim().toLowerCase();
+
   try {
-    return JSON.parse(localStorage.getItem(TEACHERS_KEY)) || [];
-  } catch {
-    return [];
+    const params = new URLSearchParams();
+    if (q) params.append("keyword", q);
+
+    const response = await fetch(`${API_BASE}?action=list&${params.toString()}`);
+    const teachers = await response.json();
+
+    if (!Array.isArray(teachers)) {
+      console.error("Unexpected response:", teachers);
+      renderTeachers([]);
+      return;
+    }
+
+    renderTeachers(teachers);
+  } catch (error) {
+    console.error("Failed to load teachers:", error);
+    renderTeachers([]);
+    showToast("Failed to load teachers. Please refresh the page.", "error");
   }
 }
 
-function persist() {
-  localStorage.setItem(TEACHERS_KEY, JSON.stringify(teachers));
+function renderTeachers(teachers) {
+  if (!teachers || teachers.length === 0) {
+    teacherRows.innerHTML = "";
+    emptyState.hidden = false;
+    emptyState.textContent = searchInput.value.trim()
+      ? "No teachers match your search."
+      : 'No teachers yet. Click "Add Teacher" to get started.';
+    return;
+  }
+
+  emptyState.hidden = true;
+  teacherRows.innerHTML = teachers.map((t) => `
+    <tr>
+      <td>${esc(t.teacher_id || "—")}</td>
+      <td>
+        <div class="avatar-cell">
+          <span class="avatar">${esc((t.first_name || "?")[0] + (t.last_name || "?")[0]).toUpperCase()}</span>
+          <span class="cell-name">${esc(`${t.last_name}, ${t.first_name}`)}</span>
+        </div>
+      </td>
+      <td>${esc(t.email || "—")}</td>
+      <td>${esc(t.contact_number || "—")}</td>
+      <td>${t.specialization ? `<span class="chip">${esc(t.specialization)}</span>` : "—"}</td>
+      <td>
+        <div class="row-actions">
+          <button class="btn btn--ghost btn--sm" data-action="edit" data-id="${t.teacher_id}">Edit</button>
+          <button class="btn btn--danger btn--sm" data-action="delete" data-id="${t.teacher_id}">Delete</button>
+        </div>
+      </td>
+    </tr>
+  `).join("");
 }
 
+// ============ HELPER FUNCTIONS ============
 function esc(value) {
   return String(value ?? "").replace(/[&<>"']/g, (c) => ({
     "&": "&amp;",
@@ -44,72 +100,79 @@ function esc(value) {
   }[c]));
 }
 
-function fullName(t) {
-  return `${t.lastName}, ${t.firstName}`;
+function showToast(message, type = "info") {
+  // Create a simple toast notification
+  const existing = document.querySelector(".toast-notification");
+  if (existing) existing.remove();
+
+  const toast = document.createElement("div");
+  toast.className = `toast-notification toast-${type}`;
+  toast.textContent = message;
+  toast.style.cssText = `
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    z-index: 9999;
+    max-width: 400px;
+    background: ${type === "error" ? "#dc2626" : type === "success" ? "#16a34a" : "#2563eb"};
+    color: white;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    animation: slideUp 0.3s ease;
+  `;
+  document.body.appendChild(toast);
+
+  setTimeout(() => {
+    toast.style.opacity = "0";
+    toast.style.transition = "opacity 0.3s ease";
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
 }
 
-function nextTeacherId() {
-  const max = teachers.reduce((m, t) => {
-    const n = parseInt((t.teacherId || "").split("-")[1], 10);
-    return Number.isNaN(n) ? m : Math.max(m, n);
-  }, 0);
-  return "TCH-" + String(max + 1).padStart(4, "0");
-}
-
-function setMsg(text, type) {
-  teacherMsg.textContent = text;
-  teacherMsg.classList.remove("is-error", "is-success");
-  if (type) teacherMsg.classList.add(type);
-}
-
-function render() {
-  const q = searchInput.value.trim().toLowerCase();
-  const list = teachers.filter((t) =>
-    !q ||
-    fullName(t).toLowerCase().includes(q) ||
-    (t.email || "").toLowerCase().includes(q) ||
-    (t.specialization || "").toLowerCase().includes(q) ||
-    (t.teacherId || "").toLowerCase().includes(q)
-  );
-
-  teacherRows.innerHTML = list.map((t) => `<tr>
-    <td>${esc(t.teacherId)}</td>
-    <td>
-      <div class="avatar-cell">
-        <span class="avatar">${esc(`${(t.firstName || "?")[0]}${(t.lastName || "?")[0]}`.toUpperCase())}</span>
-        <span class="cell-name">${esc(fullName(t))}</span>
-      </div>
-    </td>
-    <td>${esc(t.email || "—")}</td>
-    <td>${esc(t.contact || "—")}</td>
-    <td>${t.specialization ? `<span class="chip">${esc(t.specialization)}</span>` : "—"}</td>
-    <td>
-      <div class="row-actions">
-        <button class="btn btn--ghost btn--sm" data-action="edit" data-id="${t.id}">Edit</button>
-        <button class="btn btn--danger btn--sm" data-action="delete" data-id="${t.id}">Delete</button>
-      </div>
-    </td>
-  </tr>`).join("");
-
-  emptyState.hidden = list.length > 0;
-  emptyState.textContent = q
-    ? "No teachers match your search."
-    : 'No teachers yet. Click "Add Teacher" to get started.';
-}
-
-function openTeacherModal(t) {
-  editingId = t ? t.id : null;
-  modalTitle.textContent = t ? "Edit Teacher" : "Add Teacher";
-  teacherForm.reset();
-  setMsg("");
-  if (t) {
-    for (const [key, value] of Object.entries(t)) {
-      const field = teacherForm.elements[key];
-      if (field && typeof value === "string") field.value = value;
-    }
+function setFieldError(fieldId, message) {
+  const errorEl = document.getElementById(fieldId + "Error");
+  if (errorEl) {
+    errorEl.textContent = message;
+    errorEl.style.display = message ? "block" : "none";
   }
+}
+
+function clearErrors() {
+  ["firstName", "lastName", "email", "contact", "specialization"].forEach((id) => {
+    setFieldError(id, "");
+  });
+  teacherMsg.textContent = "";
+  teacherMsg.className = "form-msg";
+}
+
+function setFormMessage(text, type) {
+  teacherMsg.textContent = text;
+  teacherMsg.className = "form-msg" + (type ? ` is-${type}` : "");
+}
+
+// ============ OPEN / CLOSE MODALS ============
+function openTeacherModal(teacher = null) {
+  clearErrors();
+  editingId = teacher ? teacher.teacher_id : null;
+  editId.value = editingId || "";
+  modalTitle.textContent = teacher ? "Edit Teacher" : "Add Teacher";
+  saveTeacherBtn.textContent = teacher ? "Update Teacher" : "Save Teacher";
+
+  if (teacher) {
+    firstName.value = teacher.first_name || "";
+    lastName.value = teacher.last_name || "";
+    email.value = teacher.email || "";
+    contact.value = teacher.contact_number || "";
+    specialization.value = teacher.specialization || "";
+  } else {
+    teacherForm.reset();
+    editId.value = "";
+  }
+
   teacherModal.hidden = false;
-  teacherForm.elements.firstName.focus();
+  firstName.focus();
 }
 
 function hideModals() {
@@ -117,81 +180,225 @@ function hideModals() {
   deleteModal.hidden = true;
 }
 
-searchInput.addEventListener("input", render);
+// ============ FORM VALIDATION ============
+function validateForm() {
+  let isValid = true;
+  clearErrors();
+
+  const fname = firstName.value.trim();
+  const lname = lastName.value.trim();
+  const emailVal = email.value.trim();
+  const contactVal = contact.value.trim();
+  const specVal = specialization.value.trim();
+
+  // First Name validation
+  if (!fname) {
+    setFieldError("firstName", "First name is required.");
+    isValid = false;
+  } else if (!/^[a-zA-Z .'-]{2,50}$/.test(fname)) {
+    setFieldError("firstName", "First name: 2-50 letters, spaces, apostrophes, or hyphens.");
+    isValid = false;
+  }
+
+  // Last Name validation
+  if (!lname) {
+    setFieldError("lastName", "Last name is required.");
+    isValid = false;
+  } else if (!/^[a-zA-Z .'-]{2,50}$/.test(lname)) {
+    setFieldError("lastName", "Last name: 2-50 letters, spaces, apostrophes, or hyphens.");
+    isValid = false;
+  }
+
+  // Email validation
+  if (!emailVal) {
+    setFieldError("email", "Email is required.");
+    isValid = false;
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)) {
+    setFieldError("email", "Please enter a valid email address.");
+    isValid = false;
+  }
+
+  // Contact validation
+  if (!contactVal) {
+    setFieldError("contact", "Contact number is required.");
+    isValid = false;
+  } else if (!/^[0-9]{7,15}$/.test(contactVal.replace(/[\s\-()]/g, ""))) {
+    setFieldError("contact", "Contact number must be 7-15 digits, numbers only.");
+    isValid = false;
+  }
+
+  // Specialization validation
+  if (!specVal) {
+    setFieldError("specialization", "Specialization is required.");
+    isValid = false;
+  } else if (specVal.length > 100) {
+    setFieldError("specialization", "Specialization must be 100 characters or fewer.");
+    isValid = false;
+  }
+
+  return isValid;
+}
+
+// ============ SAVE TEACHER (CREATE / UPDATE) ============
+async function saveTeacher(e) {
+  e.preventDefault();
+
+  if (!validateForm()) {
+    return;
+  }
+
+  const data = {
+    first_name: firstName.value.trim(),
+    last_name: lastName.value.trim(),
+    email: email.value.trim(),
+    contact_number: contact.value.trim(),
+    specialization: specialization.value.trim()
+  };
+
+  const isEdit = !!editId.value;
+
+  if (isEdit) {
+    data.action = "update";
+    data.teacher_id = editId.value;
+    data.status = "Active";
+  } else {
+    data.action = "create";
+  }
+
+  // Disable submit button
+  saveTeacherBtn.disabled = true;
+  saveTeacherBtn.textContent = "Saving...";
+
+  try {
+    const formData = new FormData();
+    Object.entries(data).forEach(([key, value]) => {
+      formData.append(key, value);
+    });
+
+    const response = await fetch(API_BASE, {
+      method: "POST",
+      body: formData
+    });
+
+    const result = await response.text();
+
+    if (result.includes("SUCCESS")) {
+      hideModals();
+      showToast(isEdit ? "Teacher updated successfully!" : "Teacher added successfully!", "success");
+      loadTeachers();
+    } else {
+      const errorMsg = result.replace(/^(INSERT|UPDATE)\s+FAILED:\s*/i, "");
+      setFormMessage(errorMsg || "Failed to save teacher. Please try again.", "error");
+    }
+  } catch (error) {
+    console.error("Save error:", error);
+    setFormMessage("Network error. Please check your connection.", "error");
+  } finally {
+    saveTeacherBtn.disabled = false;
+    saveTeacherBtn.textContent = isEdit ? "Update Teacher" : "Save Teacher";
+  }
+}
+
+// ============ DELETE TEACHER ============
+async function confirmDelete() {
+  if (!deletingId) return;
+
+  confirmDeleteBtn.disabled = true;
+  confirmDeleteBtn.textContent = "Deleting...";
+
+  try {
+    const formData = new FormData();
+    formData.append("action", "delete");
+    formData.append("id", deletingId);
+
+    const response = await fetch(API_BASE, {
+      method: "POST",
+      body: formData
+    });
+
+    const result = await response.text();
+
+    if (result.includes("SUCCESS")) {
+      hideModals();
+      showToast("Teacher deleted successfully!", "success");
+      deletingId = null;
+      loadTeachers();
+    } else {
+      showToast(result || "Failed to delete teacher.", "error");
+    }
+  } catch (error) {
+    console.error("Delete error:", error);
+    showToast("Network error. Please try again.", "error");
+  } finally {
+    confirmDeleteBtn.disabled = false;
+    confirmDeleteBtn.textContent = "Delete";
+  }
+}
+
+// ============ EVENT LISTENERS ============
+// Search
+searchInput.addEventListener("input", loadTeachers);
+
+// Add button
 addTeacherBtn.addEventListener("click", () => openTeacherModal());
+
+// Modal close buttons
 closeTeacherModal.addEventListener("click", hideModals);
 cancelTeacherBtn.addEventListener("click", hideModals);
 closeDeleteModal.addEventListener("click", hideModals);
 cancelDeleteBtn.addEventListener("click", hideModals);
 
+// Click outside modal to close
 [teacherModal, deleteModal].forEach((overlay) => {
   overlay.addEventListener("click", (e) => {
     if (e.target === overlay) hideModals();
   });
 });
 
+// Escape key
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") hideModals();
 });
 
-teacherForm.addEventListener("submit", (e) => {
-  e.preventDefault();
-  const data = Object.fromEntries(new FormData(teacherForm));
-  const firstName = data.firstName.trim();
-  const lastName = data.lastName.trim();
-  const email = data.email.trim();
+// Form submission
+teacherForm.addEventListener("submit", saveTeacher);
 
-  if (!firstName || !lastName) {
-    return setMsg("First name and last name are required.", "is-error");
-  }
-  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    return setMsg("Please enter a valid email address.", "is-error");
-  }
-  const emailTaken = teachers.some((t) =>
-    t.id !== editingId && email && (t.email || "").toLowerCase() === email.toLowerCase()
-  );
-  if (emailTaken) {
-    return setMsg("Another teacher already uses that email.", "is-error");
-  }
-
-  if (editingId) {
-    const t = teachers.find((x) => x.id === editingId);
-    Object.assign(t, data, { firstName, lastName, email });
-  } else {
-    teachers.push({
-      id: Date.now().toString(36),
-      teacherId: nextTeacherId(),
-      ...data,
-      firstName,
-      lastName,
-      email
-    });
-  }
-  persist();
-  hideModals();
-  render();
-});
-
+// Action buttons (Edit / Delete) - event delegation
 teacherRows.addEventListener("click", (e) => {
   const btn = e.target.closest("button[data-action]");
   if (!btn) return;
-  const t = teachers.find((x) => x.id === btn.dataset.id);
-  if (!t) return;
+
+  const teacherId = btn.dataset.id;
 
   if (btn.dataset.action === "edit") {
-    openTeacherModal(t);
-  } else {
-    deletingId = t.id;
-    deleteName.textContent = `${fullName(t)} (${t.teacherId})`;
+    // Fetch teacher data and open edit modal
+    fetch(`${API_BASE}?action=get&id=${teacherId}`)
+      .then((res) => res.json())
+      .then((teacher) => {
+        if (teacher.error) {
+          showToast(teacher.error, "error");
+          return;
+        }
+        openTeacherModal(teacher);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch teacher:", err);
+        showToast("Failed to load teacher data.", "error");
+      });
+  } else if (btn.dataset.action === "delete") {
+    // Find teacher name for confirmation
+    const row = btn.closest("tr");
+    const nameCell = row?.querySelector(".cell-name");
+    const name = nameCell ? nameCell.textContent : "this teacher";
+
+    deletingId = teacherId;
+    deleteName.textContent = `${name} (ID: ${teacherId})`;
     deleteModal.hidden = false;
   }
 });
 
-confirmDeleteBtn.addEventListener("click", () => {
-  teachers = teachers.filter((x) => x.id !== deletingId);
-  persist();
-  hideModals();
-  render();
-});
+// Confirm delete
+confirmDeleteBtn.addEventListener("click", confirmDelete);
 
-render();
+// ============ INITIAL LOAD ============
+document.addEventListener("DOMContentLoaded", loadTeachers);
