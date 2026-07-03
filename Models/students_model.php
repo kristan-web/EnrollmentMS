@@ -1,316 +1,165 @@
 <?php
 
-class Student {
+class Section {
 
-    private $student_id;
-    private $lrn;
-    private $student_number;
-    private $first_name;
-    private $middle_name;
-    private $last_name;
-    private $gender;
-    private $birthdate;
-    private $address;
-    private $contact_number;
-    private $email;
+    private $section_id;
+    private $strand_id;
+    private $adviser_id;
     private $grade_level;
+    private $section_name;
+    private $school_year;
+    private $max_slots;
     private $status;
-
-    // Parent Information
-    private $father_name;
-    private $father_contact_number;
-    private $father_occupation;
-    private $mother_name;
-    private $mother_contact_number;
-    private $mother_occupation;
-
-    // Guardian Information
-    private $guardian_name;
-    private $guardian_relationship;
-    private $guardian_contact_number;
-    private $guardian_address;
-
-    // Emergency Contact
-    private $emergency_contact_name;
-    private $emergency_contact_relationship;
-    private $emergency_contact_number;
-
     private $created_at;
 
-
     // Constructor
-
     public function __construct(
-        $lrn = null,
-        $student_number = null,
-        $first_name = null,
-        $middle_name = null,
-        $last_name = null,
-        $gender = null,
-        $birthdate = null,
-        $address = null,
-        $contact_number = null,
-        $email = null,
+        $strand_id = null,
+        $adviser_id = null,
         $grade_level = null,
-        $status = null,
-        $father_name = null,
-        $father_contact_number = null,
-        $father_occupation = null,
-        $mother_name = null,
-        $mother_contact_number = null,
-        $mother_occupation = null,
-        $guardian_name = null,
-        $guardian_relationship = null,
-        $guardian_contact_number = null,
-        $guardian_address = null,
-        $emergency_contact_name = null,
-        $emergency_contact_relationship = null,
-        $emergency_contact_number = null
+        $section_name = null,
+        $school_year = null,
+        $max_slots = null,
+        $status = "Open"
     ){
-
-        $this->lrn = $lrn;
-        $this->student_number = $student_number;
-        $this->first_name = $first_name;
-        $this->middle_name = $middle_name;
-        $this->last_name = $last_name;
-        $this->gender = $gender;
-        $this->birthdate = $birthdate;
-        $this->address = $address;
-        $this->contact_number = $contact_number;
-        $this->email = $email;
+        $this->strand_id = $strand_id;
+        $this->adviser_id = $adviser_id;
         $this->grade_level = $grade_level;
+        $this->section_name = $section_name;
+        $this->school_year = $school_year;
+        $this->max_slots = $max_slots;
         $this->status = $status;
-        $this->father_name = $father_name;
-        $this->father_contact_number = $father_contact_number;
-        $this->father_occupation = $father_occupation;
-        $this->mother_name = $mother_name;
-        $this->mother_contact_number = $mother_contact_number;
-        $this->mother_occupation = $mother_occupation;
-        $this->guardian_name = $guardian_name;
-        $this->guardian_relationship = $guardian_relationship;
-        $this->guardian_contact_number = $guardian_contact_number;
-        $this->guardian_address = $guardian_address;
-        $this->emergency_contact_name = $emergency_contact_name;
-        $this->emergency_contact_relationship = $emergency_contact_relationship;
-        $this->emergency_contact_number = $emergency_contact_number;
-
     }
-
-
 
     // Getters
-
-    public function getStudentId(){
-        return $this->student_id;
+    public function getSectionId(){
+        return $this->section_id;
     }
 
-    public function getLrn(){
-        return $this->lrn;
+    public function getStrandId(){
+        return $this->strand_id;
     }
 
-    public function getStudentNumber(){
-        return $this->student_number;
-    }
-
-    public function getFirstName(){
-        return $this->first_name;
-    }
-
-    public function getMiddleName(){
-        return $this->middle_name;
-    }
-
-    public function getLastName(){
-        return $this->last_name;
-    }
-
-    public function getGender(){
-        return $this->gender;
-    }
-
-    public function getBirthdate(){
-        return $this->birthdate;
-    }
-
-    public function getAddress(){
-        return $this->address;
-    }
-
-    public function getContactNumber(){
-        return $this->contact_number;
-    }
-
-    public function getEmail(){
-        return $this->email;
+    public function getAdviserId(){
+        return $this->adviser_id;
     }
 
     public function getGradeLevel(){
         return $this->grade_level;
     }
 
+    public function getSectionName(){
+        return $this->section_name;
+    }
+
+    public function getSchoolYear(){
+        return $this->school_year;
+    }
+
+    public function getMaxSlots(){
+        return $this->max_slots;
+    }
+
     public function getStatus(){
         return $this->status;
     }
 
-    public function getFatherName(){
-        return $this->father_name;
+    public function getCreatedAt(){
+        return $this->created_at;
     }
-
-    public function getFatherContactNumber(){
-        return $this->father_contact_number;
-    }
-
-    public function getFatherOccupation(){
-        return $this->father_occupation;
-    }
-
-    public function getMotherName(){
-        return $this->mother_name;
-    }
-
-    public function getMotherContactNumber(){
-        return $this->mother_contact_number;
-    }
-
-    public function getMotherOccupation(){
-        return $this->mother_occupation;
-    }
-
-    public function getGuardianName(){
-        return $this->guardian_name;
-    }
-
-    public function getGuardianRelationship(){
-        return $this->guardian_relationship;
-    }
-
-    public function getGuardianContactNumber(){
-        return $this->guardian_contact_number;
-    }
-
-    public function getGuardianAddress(){
-        return $this->guardian_address;
-    }
-
-    public function getEmergencyContactName(){
-        return $this->emergency_contact_name;
-    }
-
-    public function getEmergencyContactRelationship(){
-        return $this->emergency_contact_relationship;
-    }
-
-    public function getEmergencyContactNumber(){
-        return $this->emergency_contact_number;
-    }
-
 
     // Setters
-
-    public function setStudentId($student_id){
-        $this->student_id = $student_id;
+    public function setSectionId($section_id){
+        $this->section_id = $section_id;
     }
 
-    public function setLrn($lrn){
-        $this->lrn = $lrn;
+    public function setStrandId($strand_id){
+        $this->strand_id = $strand_id;
     }
 
-    public function setStudentNumber($student_number){
-        $this->student_number = $student_number;
-    }
-
-    public function setFirstName($first_name){
-        $this->first_name = $first_name;
-    }
-
-    public function setMiddleName($middle_name){
-        $this->middle_name = $middle_name;
-    }
-
-    public function setLastName($last_name){
-        $this->last_name = $last_name;
-    }
-
-    public function setGender($gender){
-        $this->gender = $gender;
-    }
-
-    public function setBirthdate($birthdate){
-        $this->birthdate = $birthdate;
-    }
-
-    public function setAddress($address){
-        $this->address = $address;
-    }
-
-    public function setContactNumber($contact_number){
-        $this->contact_number = $contact_number;
-    }
-
-    public function setEmail($email){
-        $this->email = $email;
+    public function setAdviserId($adviser_id){
+        $this->adviser_id = $adviser_id;
     }
 
     public function setGradeLevel($grade_level){
         $this->grade_level = $grade_level;
     }
 
+    public function setSectionName($section_name){
+        $this->section_name = $section_name;
+    }
+
+    public function setSchoolYear($school_year){
+        $this->school_year = $school_year;
+    }
+
+    public function setMaxSlots($max_slots){
+        $this->max_slots = $max_slots;
+    }
+
     public function setStatus($status){
         $this->status = $status;
     }
 
-    public function setFatherName($father_name){
-        $this->father_name = $father_name;
+    public function setCreatedAt($created_at){
+        $this->created_at = $created_at;
     }
 
-    public function setFatherContactNumber($father_contact_number){
-        $this->father_contact_number = $father_contact_number;
+    // Allowed values
+    public static function allowedGradeLevels(){
+        return ["11", "12"];
     }
 
-    public function setFatherOccupation($father_occupation){
-        $this->father_occupation = $father_occupation;
+    public static function allowedFormStatuses(){
+        return ["Open", "Closed"];
     }
 
-    public function setMotherName($mother_name){
-        $this->mother_name = $mother_name;
-    }
+    // Validation
+    public static function validate($data) {
+        $errors = [];
 
-    public function setMotherContactNumber($mother_contact_number){
-        $this->mother_contact_number = $mother_contact_number;
-    }
+        $strand_id    = $data["strand_id"] ?? "";
+        $adviser_id   = $data["adviser_id"] ?? "";
+        $grade_level  = $data["grade_level"] ?? "";
+        $section_name = trim($data["section_name"] ?? "");
+        $school_year  = trim($data["school_year"] ?? "");
+        $max_slots    = $data["max_slots"] ?? "";
+        $status       = $data["status"] ?? "";
 
-    public function setMotherOccupation($mother_occupation){
-        $this->mother_occupation = $mother_occupation;
-    }
+        if ($strand_id === "" || $strand_id === null) {
+            $errors[] = "Please select a strand.";
+        }
 
-    public function setGuardianName($guardian_name){
-        $this->guardian_name = $guardian_name;
-    }
+        if ($adviser_id === "" || $adviser_id === null) {
+            $errors[] = "Please select an adviser.";
+        }
 
-    public function setGuardianRelationship($guardian_relationship){
-        $this->guardian_relationship = $guardian_relationship;
-    }
+        if (!in_array($grade_level, self::allowedGradeLevels(), true)) {
+            $errors[] = "Please select a valid year level.";
+        }
 
-    public function setGuardianContactNumber($guardian_contact_number){
-        $this->guardian_contact_number = $guardian_contact_number;
-    }
+        if ($section_name === "") {
+            $errors[] = "Section name is required.";
+        } elseif (strlen($section_name) > 50) {
+            $errors[] = "Section name must be 50 characters or fewer.";
+        }
 
-    public function setGuardianAddress($guardian_address){
-        $this->guardian_address = $guardian_address;
-    }
+        if ($school_year === "") {
+            $errors[] = "School year is required.";
+        } elseif (!preg_match("/^\d{4}-\d{4}$/", $school_year)) {
+            $errors[] = "School year must be in the format YYYY-YYYY.";
+        }
 
-    public function setEmergencyContactName($emergency_contact_name){
-        $this->emergency_contact_name = $emergency_contact_name;
-    }
+        if ($max_slots === "" || !ctype_digit((string) $max_slots) || (int) $max_slots < 1 || (int) $max_slots > 100) {
+            $errors[] = "Capacity must be a whole number between 1 and 100.";
+        }
 
-    public function setEmergencyContactRelationship($emergency_contact_relationship){
-        $this->emergency_contact_relationship = $emergency_contact_relationship;
-    }
+        if (!in_array($status, self::allowedFormStatuses(), true)) {
+            $errors[] = "Status must be one of: " . implode(", ", self::allowedFormStatuses()) . ".";
+        }
 
-    public function setEmergencyContactNumber($emergency_contact_number){
-        $this->emergency_contact_number = $emergency_contact_number;
+        return $errors;
     }
-
 }
 
 ?>

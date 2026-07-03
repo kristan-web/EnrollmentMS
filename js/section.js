@@ -1,12 +1,11 @@
-const SECTIONS_KEY = "ems_sections";
-const STRANDS_KEY = "ems_strands";
-const TEACHERS_KEY = "ems_teachers";
-const ENROLL_KEY = "ems_enrollments";
-const PURGE_FLAG = "ems_sections_purged_v1";
+const SECTIONS_URL = "../Controllers/sections_controllers.php";
 const PAGE_SIZE = 10;
 
+// DOM Elements
 const searchInput = document.getElementById("searchInput");
 const gradeFilter = document.getElementById("gradeFilter");
+const yearFilter = document.getElementById("yearFilter");
+const statusFilter = document.getElementById("statusFilter");
 const addSectionBtn = document.getElementById("addSectionBtn");
 const sectionRows = document.getElementById("sectionRows");
 const emptyState = document.getElementById("emptyState");
@@ -29,342 +28,519 @@ const closeDeleteModal = document.getElementById("closeDeleteModal");
 const cancelDeleteBtn = document.getElementById("cancelDeleteBtn");
 const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
 
-let sections = loadSections();
-let editingId = null;
-let deletingId = null;
+// State
+let sections = [];
+let strands = [];
+let teachers = [];
+let editingSection = null;
+let deletingSection = null;
 let currentPage = 1;
-let lastSuggestedName = "";
+let lookupLoaded = false;
 
-function loadJson(key) {
-  try {
-    return JSON.parse(localStorage.getItem(key)) || [];
-  } catch {
-    return [];
-  }
-}
-
-function loadSections() {
-  const stored = loadJson(SECTIONS_KEY);
-  if (localStorage.getItem(PURGE_FLAG)) return stored;
-  const seedLike = (s) =>
-    /^sec-\d+$/.test(s.id) &&
-    /^(STEM|ABM|HUMSS|GAS|TVL) (11|12)-[AB]$/.test(s.name) &&
-    !s.adviserId;
-  const cleaned = stored.filter((s) => !seedLike(s));
-  if (cleaned.length !== stored.length) {
-    localStorage.setItem(SECTIONS_KEY, JSON.stringify(cleaned));
-  }
-  localStorage.setItem(PURGE_FLAG, "1");
-  return cleaned;
-}
-
-function persist() {
-  localStorage.setItem(SECTIONS_KEY, JSON.stringify(sections));
-}
-
+// Helper Functions
 function esc(value) {
-  return String(value ?? "").replace(/[&<>"']/g, (c) => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#39;"
-  }[c]));
+    return String(value ?? "").replace(/[&<>"']/g, (c) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+    }[c]));
 }
 
-function strandCodes() {
-  return loadJson(STRANDS_KEY).map((s) => s.code);
-}
-
-function teacherName(t) {
-  return `${t.lastName}, ${t.firstName}`;
-}
-
-function enrolledCount(sectionId) {
-  return loadJson(ENROLL_KEY).filter((e) => e.sectionId === sectionId && e.status === "Enrolled").length;
-}
-
-function enrollmentRecords(sectionId) {
-  return loadJson(ENROLL_KEY).filter((e) => e.sectionId === sectionId).length;
+function debounce(fn, delay) {
+    let timer = null;
+    return (...args) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn(...args), delay);
+    };
 }
 
 function setMsg(text, type) {
-  sectionMsg.textContent = text;
-  sectionMsg.classList.remove("is-error", "is-success");
-  if (type) sectionMsg.classList.add(type);
+    if (sectionMsg) {
+        sectionMsg.textContent = text;
+        sectionMsg.classList.remove("is-error", "is-success");
+        if (type) sectionMsg.classList.add(type);
+    }
 }
 
+function getFullName(first, last) {
+    if (!first && !last) return "—";
+    return `${last || ''}${last && first ? ', ' : ''}${first || ''}`.trim() || "—";
+}
+
+// ---------- API Helpers ----------
+async function apiGet(params) {
+    // Remove null, undefined, and empty values
+    const cleanParams = {};
+    for (const [key, value] of Object.entries(params)) {
+        if (value !== null && value !== undefined && value !== '' && value !== 'null') {
+            cleanParams[key] = value;
+        }
+    }
+    
+    const url = `${SECTIONS_URL}?${new URLSearchParams(cleanParams).toString()}`;
+    console.log("Fetching:", url);
+    
+    try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        console.log("Response data:", data);
+        return data;
+    } catch (e) {
+        console.error("API Error:", e);
+        throw e;
+    }
+}
+
+async function apiPost(params) {
+    const res = await fetch(SECTIONS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams(params).toString()
+    });
+    const text = await res.text();
+    console.log("Response:", text);
+    try {
+        return JSON.parse(text);
+    } catch {
+        if (text.includes("SUCCESS") || text.includes("success")) {
+            return { success: true, message: text };
+        }
+        return { success: false, message: text || "Unknown error" };
+    }
+}
+
+// ---------- Load Lookup Data ----------
+async function loadLookupData() {
+    if (lookupLoaded) return;
+    try {
+        console.log("Loading lookup data...");
+        const data = await apiGet({ action: "lookup" });
+        strands = data.strands || [];
+        teachers = data.teachers || [];
+        lookupLoaded = true;
+        console.log("Strands loaded:", strands.length);
+        console.log("Teachers loaded:", teachers.length);
+        populateFormDropdowns();
+    } catch (e) {
+        console.error("Failed to load lookup data:", e);
+    }
+}
+
+function populateFormDropdowns() {
+    // Populate strand dropdown in form
+    const strandSelect = document.querySelector('select[name="strand"]');
+    if (strandSelect) {
+        const grouped = {};
+        strands.forEach(s => {
+            if (!grouped[s.track_name]) grouped[s.track_name] = [];
+            grouped[s.track_name].push(s);
+        });
+
+        let html = '<option value="" disabled selected>Select strand</option>';
+        for (const [trackName, items] of Object.entries(grouped)) {
+            html += `<optgroup label="${esc(trackName)}">`;
+            items.forEach(s => {
+                html += `<option value="${s.strand_id}">${esc(s.strand_code)} - ${esc(s.strand_name)}</option>`;
+            });
+            html += `</optgroup>`;
+        }
+        strandSelect.innerHTML = html;
+    }
+
+    // Populate teacher dropdown in form
+    const adviserSelect = document.querySelector('select[name="adviserId"]');
+    if (adviserSelect) {
+        let html = '<option value="" disabled selected>Select adviser</option>';
+        teachers.forEach(t => {
+            // Use teacher_id (not id)
+            html += `<option value="${t.teacher_id}">${esc(t.last_name)}, ${esc(t.first_name)}</option>`;
+        });
+        adviserSelect.innerHTML = html;
+        console.log("Teachers populated in dropdown:", teachers.length);
+    }
+}
+
+// ---------- Pagination ----------
 function pageList(current, pages) {
-  if (pages <= 7) return Array.from({ length: pages }, (_, i) => i + 1);
-  const wanted = [...new Set([1, 2, current - 1, current, current + 1, pages - 1, pages])]
-    .filter((p) => p >= 1 && p <= pages)
-    .sort((a, b) => a - b);
-  const out = [];
-  let prev = 0;
-  for (const p of wanted) {
-    if (p - prev > 1) out.push("…");
-    out.push(p);
-    prev = p;
-  }
-  return out;
+    if (pages <= 7) return Array.from({ length: pages }, (_, i) => i + 1);
+    const wanted = [...new Set([1, 2, current - 1, current, current + 1, pages - 1, pages])]
+        .filter((p) => p >= 1 && p <= pages)
+        .sort((a, b) => a - b);
+    const out = [];
+    let prev = 0;
+    for (const p of wanted) {
+        if (p - prev > 1) out.push("…");
+        out.push(p);
+        prev = p;
+    }
+    return out;
 }
 
 function renderPagination(total, pages, start, shown) {
-  if (total <= PAGE_SIZE) {
-    pagination.hidden = true;
-    return;
-  }
-  pagination.hidden = false;
-  pageInfo.textContent = `Showing ${start + 1}–${start + shown} of ${total}`;
-  const parts = [
-    `<button class="page-btn" data-page="${currentPage - 1}" ${currentPage === 1 ? "disabled" : ""} aria-label="Previous page">&lsaquo;</button>`
-  ];
-  for (const p of pageList(currentPage, pages)) {
-    parts.push(p === "…"
-      ? '<span class="page-ellipsis">…</span>'
-      : `<button class="page-btn${p === currentPage ? " is-current" : ""}" data-page="${p}">${p}</button>`);
-  }
-  parts.push(
-    `<button class="page-btn" data-page="${currentPage + 1}" ${currentPage === pages ? "disabled" : ""} aria-label="Next page">&rsaquo;</button>`
-  );
-  pageControls.innerHTML = parts.join("");
+    if (total <= PAGE_SIZE) {
+        pagination.hidden = true;
+        return;
+    }
+    pagination.hidden = false;
+    pageInfo.textContent = `Showing ${start + 1}–${start + shown} of ${total}`;
+    const parts = [
+        `<button class="page-btn" data-page="${currentPage - 1}" ${currentPage === 1 ? "disabled" : ""} aria-label="Previous page">&lsaquo;</button>`
+    ];
+    for (const p of pageList(currentPage, pages)) {
+        parts.push(p === "…"
+            ? '<span class="page-ellipsis">…</span>'
+            : `<button class="page-btn${p === currentPage ? " is-current" : ""}" data-page="${p}">${p}</button>`);
+    }
+    parts.push(
+        `<button class="page-btn" data-page="${currentPage + 1}" ${currentPage === pages ? "disabled" : ""} aria-label="Next page">&rsaquo;</button>`
+    );
+    pageControls.innerHTML = parts.join("");
+}
+
+// ---------- Load + Render ----------
+// ---------- Load + Render ----------
+async function loadSections() {
+    const filters = {};
+    
+    if (searchInput && searchInput.value.trim()) {
+        filters.keyword = searchInput.value.trim();
+    }
+    if (gradeFilter && gradeFilter.value) {
+        filters.grade_level = gradeFilter.value;
+    }
+    if (yearFilter && yearFilter.value) {
+        filters.school_year = yearFilter.value;
+    }
+    if (statusFilter && statusFilter.value) {
+        filters.status = statusFilter.value;
+    }
+    
+    // Always include action
+    filters.action = "list";
+
+    console.log("Loading sections with filters:", filters);
+
+    try {
+        const response = await apiGet(filters);
+        sections = Array.isArray(response) ? response : [];
+        console.log("Sections loaded:", sections.length);
+        render();
+    } catch (e) {
+        console.error("Failed to load sections:", e);
+        sections = [];
+        render();
+    }
 }
 
 function render() {
-  const q = searchInput.value.trim().toLowerCase();
-  const grade = gradeFilter.value;
-  const teachers = loadJson(TEACHERS_KEY);
+    const total = sections.length;
+    const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+    if (currentPage > pages) currentPage = pages;
+    const start = (currentPage - 1) * PAGE_SIZE;
+    const pageItems = sections.slice(start, start + PAGE_SIZE);
 
-  const list = sections
-    .filter((sec) => {
-      if (grade && sec.grade !== grade) return false;
-      if (!q) return true;
-      const adviser = sec.adviserId ? teachers.find((t) => t.id === sec.adviserId) : null;
-      return (
-        sec.name.toLowerCase().includes(q) ||
-        (sec.strand || "").toLowerCase().includes(q) ||
-        (adviser ? teacherName(adviser).toLowerCase().includes(q) : false)
-      );
-    })
-    .sort((a, b) => a.grade.localeCompare(b.grade) || a.name.localeCompare(b.name));
+    if (pageItems.length === 0) {
+        sectionRows.innerHTML = "";
+        emptyState.hidden = false;
+        const hasFilters = (searchInput && searchInput.value.trim()) || 
+                          (gradeFilter && gradeFilter.value) || 
+                          (yearFilter && yearFilter.value) || 
+                          (statusFilter && statusFilter.value);
+        emptyState.textContent = hasFilters
+            ? "No sections match your filters."
+            : 'No sections yet. Click "Add Section" to get started.';
+        pagination.hidden = true;
+        return;
+    }
 
-  const total = list.length;
-  const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  if (currentPage > pages) currentPage = pages;
-  const start = (currentPage - 1) * PAGE_SIZE;
-  const pageItems = list.slice(start, start + PAGE_SIZE);
+    emptyState.hidden = true;
 
-  sectionRows.innerHTML = pageItems.map((sec) => {
-    const adviser = sec.adviserId ? teachers.find((t) => t.id === sec.adviserId) : null;
-    const enrolled = enrolledCount(sec.id);
-    const adviserCell = adviser
-      ? `<div class="avatar-cell">
-           <span class="avatar">${esc(`${(adviser.firstName || "?")[0]}${(adviser.lastName || "?")[0]}`.toUpperCase())}</span>
-           <span class="cell-name">${esc(teacherName(adviser))}</span>
-         </div>`
-      : "—";
-    return `<tr>
-      <td><span class="chip">Grade ${esc(sec.grade)}</span></td>
-      <td>
-        <span class="cell-name">${esc(sec.name)}</span>
-        <span class="cell-sub">${esc(sec.strand || "—")} · ${enrolled}/${esc(sec.capacity)} enrolled</span>
-      </td>
-      <td>${adviserCell}</td>
-      <td>
-        <div class="row-actions">
-          <button class="btn btn--ghost btn--sm" data-action="edit" data-id="${sec.id}">Edit</button>
-          <button class="btn btn--danger btn--sm" data-action="delete" data-id="${sec.id}">Delete</button>
-        </div>
-      </td>
-    </tr>`;
-  }).join("");
+    sectionRows.innerHTML = pageItems.map((s) => {
+        const adviserName = getFullName(s.adviser_first_name, s.adviser_last_name);
+        const enrolledText = s.enrolled_count !== undefined
+            ? `${s.enrolled_count}/${s.max_slots}`
+            : `0/${s.max_slots}`;
 
-  emptyState.hidden = total > 0;
-  emptyState.textContent = q || grade
-    ? "No sections match your filters."
-    : 'No sections yet. Click "Add Section" to get started.';
+        const statusClass = s.status === 'Open' ? 'status-open' :
+                           s.status === 'Closed' ? 'status-closed' :
+                           'status-cancelled';
 
-  renderPagination(total, pages, start, pageItems.length);
+        const hasStudents = (s.enrolled_count || 0) > 0;
+
+        return `<tr>
+            <td><span class="chip grade-chip">Grade ${esc(s.grade_level)}</span></td>
+            <td>
+                <span class="cell-name">${esc(s.section_name)}</span>
+                <span class="cell-sub">${esc(s.strand_code || '')} · ${esc(s.track_name || '')}</span>
+            </td>
+            <td>${esc(adviserName)}</td>
+            <td>
+                <span class="status-badge ${statusClass}">${esc(s.status)}</span>
+                <span class="enrolled-count">${enrolledText} enrolled</span>
+            </td>
+            <td>
+                <div class="row-actions">
+                    <button class="btn btn--ghost btn--sm" data-action="edit" data-id="${s.section_id}">Edit</button>
+                    <button class="btn btn--danger btn--sm" data-action="delete" data-id="${s.section_id}" ${hasStudents ? 'disabled title="Cannot cancel: has enrolled students"' : ''}>
+                        ${hasStudents ? 'Has Students' : 'Cancel'}
+                    </button>
+                </div>
+            </td>
+        </tr>`;
+    }).join("");
+
+    renderPagination(total, pages, start, pageItems.length);
 }
 
-function fillStrandOptions(selected) {
-  const select = sectionForm.elements.strand;
-  const codes = strandCodes();
-  if (!codes.length) {
-    select.innerHTML = '<option value="" disabled selected>No strands yet — add strands first</option>';
-    return;
-  }
-  select.innerHTML = '<option value="" disabled>Select strand</option>' +
-    codes.map((code) => `<option value="${esc(code)}">${esc(code)}</option>`).join("");
-  select.value = selected || "";
-}
+// ---------- Modal Open/Close ----------
+async function openSectionModal(s) {
+    await loadLookupData();
 
-function fillAdviserOptions(selected) {
-  const select = sectionForm.elements.adviserId;
-  const teachers = loadJson(TEACHERS_KEY)
-    .slice()
-    .sort((a, b) => teacherName(a).localeCompare(teacherName(b)));
-  select.innerHTML = '<option value="">— No adviser —</option>' +
-    teachers.map((t) => `<option value="${esc(t.id)}">${esc(teacherName(t))}</option>`).join("");
-  select.value = selected || "";
-  if (select.value !== (selected || "")) select.value = "";
-}
+    editingSection = s || null;
+    modalTitle.textContent = s ? "Edit Section" : "Add Section";
+    sectionForm.reset();
+    setMsg("");
 
-function suggestName() {
-  const strand = sectionForm.elements.strand.value;
-  const grade = sectionForm.elements.grade.value;
-  if (!strand || !grade) return "";
-  const prefix = `${strand} ${grade}-`;
-  const used = sections
-    .filter((s) => s.id !== editingId && s.name.startsWith(prefix))
-    .map((s) => s.name.slice(prefix.length))
-    .filter((suffix) => /^[A-Z]$/.test(suffix));
-  let letter = "A";
-  while (used.includes(letter) && letter !== "Z") {
-    letter = String.fromCharCode(letter.charCodeAt(0) + 1);
-  }
-  return prefix + letter;
-}
+    // Populate dropdowns
+    populateFormDropdowns();
 
-function maybeSuggestName() {
-  const nameField = sectionForm.elements.name;
-  if (nameField.value && nameField.value !== lastSuggestedName) return;
-  lastSuggestedName = suggestName();
-  nameField.value = lastSuggestedName;
-}
+    if (s) {
+        // Set form values for edit
+        const strandSelect = document.querySelector('select[name="strand"]');
+        if (strandSelect) strandSelect.value = s.strand_id;
 
-function openSectionModal(sec) {
-  editingId = sec ? sec.id : null;
-  lastSuggestedName = "";
-  modalTitle.textContent = sec ? "Edit Section" : "Add Section";
-  sectionForm.reset();
-  setMsg("");
-  fillStrandOptions(sec ? sec.strand : "");
-  fillAdviserOptions(sec ? sec.adviserId : "");
-  if (sec) {
-    sectionForm.elements.grade.value = sec.grade;
-    sectionForm.elements.name.value = sec.name;
-    sectionForm.elements.capacity.value = sec.capacity;
-  } else {
-    sectionForm.elements.grade.selectedIndex = 0;
-    sectionForm.elements.capacity.value = 40;
-  }
-  sectionModal.hidden = false;
-  sectionForm.elements.grade.focus();
+        const adviserSelect = document.querySelector('select[name="adviserId"]');
+        if (adviserSelect) adviserSelect.value = s.adviser_id || "";
+
+        const gradeSelect = document.querySelector('select[name="grade"]');
+        if (gradeSelect) gradeSelect.value = s.grade_level;
+
+        const nameInput = document.querySelector('input[name="name"]');
+        if (nameInput) nameInput.value = s.section_name;
+
+        const capacityInput = document.querySelector('input[name="capacity"]');
+        if (capacityInput) capacityInput.value = s.max_slots;
+
+        const yearSelect = document.querySelector('select[name="schoolYear"]');
+        if (yearSelect) yearSelect.value = s.school_year;
+
+        const statusSelect = document.querySelector('select[name="status"]');
+        if (statusSelect) statusSelect.value = s.status;
+    } else {
+        // Default values for new section
+        const yearSelect = document.querySelector('select[name="schoolYear"]');
+        if (yearSelect) yearSelect.value = "2026-2027";
+
+        const statusSelect = document.querySelector('select[name="status"]');
+        if (statusSelect) statusSelect.value = "Open";
+
+        const capacityInput = document.querySelector('input[name="capacity"]');
+        if (capacityInput) capacityInput.value = 40;
+    }
+
+    sectionModal.hidden = false;
+    const nameInput = document.querySelector('input[name="name"]');
+    if (nameInput) nameInput.focus();
 }
 
 function hideModals() {
-  sectionModal.hidden = true;
-  deleteModal.hidden = true;
+    sectionModal.hidden = true;
+    deleteModal.hidden = true;
 }
 
-searchInput.addEventListener("input", () => {
-  currentPage = 1;
-  render();
-});
-gradeFilter.addEventListener("change", () => {
-  currentPage = 1;
-  render();
-});
-addSectionBtn.addEventListener("click", () => openSectionModal());
-closeSectionModal.addEventListener("click", hideModals);
-cancelSectionBtn.addEventListener("click", hideModals);
-closeDeleteModal.addEventListener("click", hideModals);
-cancelDeleteBtn.addEventListener("click", hideModals);
+// ---------- Event Wiring ----------
+// Search
+if (searchInput) {
+    searchInput.addEventListener("input", debounce(() => {
+        currentPage = 1;
+        loadSections();
+    }, 300));
+}
 
-pageControls.addEventListener("click", (e) => {
-  const btn = e.target.closest("button[data-page]");
-  if (!btn || btn.disabled) return;
-  currentPage = Number(btn.dataset.page);
-  render();
-});
-
-sectionForm.elements.strand.addEventListener("change", maybeSuggestName);
-sectionForm.elements.grade.addEventListener("change", maybeSuggestName);
-
-[sectionModal, deleteModal].forEach((overlay) => {
-  overlay.addEventListener("click", (e) => {
-    if (e.target === overlay) hideModals();
-  });
-});
-
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") hideModals();
-});
-
-sectionForm.addEventListener("submit", (e) => {
-  e.preventDefault();
-  const data = Object.fromEntries(new FormData(sectionForm));
-  const grade = data.grade || "";
-  const strand = data.strand || "";
-  const name = data.name.trim();
-  const capacity = parseInt(data.capacity, 10);
-
-  if (!grade || !strand || !name) {
-    return setMsg("Year level, strand, and section name are required.", "is-error");
-  }
-  if (Number.isNaN(capacity) || capacity < 1 || capacity > 100) {
-    return setMsg("Capacity must be a number between 1 and 100.", "is-error");
-  }
-  const nameTaken = sections.some((s) =>
-    s.id !== editingId && s.name.toLowerCase() === name.toLowerCase()
-  );
-  if (nameTaken) {
-    return setMsg("A section with that name already exists.", "is-error");
-  }
-  if (editingId) {
-    const enrolled = enrolledCount(editingId);
-    if (capacity < enrolled) {
-      return setMsg(`${enrolled} student${enrolled === 1 ? " is" : "s are"} currently enrolled — capacity cannot be lower than that.`, "is-error");
+// Filters
+[gradeFilter, yearFilter, statusFilter].forEach(filter => {
+    if (filter) {
+        filter.addEventListener("change", () => {
+            currentPage = 1;
+            loadSections();
+        });
     }
-  }
+});
 
-  if (editingId) {
-    const sec = sections.find((x) => x.id === editingId);
-    sec.grade = grade;
-    sec.strand = strand;
-    sec.name = name;
-    sec.capacity = capacity;
-    sec.adviserId = data.adviserId || "";
-  } else {
-    sections.push({
-      id: "sec-" + Date.now().toString(36),
-      name,
-      strand,
-      grade,
-      capacity,
-      adviserId: data.adviserId || ""
+// Add Section Button
+if (addSectionBtn) {
+    addSectionBtn.addEventListener("click", () => openSectionModal());
+}
+
+// Modal Close Buttons
+if (closeSectionModal) closeSectionModal.addEventListener("click", hideModals);
+if (cancelSectionBtn) cancelSectionBtn.addEventListener("click", hideModals);
+if (closeDeleteModal) closeDeleteModal.addEventListener("click", hideModals);
+if (cancelDeleteBtn) cancelDeleteBtn.addEventListener("click", hideModals);
+
+// Pagination
+if (pageControls) {
+    pageControls.addEventListener("click", (e) => {
+        const btn = e.target.closest("button[data-page]");
+        if (!btn || btn.disabled) return;
+        currentPage = Number(btn.dataset.page);
+        render();
     });
-  }
-  persist();
-  hideModals();
-  render();
+}
+
+// Click outside modal to close
+[sectionModal, deleteModal].forEach((overlay) => {
+    if (overlay) {
+        overlay.addEventListener("click", (e) => {
+            if (e.target === overlay) hideModals();
+        });
+    }
 });
 
-sectionRows.addEventListener("click", (e) => {
-  const btn = e.target.closest("button[data-action]");
-  if (!btn) return;
-  const sec = sections.find((x) => x.id === btn.dataset.id);
-  if (!sec) return;
-
-  if (btn.dataset.action === "edit") {
-    openSectionModal(sec);
-  } else {
-    deletingId = sec.id;
-    deleteName.textContent = `${sec.name} (Grade ${sec.grade})`;
-    const records = enrollmentRecords(sec.id);
-    deleteNote.textContent = records > 0
-      ? `${records} enrollment record${records === 1 ? "" : "s"} reference${records === 1 ? "s" : ""} this section. Deleting it will not remove those records, and this cannot be undone.`
-      : "This permanently removes the section. This cannot be undone.";
-    deleteModal.hidden = false;
-  }
+// Escape key to close
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") hideModals();
 });
 
-confirmDeleteBtn.addEventListener("click", () => {
-  sections = sections.filter((x) => x.id !== deletingId);
-  persist();
-  hideModals();
-  render();
-});
+// ---------- Form Submit ----------
+if (sectionForm) {
+    sectionForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
 
-render();
+        const formData = new FormData(sectionForm);
+        const data = {
+            strand_id: formData.get("strand"),
+            adviser_id: formData.get("adviserId") || "",
+            grade_level: formData.get("grade"),
+            section_name: formData.get("name").trim(),
+            school_year: formData.get("schoolYear"),
+            max_slots: formData.get("capacity"),
+            status: formData.get("status"),
+        };
+
+        console.log("Submitting data:", data);
+
+        // Validate
+        if (!data.strand_id) {
+            return setMsg("Please select a strand.", "is-error");
+        }
+        if (!data.grade_level) {
+            return setMsg("Please select a grade level.", "is-error");
+        }
+        if (!data.section_name || data.section_name.length < 2) {
+            return setMsg("Section name must be at least 2 characters.", "is-error");
+        }
+        if (data.section_name.length > 50) {
+            return setMsg("Section name must be 50 characters or fewer.", "is-error");
+        }
+        if (!data.school_year) {
+            return setMsg("Please select a school year.", "is-error");
+        }
+        if (!/^\d{4}-\d{4}$/.test(data.school_year)) {
+            return setMsg("School year must be in YYYY-YYYY format.", "is-error");
+        }
+        if (!data.max_slots || parseInt(data.max_slots) < 1 || parseInt(data.max_slots) > 100) {
+            return setMsg("Capacity must be between 1 and 100.", "is-error");
+        }
+        // REQUIRE TEACHER
+        if (!data.adviser_id) {
+            return setMsg("Please select an adviser for this section.", "is-error");
+        }
+
+        const submitBtn = sectionForm.querySelector('button[type="submit"]');
+        if (submitBtn) submitBtn.disabled = true;
+
+        const payload = {
+            action: editingSection ? "update" : "create",
+            ...data
+        };
+        if (editingSection) {
+            payload.section_id = editingSection.section_id;
+        }
+
+        const response = await apiPost(payload);
+        if (submitBtn) submitBtn.disabled = false;
+
+        if (response.success) {
+            hideModals();
+            await loadSections();
+        } else {
+            setMsg(response.message || "Failed to save section.", "is-error");
+        }
+    });
+}
+
+// ---------- Row Actions (Edit / Delete) ----------
+if (sectionRows) {
+    sectionRows.addEventListener("click", (e) => {
+        const btn = e.target.closest("button[data-action]");
+        if (!btn) return;
+
+        const s = sections.find((x) => String(x.section_id) === btn.dataset.id);
+        if (!s) return;
+
+        if (btn.dataset.action === "edit") {
+            openSectionModal(s);
+        } else if (btn.dataset.action === "delete") {
+            deletingSection = s;
+            deleteName.textContent = `${s.section_name} (Grade ${s.grade_level} · ${s.strand_code || ''})`;
+
+            if ((s.enrolled_count || 0) > 0) {
+                deleteNote.textContent =
+                    `${s.enrolled_count} student${s.enrolled_count === 1 ? "" : "s"} currently enrolled in this section. ` +
+                    `You must drop all students before cancelling this section.`;
+                confirmDeleteBtn.disabled = true;
+            } else {
+                deleteNote.textContent =
+                    "This will cancel the section. It will be hidden from the active list " +
+                    "but can be restored later from the Status filter.";
+                confirmDeleteBtn.disabled = false;
+            }
+
+            deleteModal.hidden = false;
+        }
+    });
+}
+
+// ---------- Confirm Delete ----------
+if (confirmDeleteBtn) {
+    confirmDeleteBtn.addEventListener("click", async () => {
+        if (!deletingSection) return;
+
+        const response = await apiPost({
+            action: "delete",
+            section_id: deletingSection.section_id
+        });
+
+        hideModals();
+
+        if (response.success) {
+            await loadSections();
+        } else {
+            alert(response.message || "Failed to cancel section.");
+        }
+    });
+}
+
+// ---------- Clear Search ----------
+const searchClear = document.querySelector('.search-clear');
+if (searchClear && searchInput) {
+    searchInput.addEventListener('input', () => {
+        searchClear.hidden = !searchInput.value;
+    });
+    searchClear.addEventListener('click', () => {
+        searchInput.value = '';
+        searchClear.hidden = true;
+        currentPage = 1;
+        loadSections();
+    });
+}
+
+// ---------- Initialize ----------
+console.log("Initializing Section module...");
+loadLookupData().then(() => {
+    loadSections();
+});
