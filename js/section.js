@@ -32,6 +32,7 @@ const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
 let sections = [];
 let strands = [];
 let teachers = [];
+let schoolYears = [];
 let editingSection = null;
 let deletingSection = null;
 let currentPage = 1;
@@ -69,9 +70,15 @@ function getFullName(first, last) {
     return `${last || ''}${last && first ? ', ' : ''}${first || ''}`.trim() || "—";
 }
 
+function showLoading(show) {
+    const loadingModal = document.getElementById("loadingModal");
+    if (loadingModal) {
+        loadingModal.hidden = !show;
+    }
+}
+
 // ---------- API Helpers ----------
 async function apiGet(params) {
-    // Remove null, undefined, and empty values
     const cleanParams = {};
     for (const [key, value] of Object.entries(params)) {
         if (value !== null && value !== undefined && value !== '' && value !== 'null') {
@@ -115,17 +122,35 @@ async function apiPost(params) {
 // ---------- Load Lookup Data ----------
 async function loadLookupData() {
     if (lookupLoaded) return;
+    showLoading(true);
     try {
         console.log("Loading lookup data...");
         const data = await apiGet({ action: "lookup" });
         strands = data.strands || [];
         teachers = data.teachers || [];
+        schoolYears = data.school_years || [];
         lookupLoaded = true;
         console.log("Strands loaded:", strands.length);
         console.log("Teachers loaded:", teachers.length);
+        console.log("School Years loaded:", schoolYears.length);
         populateFormDropdowns();
+        populateFilterDropdowns();
     } catch (e) {
         console.error("Failed to load lookup data:", e);
+    } finally {
+        showLoading(false);
+    }
+}
+
+function populateFilterDropdowns() {
+    // Populate school year filter
+    if (yearFilter) {
+        let html = '<option value="">All School Years</option>';
+        schoolYears.forEach(sy => {
+            const isActive = sy.status === 'active';
+            html += `<option value="${esc(sy.year)}">${esc(sy.year)}${isActive ? ' (Active)' : ''}</option>`;
+        });
+        yearFilter.innerHTML = html;
     }
 }
 
@@ -155,11 +180,21 @@ function populateFormDropdowns() {
     if (adviserSelect) {
         let html = '<option value="" disabled selected>Select adviser</option>';
         teachers.forEach(t => {
-            // Use teacher_id (not id)
             html += `<option value="${t.teacher_id}">${esc(t.last_name)}, ${esc(t.first_name)}</option>`;
         });
         adviserSelect.innerHTML = html;
         console.log("Teachers populated in dropdown:", teachers.length);
+    }
+
+    // Populate school year dropdown in form
+    const schoolYearSelect = document.querySelector('select[name="schoolYear"]');
+    if (schoolYearSelect) {
+        let html = '<option value="" disabled selected>Select school year</option>';
+        schoolYears.forEach(sy => {
+            const isActive = sy.status === 'active';
+            html += `<option value="${esc(sy.year)}"${isActive ? ' selected' : ''}>${esc(sy.year)}${isActive ? ' (Active)' : ''}</option>`;
+        });
+        schoolYearSelect.innerHTML = html;
     }
 }
 
@@ -201,7 +236,6 @@ function renderPagination(total, pages, start, shown) {
 }
 
 // ---------- Load + Render ----------
-// ---------- Load + Render ----------
 async function loadSections() {
     const filters = {};
     
@@ -218,11 +252,11 @@ async function loadSections() {
         filters.status = statusFilter.value;
     }
     
-    // Always include action
     filters.action = "list";
 
     console.log("Loading sections with filters:", filters);
 
+    showLoading(true);
     try {
         const response = await apiGet(filters);
         sections = Array.isArray(response) ? response : [];
@@ -232,6 +266,8 @@ async function loadSections() {
         console.error("Failed to load sections:", e);
         sections = [];
         render();
+    } finally {
+        showLoading(false);
     }
 }
 
@@ -331,14 +367,11 @@ async function openSectionModal(s) {
         if (statusSelect) statusSelect.value = s.status;
     } else {
         // Default values for new section
-        const yearSelect = document.querySelector('select[name="schoolYear"]');
-        if (yearSelect) yearSelect.value = "2026-2027";
+        const capacityInput = document.querySelector('input[name="capacity"]');
+        if (capacityInput) capacityInput.value = 40;
 
         const statusSelect = document.querySelector('select[name="status"]');
         if (statusSelect) statusSelect.value = "Open";
-
-        const capacityInput = document.querySelector('input[name="capacity"]');
-        if (capacityInput) capacityInput.value = 40;
     }
 
     sectionModal.hidden = false;
@@ -445,7 +478,6 @@ if (sectionForm) {
         if (!data.max_slots || parseInt(data.max_slots) < 1 || parseInt(data.max_slots) > 100) {
             return setMsg("Capacity must be between 1 and 100.", "is-error");
         }
-        // REQUIRE TEACHER
         if (!data.adviser_id) {
             return setMsg("Please select an adviser for this section.", "is-error");
         }

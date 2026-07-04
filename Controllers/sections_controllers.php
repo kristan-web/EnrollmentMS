@@ -15,9 +15,13 @@ if ($method == "GET") {
     $action = isset($_GET["action"]) ? $_GET["action"] : "list";
 
     if ($action == "lookup") {
+        // Get school years from the database
+        $schoolYears = $dao->getAllSchoolYears();
+        
         echo json_encode([
             "strands" => $dao->getAllStrands(),
             "teachers" => $dao->getAllTeachers(),
+            "school_years" => $schoolYears,
         ]);
     } else if ($action == "list") {
         $filters = [
