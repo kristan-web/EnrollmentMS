@@ -5,33 +5,30 @@ class Enrollment {
     private $enrollment_id;
     private $student_id;
     private $section_id;
-    private $school_year;
+    private $school_year_id;  // Changed from school_year to school_year_id
+    private $school_year;     // Keep this for display (denormalized)
     private $semester;
     private $date_enrolled;
     private $status;
 
-
     // Constructor
-
     public function __construct(
         $student_id = null,
         $section_id = null,
+        $school_year_id = null,
         $school_year = null,
         $semester = null,
         $status = "Enrolled"
     ){
-
         $this->student_id = $student_id;
         $this->section_id = $section_id;
+        $this->school_year_id = $school_year_id;
         $this->school_year = $school_year;
         $this->semester = $semester;
         $this->status = $status;
-
     }
 
-
     // Getters
-
     public function getEnrollmentId(){
         return $this->enrollment_id;
     }
@@ -42,6 +39,10 @@ class Enrollment {
 
     public function getSectionId(){
         return $this->section_id;
+    }
+
+    public function getSchoolYearId(){
+        return $this->school_year_id;
     }
 
     public function getSchoolYear(){
@@ -60,9 +61,7 @@ class Enrollment {
         return $this->status;
     }
 
-
     // Setters
-
     public function setEnrollmentId($enrollment_id){
         $this->enrollment_id = $enrollment_id;
     }
@@ -73,6 +72,10 @@ class Enrollment {
 
     public function setSectionId($section_id){
         $this->section_id = $section_id;
+    }
+
+    public function setSchoolYearId($school_year_id){
+        $this->school_year_id = $school_year_id;
     }
 
     public function setSchoolYear($school_year){
@@ -91,33 +94,22 @@ class Enrollment {
         $this->status = $status;
     }
 
-
-    // List of allowed values, used for both validation and dropdowns
-
+    // List of allowed values
     public static function allowedSemesters(){
-
         return ["1st Semester", "2nd Semester"];
-
     }
 
     public static function allowedStatuses(){
-
         return ["Enrolled", "Dropped", "Pending"];
-
     }
 
-
-    // Shared validation used by the create controller.
-    // $data is expected to be an array (e.g. $_POST).
-    // Returns an array of human-readable error messages (empty = valid).
-
+    // Validation
     public static function validate($data) {
-
         $errors = [];
 
         $student_id = $data["student_id"] ?? "";
         $section_id = $data["section_id"] ?? "";
-        $school_year = trim($data["school_year"] ?? "");
+        $school_year_id = $data["school_year_id"] ?? "";
         $semester = $data["semester"] ?? "";
 
         if ($student_id === "" || $student_id === null) {
@@ -128,10 +120,8 @@ class Enrollment {
             $errors[] = "Please select a section.";
         }
 
-        if ($school_year === "") {
-            $errors[] = "School year is required.";
-        } elseif (!preg_match("/^\d{4}-\d{4}$/", $school_year)) {
-            $errors[] = "School year must be in the format YYYY-YYYY.";
+        if ($school_year_id === "" || $school_year_id === null) {
+            $errors[] = "Please select a school year.";
         }
 
         if (!in_array($semester, self::allowedSemesters(), true)) {
@@ -139,9 +129,5 @@ class Enrollment {
         }
 
         return $errors;
-
     }
-
 }
-
-?>
