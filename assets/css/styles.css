@@ -389,9 +389,41 @@ body::after {
   .footer { font-size: 18px; }
 }
 
-@media (min-width: 768px) and (max-height: 760px) {
-  body { justify-content: flex-start; gap: 22px; padding: 32px 20px; }
-  .login__title { margin-top: 14px; }
+@media (min-width: 768px) {
+  .login { max-width: 660px; }
+  .footer { font-size: 22px; }
+}
+
+@media (min-width: 1280px) {
+  body { padding: 56px 24px; }
+  .login { max-width: 680px; }
+  .brand__logo { width: clamp(280px, 22vw, 340px); }
+}
+
+@media (min-width: 1680px) {
+  .login { max-width: 720px; }
+  .form { gap: 30px; }
+}
+
+@media (min-width: 768px) and (max-height: 860px) {
+  body { justify-content: flex-start; gap: 18px; padding: 30px 20px 78px; }
+  .brand__logo { width: clamp(170px, 24vh, 250px); }
+  .login__title { font-size: clamp(26px, 4.4vh, 42px); margin: 12px 0 6px; }
+  .login__subtitle { margin-bottom: 22px; font-size: 16px; }
+  .form { gap: 18px; }
+  .field__inner { padding: 15px 20px; }
+  .btn { padding: 16px 36px; font-size: 20px; }
+  .footer { font-size: 20px; }
+}
+
+@media (min-width: 768px) and (max-height: 680px) {
+  body { gap: 14px; padding: 22px 20px 72px; }
+  .brand__logo { width: clamp(140px, 19vh, 200px); }
+  .login__title { margin-top: 8px; }
+  .login__subtitle { margin-bottom: 14px; }
+  .form { gap: 13px; }
+  .field__error { margin-top: 5px; }
+  .btn { padding: 14px 34px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
