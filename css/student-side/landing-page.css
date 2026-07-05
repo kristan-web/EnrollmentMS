@@ -1,0 +1,13 @@
+.card-body{
+    position: relative;
+}
+
+.alert{
+    display: none;
+    position: absolute;
+    bottom: -200;
+    left: 0;
+    width: 100%;
+    transform: translateY(50px);
+    text-align: center;
+}

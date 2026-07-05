@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enrollment System - Admission Page</title>
+    <link rel="stylesheet" href="../../src/bootstrap/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="card-header text-center">
+                <h1>Admission Form</h1>
+            </div>
+
+            <div class="card-body">
+                <form>
+                    <div class="row">
+                        <div class="col">
+                            <label for="givenName" class="form-label">Given Name: </label>
+                            <input type="text" id="givenName" class="form-control">
+                        </div>
+
+                        <div class="col">
+                            <label for="middleName" class="form-label">Middle Name: </label>
+                            <input type="text" id="middleName" class="form-control">
+                        </div>  
+
+                        <div class="col">
+                            <label for="lastName" class="form-label">Last Name: </label>
+                            <input type="text" id="lastName" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="form-check form-check-inline my-2">
+                        <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" value="option1">
+                        <label class="form-check-label" for="inlineRadio1">Male</label>
+                    </div>
+
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio2" value="option2">
+                        <label class="form-check-label" for="inlineRadio2">Female</label>
+                    </div>
+
+                    <div class="row">
+                        <div class="col">
+                            <label for="homeAddress" class="form-label">Home Address</label>
+                            <input type="text" name="" id="homeAddress" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col">
+                            <label for="fatherName" class="form-label">Name of Father:</label>
+                            <input type="text" name="" id="fatherName" class="form-control">
+                        </div>
+                        <div class="col">
+                            <label for="fatherOccupation" class="form-label">Father's Occupation:</label>
+                            <input type="text" class="form-control" id="fatherOccupation">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col">
+                            <label for="motherName" class="form-label">Name of Mother:</label>
+                            <input type="text" name="" id="motherName" class="form-control">
+                        </div>
+                        <div class="col">
+                            <label for="motherOccupation" class="form-label">Mother's Occupation:</label>
+                            <input type="text" class="form-control" id="motherOccupation">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col">
+                            <label for="lrn" class="form-label">Learner's Reference Number:</label>
+                            <input type="text" class="form-control">
+                        </div>
+
+                        <div class="col">
+                            <label for="" class="form-label">Grade Completed:</label>
+                            <input type="text" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="row mt-2">
+                        <div class="col">
+                            <select class="form-select" aria-label="Default select example">
+                                <option selected>Select Preferred Track</option>
+                                <option value="1">Academic Track</option>
+                                <option value="2">Technical-Vocational-Livelihood Tract</option>
+                            </select>
+                        </div>
+
+                        <div class="col">
+                            <select class="form-select" aria-label="Default select example">
+                                <option selected>Select Preferred Strand</option>
+                                <option value="1">Science, Technology, Engineering and Mathematics</option>
+                                <option value="2">Humanities and Social Sciences</option>
+                                <option value="2">Accountancy, Business and Management</option>
+                                <option value="2">General Academic Strand</option>
+                                <option value="2">Information and Communications Technology</option>
+                                <option value="2">Home Economics</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row mt-2">
+                        <div class="col">
+                            <label for="formFile" class="form-label">Upload 2x2 pic</label>
+                            <input class="form-control" type="file" id="formFile">
+                        </div>
+
+                        <div class="col">
+                            <label for="formFile" class="form-label">Upload PSA/Birth Certificate</label>
+                            <input class="form-control" type="file" id="formFile">
+                        </div>
+
+                        <div class="col">
+                            <label for="formFile" class="form-label">Upload Latest Report Card</label>
+                            <input class="form-control" type="file" id="formFile">
+                        </div>
+                        <div class="col">
+                            <label for="formFile" class="form-label">Upload School ID</label>
+                            <input class="form-control" type="file" id="formFile">
+                        </div>
+                    </div>
+
+                    <div class="row text-center mt-5">
+                        <div class="col d-flex justify-content-end">
+                            <button class="btn btn-primary" type="submit">Submit Application</button>
+                            <button class="btn btn-secondary mx-2">Cancel</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>

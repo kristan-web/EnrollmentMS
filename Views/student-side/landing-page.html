@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enrollment System - Create Account</title>
+    <link rel="stylesheet" href="../../src/bootstrap/bootstrap.min.css">
+    <link rel="stylesheet" href="../../css/student-side/landing-page.css">
+</head>
+<body>
+    <!-- Container for Account Creation -->
+    <div class="container d-flex justify-content-center align-items-center min-vh-100 active" id="regForm">
+        <div class="card">
+            <div class="card-header text-center">
+                <h1>Create Account</h1>
+            </div>
+            <div class="card-body">
+                <form id="createAccount">
+                    <input type="hidden" name="form_type" value="creation">
+                    <div class="row">
+                        <div class="col">
+                            <label for="email_address" class="form-label">Email Address</label>
+                            <input type="email" id="email_address" name="email_address" class="form-control" >
+                        </div>
+                        
+                        <div class="col">
+                            <label for="contact_number" class="form-label">Contact No.</label>
+                            <input type="text" id="contact_number" name="contact_number" class="form-control" placeholder="09*********"/>
+                        </div>
+                    </div>
+
+                    <div class="row mt-2">
+                        <div class="col">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" id="password" name="password" class="form-control" >
+                        </div>
+
+                        <div class="col">
+                            <label for="confpassword" class="form-label">Confirm Password</label>
+                            <input type="password" id="confpassword" name="confpassword" class="form-control" >
+                        </div>
+                    </div>
+
+                    <div class="row mt-3 px-5">
+                        <button class="btn btn-success" type="submit">Sign Up</button>
+                    </div>
+                </form>
+
+                <div class="row mt-2 text-center">
+                    <a href="#" onclick="changeActiveForm()">Already have an account?</a>
+                </div>
+
+                <div class="alert" id="regAlert" role="alert">
+                    <!-- Message goes here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Container for Login Form -->
+    <div class="container d-flex justify-content-center align-items-center min-vh-100" id="loginForm">
+        <div class="card">
+            <div class="card-header text-center">
+                <h1>Login</h1>
+            </div>
+            <div class="card-body">
+                <form id="loginAccount">
+                    <input type="hidden" name="form_type" value="login">
+                        <div class="row">
+                            <div class="col">
+                                <label for="email_login" class="form-label">Email Address</label>
+                                <input type="email" id="email_login" name="email_login" class="form-control">
+                            </div>
+                        </div>
+
+                        <div class="row mt-2">
+                            <div class="col">
+                                <label for="password_login" class="form-label">Password</label>
+                                <input type="password" id="password_login" name="password_login"   class="form-control" >
+                            </div>
+                        </div>
+
+                        <div class="row mt-3 px-5  4">
+                            <button class="btn btn-success" type="submit">Login</button>
+                        </div>
+                </form>
+
+                <div class="row mt-2 text-center">
+                    <a href="#" id="registration-trigger" onclick="changeActiveForm()">Don't have an account? Sign up</a>
+                </div>
+
+                <div class="alert alert-success" id="loginAlert" role="alert">
+                    <!-- Message goes here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script src="../../src/bootstrap/bootstrap.bundle.min.js"></script>
+<script src="../../js/student-side/student-account.js"></script>
+</body>
+</html>
