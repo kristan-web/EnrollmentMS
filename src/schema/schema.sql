@@ -3,9 +3,13 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 04, 2026 at 08:42 PM
+-- Generation Time: Jul 05, 2026 at 05:49 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
+
+CREATE DATABASE IF NOT EXISTS enrollment_management_system;
+USE enrollment_management_system;
+
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -20,6 +24,66 @@ SET time_zone = "+00:00";
 --
 -- Database: `enrollment_management_system`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `applicants`
+--
+
+
+CREATE TABLE `applicants` (
+  `applicant_id` int(11) NOT NULL,
+  `reference_number` varchar(20) NOT NULL,
+  `applicant_type` enum('New Student','Transferee') NOT NULL DEFAULT 'New Student',
+  `first_name` varchar(50) NOT NULL,
+  `last_name` varchar(50) NOT NULL,
+  `middle_name` varchar(50) DEFAULT NULL,
+  `gender` enum('Male','Female','Other') NOT NULL,
+  `birthdate` date NOT NULL,
+  `address` varchar(255) NOT NULL,
+  `contact_number` varchar(20) DEFAULT NULL,
+  `email` varchar(100) NOT NULL,
+  `lrn` varchar(12) DEFAULT NULL,
+  `desired_grade_level` enum('11','12') NOT NULL,
+  `desired_strand_id` int(11) NOT NULL,
+  `school_year` varchar(9) NOT NULL,
+  `father_name` varchar(100) DEFAULT NULL,
+  `father_contact_number` varchar(20) DEFAULT NULL,
+  `mother_name` varchar(100) DEFAULT NULL,
+  `mother_contact_number` varchar(20) DEFAULT NULL,
+  `guardian_name` varchar(100) DEFAULT NULL,
+  `guardian_relationship` varchar(50) DEFAULT NULL,
+  `guardian_contact_number` varchar(20) DEFAULT NULL,
+  `emergency_contact_name` varchar(100) NOT NULL,
+  `emergency_contact_relationship` varchar(50) NOT NULL,
+  `emergency_contact_number` varchar(20) NOT NULL,
+  `status` enum('Pending','Under Review','Approved','Rejected','Enrolled') NOT NULL DEFAULT 'Pending',
+  `rejection_reason` varchar(255) DEFAULT NULL,
+  `reviewed_by` int(11) DEFAULT NULL,
+  `reviewed_at` datetime DEFAULT NULL,
+  `converted_student_id` int(11) DEFAULT NULL,
+  `submitted_at` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `applicant_documents`
+--
+
+CREATE TABLE `applicant_documents` (
+  `document_id` int(11) NOT NULL,
+  `applicant_id` int(11) NOT NULL,
+  `document_type_id` int(11) NOT NULL,
+  `file_path` varchar(255) NOT NULL,
+  `original_filename` varchar(255) NOT NULL,
+  `file_size` int(11) NOT NULL,
+  `mime_type` varchar(100) NOT NULL,
+  `status` enum('Pending','Verified','Rejected') NOT NULL DEFAULT 'Pending',
+  `remarks` varchar(255) DEFAULT NULL,
+  `uploaded_at` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -66,6 +130,34 @@ CREATE TABLE `class_subjects` (
   `teacher_id` int(11) DEFAULT NULL,
   `created_at` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `document_types`
+--
+
+CREATE TABLE `document_types` (
+  `document_type_id` int(11) NOT NULL,
+  `name` varchar(150) NOT NULL,
+  `description` varchar(255) DEFAULT NULL,
+  `applicant_type` enum('New Student','Transferee','All') NOT NULL DEFAULT 'All',
+  `is_required` tinyint(1) NOT NULL DEFAULT 1,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `sort_order` int(11) NOT NULL DEFAULT 0,
+  `created_at` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `document_types`
+--
+
+INSERT INTO `document_types` (`document_type_id`, `name`, `description`, `applicant_type`, `is_required`, `is_active`, `sort_order`, `created_at`) VALUES
+(1, 'Form 138 (Report Card)', 'Proof of previous academic performance / Grade 10 completion', 'All', 1, 1, 1, '2026-07-05 23:27:06'),
+(2, 'Certificate of Good Moral Character', 'Behavioral clearance from previous school', 'All', 1, 1, 2, '2026-07-05 23:27:06'),
+(3, 'PSA Birth Certificate (photocopy)', 'Identity & age verification', 'All', 1, 1, 3, '2026-07-05 23:27:06'),
+(4, '2x2 ID Photo', 'School ID, records', 'All', 1, 1, 4, '2026-07-05 23:27:06'),
+(5, 'Certificate of Transfer / Honorable Dismissal', 'Confirms clearance from the previous school', 'Transferee', 1, 1, 5, '2026-07-05 23:27:06');
 
 -- --------------------------------------------------------
 
@@ -256,6 +348,14 @@ CREATE TABLE `subjects` (
   `created_at` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `subjects`
+--
+
+INSERT INTO `subjects` (`subject_id`, `strand_id`, `subject_code`, `subject_name`, `subject_type`, `grade_level`, `semester`, `units`, `description`, `status`, `created_at`) VALUES
+(1, NULL, 'EAIDOFFICIISETCU', 'Caryn Pena', 'Applied', '12', '2nd Semester', 3.0, 'Omnis voluptatibus d', 'Inactive', '2026-07-05 03:02:35'),
+(2, NULL, '123321', 'dasdsa', 'Core', '11', '1st Semester', 2.0, 'adsdsa', 'Active', '2026-07-05 03:04:03');
+
 -- --------------------------------------------------------
 
 --
@@ -331,6 +431,24 @@ INSERT INTO `users` (`user_id`, `password_hash`, `full_name`, `email`, `role`, `
 --
 
 --
+-- Indexes for table `applicants`
+--
+ALTER TABLE `applicants`
+  ADD PRIMARY KEY (`applicant_id`),
+  ADD UNIQUE KEY `reference_number` (`reference_number`),
+  ADD KEY `desired_strand_id` (`desired_strand_id`),
+  ADD KEY `reviewed_by` (`reviewed_by`),
+  ADD KEY `converted_student_id` (`converted_student_id`);
+
+--
+-- Indexes for table `applicant_documents`
+--
+ALTER TABLE `applicant_documents`
+  ADD PRIMARY KEY (`document_id`),
+  ADD KEY `applicant_id` (`applicant_id`),
+  ADD KEY `document_type_id` (`document_type_id`);
+
+--
 -- Indexes for table `class_sections`
 --
 ALTER TABLE `class_sections`
@@ -346,6 +464,12 @@ ALTER TABLE `class_subjects`
   ADD UNIQUE KEY `uq_section_subject` (`section_id`,`subject_id`),
   ADD KEY `subject_id` (`subject_id`),
   ADD KEY `teacher_id` (`teacher_id`);
+
+--
+-- Indexes for table `document_types`
+--
+ALTER TABLE `document_types`
+  ADD PRIMARY KEY (`document_type_id`);
 
 --
 -- Indexes for table `enrollments`
@@ -436,6 +560,18 @@ ALTER TABLE `users`
 --
 
 --
+-- AUTO_INCREMENT for table `applicants`
+--
+ALTER TABLE `applicants`
+  MODIFY `applicant_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `applicant_documents`
+--
+ALTER TABLE `applicant_documents`
+  MODIFY `document_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `class_sections`
 --
 ALTER TABLE `class_sections`
@@ -446,6 +582,12 @@ ALTER TABLE `class_sections`
 --
 ALTER TABLE `class_subjects`
   MODIFY `class_subject_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `document_types`
+--
+ALTER TABLE `document_types`
+  MODIFY `document_type_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `enrollments`
@@ -493,7 +635,7 @@ ALTER TABLE `students`
 -- AUTO_INCREMENT for table `subjects`
 --
 ALTER TABLE `subjects`
-  MODIFY `subject_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `subject_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `teachers`
@@ -516,6 +658,21 @@ ALTER TABLE `users`
 --
 -- Constraints for dumped tables
 --
+
+--
+-- Constraints for table `applicants`
+--
+ALTER TABLE `applicants`
+  ADD CONSTRAINT `applicants_ibfk_1` FOREIGN KEY (`desired_strand_id`) REFERENCES `strands` (`strand_id`) ON UPDATE CASCADE,
+  ADD CONSTRAINT `applicants_ibfk_2` FOREIGN KEY (`reviewed_by`) REFERENCES `users` (`user_id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  ADD CONSTRAINT `applicants_ibfk_3` FOREIGN KEY (`converted_student_id`) REFERENCES `students` (`student_id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+--
+-- Constraints for table `applicant_documents`
+--
+ALTER TABLE `applicant_documents`
+  ADD CONSTRAINT `applicant_documents_ibfk_1` FOREIGN KEY (`applicant_id`) REFERENCES `applicants` (`applicant_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `applicant_documents_ibfk_2` FOREIGN KEY (`document_type_id`) REFERENCES `document_types` (`document_type_id`) ON UPDATE CASCADE;
 
 --
 -- Constraints for table `class_sections`
