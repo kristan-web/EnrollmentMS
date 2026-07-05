@@ -1,3 +1,19 @@
+/**
+ * Apply Wizard Controller
+ * All data (strands, school year, document checklist, and the final
+ * application + uploads) comes from the database via these endpoints —
+ * nothing is read from or written to localStorage.
+ *
+ * NOTE: adjust these two paths if your folder layout differs. They assume
+ * this file lives at .../public/controllers/apply.js and the PHP backend's
+ * Controllers/ folder lives at the project root, i.e. two levels up.
+ */
+const APPLICANTS_API_URL = "../../Controllers/applicants_controllers.php";
+const DOCUMENTS_API_URL = "../../Controllers/applicant_documents_controllers.php";
+
+const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png", "application/pdf"];
+const MAX_FILE_BYTES = 5 * 1024 * 1024; // 5MB — must match the backend's limit
+
 const form = document.getElementById("applyForm");
 const steps = Array.from(document.querySelectorAll(".step"));
 const stepperItems = Array.from(document.querySelectorAll(".stepper__item"));
@@ -21,7 +37,12 @@ const applyShell = document.getElementById("applyShell");
 
 const TOTAL_STEPS = steps.length;
 let current = 1;
-const uploads = new Map();
+const uploads = new Map(); // document_type_id -> { file, fileName, fileSize, mimeType, dataUrl }
+
+// Document checklist is applicant-type dependent and comes from the server;
+// cache it per type so switching back and forth doesn't re-fetch every time.
+const checklistCache = new Map(); // applicant_type -> array of { id, name, description, isRequired }
+let currentChecklist = [];
 
 function esc(value) {
   return String(value ?? "").replace(/[&<>"']/g, (c) => ({
@@ -44,22 +65,93 @@ function applicantType() {
 }
 
 function requirements() {
-  return ApplicantModel.requirementsFor(applicantType() || "New Student");
+  return currentChecklist;
 }
 
-for (const s of ApplicantModel.strandOptions()) {
-  const opt = document.createElement("option");
-  opt.value = s.code;
-  opt.textContent = `${s.code} — ${s.name}`;
-  opt.dataset.name = s.name;
-  strandSelect.appendChild(opt);
+function validateFile(file) {
+  if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+    return "Only JPG, PNG, or PDF files are accepted.";
+  }
+  if (file.size > MAX_FILE_BYTES) {
+    return "File exceeds the 5MB limit.";
+  }
+  return null;
 }
-schoolYearInput.value = ApplicantModel.activeSchoolYear();
+
+// ---------- Initial lookups: strands + active school year ----------
+
+async function loadStrandOptions() {
+  try {
+    const response = await fetch(`${APPLICANTS_API_URL}?action=strands`);
+    const strands = await response.json();
+    if (strands.error) throw new Error(strands.error);
+
+    strands.forEach((s) => {
+      const opt = document.createElement("option");
+      opt.value = s.strand_id;
+      opt.textContent = `${s.strand_code} — ${s.strand_name}`;
+      opt.dataset.name = s.strand_name;
+      opt.dataset.code = s.strand_code;
+      strandSelect.appendChild(opt);
+    });
+  } catch (error) {
+    console.error("Error loading strands:", error);
+    setMsg("Could not load strand options. Please refresh the page.", "is-error");
+  }
+}
+
+async function loadActiveSchoolYear() {
+  try {
+    const response = await fetch(`${APPLICANTS_API_URL}?action=school-year`);
+    const data = await response.json();
+    schoolYearInput.value = data && data.year ? data.year : "";
+  } catch (error) {
+    console.error("Error loading active school year:", error);
+  }
+}
+
+// ---------- Document checklist (Step 4) ----------
+
+async function fetchChecklist(type) {
+  if (checklistCache.has(type)) return checklistCache.get(type);
+
+  const params = new URLSearchParams({ action: "checklist", applicant_type: type });
+  const response = await fetch(`${DOCUMENTS_API_URL}?${params.toString()}`);
+  const data = await response.json();
+  if (data.error) throw new Error(data.error);
+
+  const normalized = data.map((docType) => ({
+    id: String(docType.document_type_id),
+    name: docType.name,
+    description: docType.description,
+    isRequired: docType.is_required == 1
+  }));
+  checklistCache.set(type, normalized);
+  return normalized;
+}
+
+async function loadDocList() {
+  docList.innerHTML = `<p class="doc-list__loading">Loading requirements…</p>`;
+  nextBtn.disabled = true;
+  try {
+    currentChecklist = await fetchChecklist(applicantType() || "New Student");
+    renderDocList();
+  } catch (error) {
+    console.error("Error loading document checklist:", error);
+    docList.innerHTML = `<p style="color:#c00;">Failed to load requirements: ${esc(error.message)}</p>`;
+  } finally {
+    nextBtn.disabled = false;
+  }
+}
 
 form.elements.applicantType.addEventListener("change", () => {
   const isTransferee = applicantType() === "Transferee";
   form.elements.lrn.required = isTransferee;
   lrnReq.hidden = !isTransferee;
+
+  // Requirements can differ between New Student / Transferee — drop any
+  // uploads that no longer belong to a required/optional slot for this type.
+  uploads.clear();
 });
 
 function goTo(step) {
@@ -76,7 +168,7 @@ function goTo(step) {
   stepChip.textContent = `Step ${step} of ${TOTAL_STEPS}`;
   progressBar.style.width = `${(step / TOTAL_STEPS) * 100}%`;
   setMsg("");
-  if (step === 4) renderDocList();
+  if (step === 4) loadDocList();
   if (step === 5) renderReview();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -107,8 +199,9 @@ function validateStep(step) {
 
 function slotHtml(t) {
   const file = uploads.get(t.id);
+  const isImage = file && file.mimeType && file.mimeType.startsWith("image/");
   return `<div class="doc-slot${file ? " has-file" : ""}" data-type-id="${t.id}">
-    <img class="doc-slot__thumb" alt="" ${file ? `src="${file.dataUrl}"` : "hidden"} />
+    <img class="doc-slot__thumb" alt="" ${isImage ? `src="${file.dataUrl}"` : "hidden"} />
     <div class="doc-slot__info">
       <div class="doc-slot__name">${esc(t.name)}
         <span class="tag ${t.isRequired ? "tag--required" : "tag--optional"}">${t.isRequired ? "Required" : "Optional"}</span>
@@ -118,7 +211,7 @@ function slotHtml(t) {
     </div>
     ${file ? `<span class="doc-slot__file" title="${esc(file.fileName)}" data-no-translate>${esc(file.fileName)}</span>` : ""}
     <label class="btn btn--ghost btn--sm">${file ? "Replace" : "Choose File"}
-      <input type="file" accept="image/jpeg,image/png" />
+      <input type="file" accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf" />
     </label>
     ${file ? `<button type="button" class="btn btn--ghost btn--sm" data-action="remove">Remove</button>` : ""}
   </div>`;
@@ -132,28 +225,36 @@ function handleFile(slot, file) {
   const typeId = slot.dataset.typeId;
   const errorEl = slot.querySelector(".doc-slot__error");
 
-  const error = ApplicantModel.validateFile(file);
+  const error = validateFile(file);
   if (error) {
     errorEl.textContent = error;
     errorEl.hidden = false;
     return;
   }
 
-  const reader = new FileReader();
-  reader.onload = () => {
+  const finish = (dataUrl) => {
     const type = requirements().find((t) => t.id === typeId);
     uploads.set(typeId, {
       documentTypeId: typeId,
       documentTypeName: type ? type.name : "",
+      file,
       fileName: file.name,
       fileSize: file.size,
       mimeType: file.type,
-      dataUrl: reader.result
+      dataUrl
     });
     renderDocList();
     setMsg("");
   };
-  reader.readAsDataURL(file);
+
+  // Only images get an inline preview thumbnail; PDFs just show the filename.
+  if (file.type.startsWith("image/")) {
+    const reader = new FileReader();
+    reader.onload = () => finish(reader.result);
+    reader.readAsDataURL(file);
+  } else {
+    finish(null);
+  }
 }
 
 docList.addEventListener("change", (e) => {
@@ -271,7 +372,54 @@ backBtn.addEventListener("click", () => {
   }
 });
 
-form.addEventListener("submit", (e) => {
+// ---------- Submission ----------
+
+function buildApplicantFormData(d, strandOpt) {
+  const fd = new FormData();
+  fd.append("action", "submit");
+  fd.append("applicantType", d.applicantType);
+  fd.append("lastName", d.lastName.trim());
+  fd.append("firstName", d.firstName.trim());
+  fd.append("middleName", (d.middleName || "").trim());
+  fd.append("gender", d.gender);
+  fd.append("birthDate", d.birthDate);
+  fd.append("lrn", (d.lrn || "").trim());
+  fd.append("email", d.email.trim());
+  fd.append("contact", d.contact.trim());
+  fd.append("address", d.address.trim());
+  fd.append("fatherName", (d.fatherName || "").trim());
+  fd.append("fatherContact", (d.fatherContact || "").trim());
+  fd.append("motherName", (d.motherName || "").trim());
+  fd.append("motherContact", (d.motherContact || "").trim());
+  fd.append("guardianName", (d.guardianName || "").trim());
+  fd.append("guardianRelationship", (d.guardianRelationship || "").trim());
+  fd.append("guardianContact", (d.guardianContact || "").trim());
+  fd.append("emergencyName", d.emergencyName.trim());
+  fd.append("emergencyRelationship", d.emergencyRelationship.trim());
+  fd.append("emergencyContact", d.emergencyContact.trim());
+  fd.append("desiredGradeLevel", d.gradeLevel);
+  fd.append("desiredStrandId", d.strand);
+  fd.append("schoolYear", d.schoolYear);
+  return fd;
+}
+
+async function uploadOneDocument(applicantId, referenceNumber, docTypeId, fileEntry) {
+  const fd = new FormData();
+  fd.append("action", "upload");
+  fd.append("applicant_id", applicantId);
+  fd.append("document_type_id", docTypeId);
+  fd.append("reference_number", referenceNumber);
+  fd.append("document", fileEntry.file);
+
+  const response = await fetch(DOCUMENTS_API_URL, { method: "POST", body: fd });
+  const result = await response.json();
+  if (!result.success) {
+    throw new Error(`${fileEntry.documentTypeName || "Document"}: ${result.message || "Upload failed."}`);
+  }
+  return result;
+}
+
+form.addEventListener("submit", async (e) => {
   e.preventDefault();
   if (!declaration.checked) {
     return setMsg("Please tick the declaration checkbox to confirm your information.", "is-error");
@@ -286,45 +434,40 @@ form.addEventListener("submit", (e) => {
 
   const d = Object.fromEntries(new FormData(form));
   const strandOpt = strandSelect.selectedOptions[0];
-  const data = {
-    applicantType: d.applicantType,
-    lastName: d.lastName.trim(),
-    firstName: d.firstName.trim(),
-    middleName: (d.middleName || "").trim(),
-    gender: d.gender,
-    birthDate: d.birthDate,
-    lrn: (d.lrn || "").trim(),
-    email: d.email.trim(),
-    contact: d.contact.trim(),
-    address: d.address.trim(),
-    fatherName: (d.fatherName || "").trim(),
-    fatherContact: (d.fatherContact || "").trim(),
-    motherName: (d.motherName || "").trim(),
-    motherContact: (d.motherContact || "").trim(),
-    guardianName: (d.guardianName || "").trim(),
-    guardianRelationship: (d.guardianRelationship || "").trim(),
-    guardianContact: (d.guardianContact || "").trim(),
-    emergencyName: d.emergencyName.trim(),
-    emergencyRelationship: d.emergencyRelationship.trim(),
-    emergencyContact: d.emergencyContact.trim(),
-    desiredGradeLevel: d.gradeLevel,
-    desiredStrand: d.strand,
-    desiredStrandName: strandOpt ? strandOpt.dataset.name || "" : "",
-    schoolYear: d.schoolYear
-  };
   const files = requirements()
     .filter((t) => uploads.has(t.id))
     .map((t) => uploads.get(t.id));
 
+  submitBtn.disabled = true;
+  setMsg("Submitting your application…");
+
   try {
-    const record = ApplicantModel.submitApplication(data, files);
-    refNumber.textContent = record.referenceNumber;
+    const applicantResponse = await fetch(APPLICANTS_API_URL, {
+      method: "POST",
+      body: buildApplicantFormData(d, strandOpt)
+    });
+    const applicantResult = await applicantResponse.json();
+    if (!applicantResult.success) {
+      throw new Error(applicantResult.message || "Could not submit your application.");
+    }
+
+    const { applicant_id: applicantId, reference_number: referenceNumber } = applicantResult;
+
+    setMsg("Uploading your documents…");
+    for (const fileEntry of files) {
+      await uploadOneDocument(applicantId, referenceNumber, fileEntry.documentTypeId, fileEntry);
+    }
+
+    refNumber.textContent = referenceNumber;
     wizard.hidden = true;
     successPanel.hidden = false;
     applyShell.classList.add("is-complete");
     window.scrollTo({ top: 0, behavior: "smooth" });
   } catch (err) {
-    setMsg(err.message, "is-error");
+    console.error("Error submitting application:", err);
+    setMsg(err.message || "Something went wrong while submitting. Please try again.", "is-error");
+  } finally {
+    submitBtn.disabled = false;
   }
 });
 
@@ -351,4 +494,7 @@ copyRefBtn.addEventListener("click", () => {
   }
 });
 
-goTo(1);
+(async function init() {
+  await Promise.all([loadStrandOptions(), loadActiveSchoolYear()]);
+  goTo(1);
+})();
