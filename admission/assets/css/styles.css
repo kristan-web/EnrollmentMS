@@ -369,6 +369,20 @@ body::after {
   to   { opacity: 1; transform: translateY(0); }
 }
 
+.login__portal {
+  margin: 26px 0 0;
+  font-size: 15px;
+  color: rgba(22, 36, 79, 0.65);
+  animation: rise 0.7s var(--ease) 0.3s both;
+}
+.login__portal a {
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  font-weight: 700;
+  color: var(--blue);
+  text-decoration: none;
+}
+.login__portal a:hover { text-decoration: underline; }
+
 .footer {
   position: absolute;
   bottom: 20px;
