@@ -99,9 +99,6 @@
         </select>
         <select class="filter-select" id="yearFilter">
           <option value="">All School Years</option>
-          <option value="2025-2026">2025-2026</option>
-          <option value="2026-2027" selected>2026-2027</option>
-          <option value="2027-2028">2027-2028</option>
         </select>
         <select class="filter-select" id="statusFilter">
           <option value="">Open &amp; Closed</option>
@@ -158,7 +155,7 @@
         <form id="sectionForm" class="settings-form" novalidate>
           <div class="form-row">
             <label class="field">
-              <span>Year Level</span>
+              <span>Year Level <span class="required">*</span></span>
               <select name="grade" required>
                 <option value="" disabled selected>Select year level</option>
                 <option value="11">Grade 11</option>
@@ -166,7 +163,7 @@
               </select>
             </label>
             <label class="field">
-              <span>Strand</span>
+              <span>Strand <span class="required">*</span></span>
               <select name="strand" required>
                 <option value="" disabled selected>Select strand</option>
               </select>
@@ -174,25 +171,23 @@
           </div>
           <div class="form-row">
             <label class="field">
-              <span>Section Name</span>
+              <span>Section Name <span class="required">*</span></span>
               <input type="text" name="name" placeholder="e.g. STEM 11-A" autocomplete="off" required />
             </label>
             <label class="field">
-              <span>Capacity</span>
+              <span>Capacity <span class="required">*</span></span>
               <input type="number" name="capacity" min="1" max="100" placeholder="40" required />
             </label>
           </div>
           <div class="form-row">
             <label class="field">
-              <span>School Year (A.Y)</span>
+              <span>School Year (A.Y) <span class="required">*</span></span>
               <select name="schoolYear" required>
-                <option value="2025-2026">2025-2026</option>
-                <option value="2026-2027" selected>2026-2027</option>
-                <option value="2027-2028">2027-2028</option>
+                <option value="" disabled selected>Select school year</option>
               </select>
             </label>
             <label class="field">
-              <span>Status</span>
+              <span>Status <span class="required">*</span></span>
               <select name="status" required>
                 <option value="Open" selected>Open</option>
                 <option value="Closed">Closed</option>
@@ -200,9 +195,9 @@
             </label>
           </div>
           <label class="field">
-            <span>Adviser</span>
+            <span>Adviser <span class="required">*</span></span>
             <select name="adviserId" required>
-              <option value="">— No adviser —</option>
+              <option value="" disabled selected>Select adviser</option>
             </select>
           </label>
           <p class="form-msg" id="sectionMsg" role="status"></p>
@@ -228,6 +223,14 @@
           <button type="button" class="btn btn--ghost" id="cancelDeleteBtn">Cancel</button>
           <button type="button" class="btn btn--danger" id="confirmDeleteBtn">Cancel Section</button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="loadingModal" hidden>
+    <div class="modal modal--small" role="dialog" aria-modal="true">
+      <div class="modal__body" style="text-align: center; padding: 2rem;">
+        <p>Loading...</p>
       </div>
     </div>
   </div>

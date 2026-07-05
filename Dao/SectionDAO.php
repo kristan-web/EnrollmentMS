@@ -131,6 +131,17 @@ class SectionDAO {
     //   school_year
     //   status      - Open, Closed, Cancelled
 
+    public function getAllSchoolYears() {
+        $query = "
+        SELECT school_year_id, year, status
+        FROM school_years
+        ORDER BY year DESC
+        ";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
     public function search($filters = []) {
 
         $query = "

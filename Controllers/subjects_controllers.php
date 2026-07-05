@@ -3,217 +3,177 @@
 require_once "../Dao/SubjectDAO.php";
 require_once "../Models/subjects_model.php";
 
+header("Content-Type: application/json");
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: GET, POST");
+header("Access-Control-Allow-Headers: Content-Type");
+
 $method = $_SERVER["REQUEST_METHOD"];
-$dao    = new SubjectDAO();
+$dao = new SubjectDAO();
 
 if ($method == "GET") {
+    $action = isset($_GET["action"]) ? $_GET["action"] : "list";
 
-    header("Content-Type: application/json");
+    if ($action == "list") {
+        $filters = [
+            "keyword" => isset($_GET["keyword"]) ? $_GET["keyword"] : null,
+            "subject_type" => isset($_GET["subject_type"]) ? $_GET["subject_type"] : null,
+            "grade_level" => isset($_GET["grade_level"]) ? $_GET["grade_level"] : null,
+            "semester" => isset($_GET["semester"]) ? $_GET["semester"] : null,
+            "status" => isset($_GET["status"]) ? $_GET["status"] : null,
+        ];
+        echo json_encode($dao->getAll($filters));
 
-    // action=get     -> single subject by id
-    // action=meta    -> dropdown data (subject types, grade levels, semesters, strands)
-    // action=list (default) -> filtered list of subjects
-    $action = isset($_GET["action"]) ? $_GET["action"] : (isset($_GET["id"]) ? "get" : "list");
+    } else if ($action == "lookup") {
+        echo json_encode([
+            "strands" => $dao->getAllStrands(),
+            "types" => $dao->getAllTypes(),
+            "semesters" => $dao->getAllSemesters(),
+            "grade_levels" => ['11', '12']
+        ]);
 
-    if ($action == "get") {
-
+    } else if ($action == "get") {
         $id = isset($_GET["id"]) ? $_GET["id"] : null;
-
         if (empty($id)) {
             echo json_encode(["error" => "Missing subject id"]);
             exit;
         }
-
         $subject = $dao->getById($id);
-
         if ($subject) {
             echo json_encode($subject);
         } else {
             echo json_encode(["error" => "Subject not found"]);
         }
 
-    } else if ($action == "meta") {
+    } else if ($action == "by_strand") {
+        $strandId = isset($_GET["strand_id"]) ? $_GET["strand_id"] : null;
+        if (empty($strandId)) {
+            echo json_encode(["error" => "Missing strand id"]);
+            exit;
+        }
+        echo json_encode($dao->getByStrand($strandId));
 
-        echo json_encode([
-            "subject_types" => Subject::allowedSubjectTypes(),
-            "grade_levels"  => Subject::allowedGradeLevels(),
-            "semesters"     => Subject::allowedSemesters(),
-            "strands"       => $dao->getStrands(),
-        ]);
+    } else if ($action == "by_grade") {
+        $gradeLevel = isset($_GET["grade_level"]) ? $_GET["grade_level"] : null;
+        if (empty($gradeLevel)) {
+            echo json_encode(["error" => "Missing grade level"]);
+            exit;
+        }
+        echo json_encode($dao->getByGrade($gradeLevel));
 
-    } else if ($action == "list") {
-
-        $filters = [
-            "keyword"      => isset($_GET["keyword"]) ? $_GET["keyword"] : null,
-            "subject_type" => isset($_GET["subject_type"]) ? $_GET["subject_type"] : null,
-            "grade_level"  => isset($_GET["grade_level"]) ? $_GET["grade_level"] : null,
-            "semester"     => isset($_GET["semester"]) ? $_GET["semester"] : null,
-            "strand_id"    => isset($_GET["strand_id"]) ? $_GET["strand_id"] : null,
-            "status"       => isset($_GET["status"]) ? $_GET["status"] : "Active",
-        ];
-
-        echo json_encode($dao->search($filters));
+    } else if ($action == "with_usage") {
+        echo json_encode($dao->getSubjectsWithUsage());
 
     } else {
-
         echo json_encode(["error" => "Invalid action"]);
-
     }
 
 } else if ($method == "POST") {
-
-    // action=delete  -> soft delete a subject (Active -> Inactive)
-    // action=restore -> restore a subject (Inactive -> Active)
-    // action=update  -> update existing subject (requires subject_id)
-    // action=create (default) -> insert new subject
-    $action = isset($_POST["action"]) ? $_POST["action"] : (!empty($_POST["subject_id"]) ? "update" : "create");
+    $action = isset($_POST["action"]) ? $_POST["action"] : "create";
 
     if ($action == "delete") {
-
-        $id = isset($_POST["id"]) ? $_POST["id"] : (isset($_POST["subject_id"]) ? $_POST["subject_id"] : null);
-
+        $id = isset($_POST["subject_id"]) ? $_POST["subject_id"] : null;
         if (empty($id)) {
-            echo "DELETE FAILED: missing subject id";
+            echo json_encode(["success" => false, "message" => "Missing subject id"]);
             exit;
         }
-
-        if ($dao->delete($id)) {
-            echo "DELETE SUCCESS";
-        } else {
-            echo "DELETE FAILED";
-        }
-
-    } else if ($action == "restore") {
-
-        $id = isset($_POST["id"]) ? $_POST["id"] : (isset($_POST["subject_id"]) ? $_POST["subject_id"] : null);
-
-        if (empty($id)) {
-            echo "RESTORE FAILED: missing subject id";
-            exit;
-        }
-
-        if ($dao->restore($id)) {
-            echo "RESTORE SUCCESS";
-        } else {
-            echo "RESTORE FAILED";
-        }
-
-    } else if ($action == "update") {
-
-        if (empty($_POST["subject_id"])) {
-            echo "UPDATE FAILED: missing subject_id";
-            exit;
-        }
-
-        $errors = Subject::validate($_POST, true);
-
-        if (!empty($errors)) {
-            echo "UPDATE FAILED: " . implode(" ", $errors);
-            exit;
-        }
-
-        $code = trim($_POST["subject_code"]);
-
-        if ($dao->codeExists($code, $_POST["subject_id"])) {
-            echo "UPDATE FAILED: Subject code is already in use by another subject.";
-            exit;
-        }
-
-        $subjectType = trim($_POST["subject_type"]);
-        $strandId    = ($subjectType == "Core") ? null : trim($_POST["strand_id"]);
-
-        $subject = new Subject();
-
-        $subject->setSubjectId($_POST["subject_id"]);
-        $subject->setStrandId($strandId);
-        $subject->setSubjectCode($code);
-        $subject->setSubjectName(trim($_POST["subject_name"]));
-        $subject->setSubjectType($subjectType);
-        $subject->setGradeLevel(trim($_POST["grade_level"]));
-        $subject->setSemester(trim($_POST["semester"]));
-        $subject->setUnits(trim($_POST["units"]));
-        $subject->setDescription(trim($_POST["description"] ?? ""));
-        $subject->setStatus($_POST["status"]);
 
         try {
-
-            if ($dao->update($subject)) {
-                echo "UPDATE SUCCESS";
-            } else {
-                echo "UPDATE FAILED";
-            }
-
+            $result = $dao->delete($id);
+            echo json_encode([
+                "success" => $result,
+                "message" => $result ? "Subject deactivated successfully" : "Failed to deactivate subject"
+            ]);
         } catch (PDOException $e) {
-
-            if ($e->getCode() == 23000) {
-                echo "UPDATE FAILED: Subject code is already in use by another subject.";
-            } else {
-                echo "UPDATE FAILED: A database error occurred.";
-            }
-
+            echo json_encode([
+                "success" => false,
+                "message" => "Cannot delete subject. It may be referenced by other records."
+            ]);
         }
 
-    } else if ($action == "create") {
-
-        $errors = Subject::validate($_POST, false);
+    } else if ($action == "create" || $action == "update") {
+        $errors = Subject::validate($_POST);
 
         if (!empty($errors)) {
-            echo "INSERT FAILED: " . implode(" ", $errors);
+            echo json_encode([
+                "success" => false,
+                "message" => implode(" ", $errors)
+            ]);
             exit;
         }
 
-        $code = trim($_POST["subject_code"]);
+        $subjectCode = strtoupper(trim($_POST["subject_code"]));
+        $excludeId = ($action == "update" && !empty($_POST["subject_id"])) ? $_POST["subject_id"] : null;
 
-        if ($dao->codeExists($code)) {
-            echo "INSERT FAILED: Subject code is already in use.";
+        if ($dao->isCodeTaken($subjectCode, $excludeId)) {
+            echo json_encode([
+                "success" => false,
+                "message" => "A subject with code \"$subjectCode\" already exists."
+            ]);
             exit;
         }
-
-        $subjectType = trim($_POST["subject_type"]);
-        $strandId    = ($subjectType == "Core") ? null : trim($_POST["strand_id"]);
 
         $subject = new Subject();
-
-        $subject->setStrandId($strandId);
-        $subject->setSubjectCode($code);
+        $subject->setStrandId(!empty($_POST["strand_id"]) ? $_POST["strand_id"] : null);
+        $subject->setSubjectCode($subjectCode);
         $subject->setSubjectName(trim($_POST["subject_name"]));
-        $subject->setSubjectType($subjectType);
-        $subject->setGradeLevel(trim($_POST["grade_level"]));
-        $subject->setSemester(trim($_POST["semester"]));
-        $subject->setUnits(trim($_POST["units"]));
-        $subject->setDescription(trim($_POST["description"] ?? ""));
-
-        // default value
-        $subject->setStatus("Active");
+        $subject->setSubjectType($_POST["subject_type"]);
+        $subject->setGradeLevel($_POST["grade_level"]);
+        $subject->setSemester($_POST["semester"]);
+        $subject->setUnits((float)$_POST["units"]);
+        $subject->setDescription(!empty($_POST["description"]) ? trim($_POST["description"]) : null);
+        $subject->setStatus($_POST["status"] ?? 'Active');
 
         try {
-
-            if ($dao->insert($subject)) {
-                echo "INSERT SUCCESS";
+            if ($action == "update") {
+                if (empty($_POST["subject_id"])) {
+                    echo json_encode(["success" => false, "message" => "Missing subject_id"]);
+                    exit;
+                }
+                $subject->setSubjectId($_POST["subject_id"]);
+                $result = $dao->update($subject);
+                echo json_encode([
+                    "success" => $result,
+                    "message" => $result ? "Subject updated successfully" : "Failed to update subject"
+                ]);
             } else {
-                echo "INSERT FAILED";
+                $result = $dao->insert($subject);
+                echo json_encode([
+                    "success" => $result,
+                    "message" => $result ? "Subject created successfully" : "Failed to create subject"
+                ]);
             }
-
         } catch (PDOException $e) {
+            echo json_encode([
+                "success" => false,
+                "message" => "Unable to save subject. Please check your inputs."
+            ]);
+        }
 
-            if ($e->getCode() == 23000) {
-                echo "INSERT FAILED: Subject code is already in use.";
-            } else {
-                echo "INSERT FAILED: A database error occurred.";
-            }
+    } else if ($action == "hard_delete") {
+        $id = isset($_POST["subject_id"]) ? $_POST["subject_id"] : null;
+        if (empty($id)) {
+            echo json_encode(["success" => false, "message" => "Missing subject id"]);
+            exit;
+        }
 
+        try {
+            $result = $dao->hardDelete($id);
+            echo json_encode([
+                "success" => $result,
+                "message" => $result ? "Subject deleted permanently" : "Failed to delete subject"
+            ]);
+        } catch (PDOException $e) {
+            echo json_encode([
+                "success" => false,
+                "message" => "Cannot delete subject. It may be referenced by other records."
+            ]);
         }
 
     } else {
-
-        echo "Invalid action";
-
+        echo json_encode(["error" => "Invalid action"]);
     }
 
 } else {
-
-    echo "Method not allowed";
-
+    echo json_encode(["error" => "Method not allowed"]);
 }
-
-?>

@@ -88,19 +88,25 @@
           <span aria-current="page">SHS subject</span>
         </nav>
         <h1 class="page-head__title">SHS Subject</h1>
-        <p class="page-head__desc">Manage core and specialized subjects offered across senior high school year levels.</p>
+        <p class="page-head__desc">Manage core, applied, and specialized subjects offered across senior high school year levels.</p>
       </header>
 
       <div class="toolbar">
         <select class="filter-select" id="typeFilter">
           <option value="">All Types</option>
           <option value="Core">Core</option>
+          <option value="Applied">Applied</option>
           <option value="Specialized">Specialized</option>
         </select>
         <select class="filter-select" id="gradeFilter">
           <option value="">All Year Levels</option>
           <option value="11">Grade 11</option>
           <option value="12">Grade 12</option>
+        </select>
+        <select class="filter-select" id="semesterFilter">
+          <option value="">All Semesters</option>
+          <option value="1st Semester">1st Semester</option>
+          <option value="2nd Semester">2nd Semester</option>
         </select>
         <div class="search-box">
           <svg class="search-box__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
@@ -125,6 +131,8 @@
                 <th>Unit(s)</th>
                 <th>Type</th>
                 <th>Year Level</th>
+                <th>Semester</th>
+                <th>Status</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -152,36 +160,64 @@
         <form id="subjectForm" class="settings-form" novalidate>
           <div class="form-row">
             <label class="field">
-              <span>Subject Code</span>
-              <input type="text" name="code" placeholder="e.g. STEM-GB1" autocomplete="off" maxlength="15" required />
+              <span>Subject Code <span class="required">*</span></span>
+              <input type="text" name="subject_code" placeholder="e.g. STEM-GB1" autocomplete="off" maxlength="20" required />
             </label>
             <label class="field">
-              <span>Unit(s)</span>
+              <span>Unit(s) <span class="required">*</span></span>
               <input type="number" name="units" min="1" max="10" placeholder="e.g. 2" required />
             </label>
           </div>
           <label class="field">
-            <span>Descriptive Title</span>
-            <input type="text" name="title" placeholder="e.g. General Biology 1" autocomplete="off" required />
+            <span>Descriptive Title <span class="required">*</span></span>
+            <input type="text" name="subject_name" placeholder="e.g. General Biology 1" autocomplete="off" required />
           </label>
           <div class="form-row">
             <label class="field">
-              <span>Type</span>
-              <select name="type" required>
+              <span>Type <span class="required">*</span></span>
+              <select name="subject_type" required>
                 <option value="" disabled selected>Select type</option>
                 <option value="Core">Core</option>
+                <option value="Applied">Applied</option>
                 <option value="Specialized">Specialized</option>
               </select>
             </label>
             <label class="field">
-              <span>Year Level</span>
-              <select name="grade" required>
+              <span>Year Level <span class="required">*</span></span>
+              <select name="grade_level" required>
                 <option value="" disabled selected>Select year level</option>
                 <option value="11">Grade 11</option>
                 <option value="12">Grade 12</option>
               </select>
             </label>
           </div>
+          <div class="form-row">
+            <label class="field">
+              <span>Semester <span class="required">*</span></span>
+              <select name="semester" required>
+                <option value="" disabled selected>Select semester</option>
+                <option value="1st Semester">1st Semester</option>
+                <option value="2nd Semester">2nd Semester</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Strand (Optional)</span>
+              <select name="strand_id">
+                <option value="">— All Strands (Core/Applied) —</option>
+              </select>
+            </label>
+          </div>
+          <label class="field">
+            <span>Description (Optional)</span>
+            <textarea name="description" placeholder="Brief description of the subject" rows="3"></textarea>
+          </label>
+          <label class="field">
+            <span>Status</span>
+            <select name="status">
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
+          </label>
           <p class="form-msg" id="subjectMsg" role="status"></p>
           <div class="form-actions">
             <button type="button" class="btn btn--ghost" id="cancelSubjectBtn">Cancel</button>
@@ -200,11 +236,19 @@
       </div>
       <div class="modal__body">
         <p class="archive-name" id="deleteName"></p>
-        <p class="archive-note">This permanently removes the subject. This cannot be undone.</p>
+        <p class="archive-note" id="deleteNote">This will deactivate the subject. It can be restored by changing the status to Active.</p>
         <div class="form-actions">
           <button type="button" class="btn btn--ghost" id="cancelDeleteBtn">Cancel</button>
-          <button type="button" class="btn btn--danger" id="confirmDeleteBtn">Delete</button>
+          <button type="button" class="btn btn--danger" id="confirmDeleteBtn">Deactivate</button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="loadingModal" hidden>
+    <div class="modal modal--small" role="dialog" aria-modal="true">
+      <div class="modal__body" style="text-align: center; padding: 2rem;">
+        <p>Loading...</p>
       </div>
     </div>
   </div>

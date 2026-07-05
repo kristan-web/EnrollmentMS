@@ -88,7 +88,7 @@
           <span aria-current="page">Schedule</span>
         </nav>
         <h1 class="page-head__title">Schedule</h1>
-        <p class="page-head__desc">Assign subjects to sections with days and time slots per term. Time conflicts are checked automatically, and each section's class program can be printed.</p>
+        <p class="page-head__desc">Assign subjects to sections with days and time slots per term. Time conflicts are checked automatically for sections, teachers, and rooms.</p>
       </header>
 
       <div class="toolbar">
@@ -102,7 +102,7 @@
         </select>
         <div class="search-box">
           <svg class="search-box__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-          <input type="search" id="searchInput" class="search" placeholder="Search by subject, section, or adviser..." />
+          <input type="search" id="searchInput" class="search" placeholder="Search by subject, section, or teacher..." />
           <button type="button" class="search-clear" aria-label="Clear search" hidden>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
           </button>
@@ -122,14 +122,12 @@
           <table class="data-table">
             <thead>
               <tr>
-                <th>Type</th>
-                <th>Strand</th>
-                <th>Grade / Term</th>
                 <th>Section</th>
-                <th>Adviser</th>
-                <th>Subject Code</th>
-                <th>Day(s)</th>
-                <th>Time (From – To)</th>
+                <th>Subject</th>
+                <th>Teacher</th>
+                <th>Day</th>
+                <th>Time</th>
+                <th>Room</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -157,46 +155,58 @@
         <form id="schedForm" class="settings-form" novalidate>
           <div class="form-row">
             <label class="field">
-              <span>Term</span>
-              <select name="term" required>
+              <span>Term <span class="required">*</span></span>
+              <select name="term" id="termSelect" required>
                 <option value="" disabled selected>Select term</option>
                 <option value="1st Semester">1st Semester</option>
                 <option value="2nd Semester">2nd Semester</option>
               </select>
             </label>
             <label class="field">
-              <span>Section</span>
-              <select name="sectionId" required>
+              <span>Section <span class="required">*</span></span>
+              <select name="sectionId" id="sectionSelect" required>
                 <option value="" disabled selected>Select section</option>
               </select>
             </label>
           </div>
           <label class="field">
-            <span>Subject</span>
-            <select name="subjectId" required>
-              <option value="" disabled selected>Select a section first</option>
+            <span>Class Subject <span class="required">*</span></span>
+            <select name="classSubjectId" id="classSubjectSelect" required>
+              <option value="" disabled selected>Select section first</option>
             </select>
           </label>
-          <div class="field">
-            <span>Day(s)</span>
-            <div class="day-picker" id="dayPicker">
-              <label class="day-pill"><input type="checkbox" name="days" value="Mon" /><span>Mon</span></label>
-              <label class="day-pill"><input type="checkbox" name="days" value="Tue" /><span>Tue</span></label>
-              <label class="day-pill"><input type="checkbox" name="days" value="Wed" /><span>Wed</span></label>
-              <label class="day-pill"><input type="checkbox" name="days" value="Thu" /><span>Thu</span></label>
-              <label class="day-pill"><input type="checkbox" name="days" value="Fri" /><span>Fri</span></label>
-              <label class="day-pill"><input type="checkbox" name="days" value="Sat" /><span>Sat</span></label>
-            </div>
+          <div class="form-row">
+            <label class="field">
+              <span>Day <span class="required">*</span></span>
+              <select name="dayOfWeek" id="daySelect" required>
+                <option value="" disabled selected>Select day</option>
+                <option value="Monday">Monday</option>
+                <option value="Tuesday">Tuesday</option>
+                <option value="Wednesday">Wednesday</option>
+                <option value="Thursday">Thursday</option>
+                <option value="Friday">Friday</option>
+                <option value="Saturday">Saturday</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Room <span class="required">*</span></span>
+              <select name="roomId" id="roomSelect" required>
+                <option value="" disabled selected>Select room</option>
+              </select>
+            </label>
           </div>
           <div class="form-row">
             <label class="field">
-              <span>Time From</span>
-              <input type="time" name="from" required />
+              <span>Start Time <span class="required">*</span></span>
+              <input type="time" name="startTime" id="startTime" required />
             </label>
             <label class="field">
-              <span>Time To</span>
-              <input type="time" name="to" required />
+              <span>End Time <span class="required">*</span></span>
+              <input type="time" name="endTime" id="endTime" required />
             </label>
+          </div>
+          <div id="conflictWarning" class="conflict-warning" hidden>
+            <p class="form-msg is-error" id="conflictMsg"></p>
           </div>
           <p class="form-msg" id="schedMsg" role="status"></p>
           <div class="form-actions">
@@ -244,6 +254,14 @@
           </button>
         </div>
         <div class="sched-sheet" id="printSheet"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="loadingModal" hidden>
+    <div class="modal modal--small" role="dialog" aria-modal="true">
+      <div class="modal__body" style="text-align: center; padding: 2rem;">
+        <p>Loading...</p>
       </div>
     </div>
   </div>

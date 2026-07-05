@@ -1,13 +1,17 @@
-const SCHEDULES_KEY = "ems_schedules";
-const SECTIONS_KEY = "ems_sections";
-const SUBJECTS_KEY = "ems_shs_subjects";
-const TEACHERS_KEY = "ems_teachers";
-const SY_KEY = "ems_school_years";
+const SCHEDULE_URL = "../Controllers/schedule_controllers.php";
 const PAGE_SIZE = 10;
 
-const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const DAY_LETTERS = { Mon: "M", Tue: "T", Wed: "W", Thu: "Th", Fri: "F", Sat: "S" };
+const DAYS = {
+    'Monday': 'Mon',
+    'Tuesday': 'Tue',
+    'Wednesday': 'Wed',
+    'Thursday': 'Thu',
+    'Friday': 'Fri',
+    'Saturday': 'Sat',
+    'Sunday': 'Sun'
+};
 
+// DOM Elements
 const searchInput = document.getElementById("searchInput");
 const termFilter = document.getElementById("termFilter");
 const sectionFilter = document.getElementById("sectionFilter");
@@ -40,498 +44,739 @@ const printTerm = document.getElementById("printTerm");
 const printBtn = document.getElementById("printBtn");
 const printSheet = document.getElementById("printSheet");
 
-let schedules = load();
+// State
+let schedules = [];
+let classSubjects = [];
+let sections = [];
+let rooms = [];
+let teachers = [];
 let editingId = null;
 let deletingId = null;
 let currentPage = 1;
 
-function loadJson(key) {
-  try {
-    return JSON.parse(localStorage.getItem(key)) || [];
-  } catch {
-    return [];
-  }
-}
-
-function load() {
-  return loadJson(SCHEDULES_KEY);
-}
-
-function persist() {
-  localStorage.setItem(SCHEDULES_KEY, JSON.stringify(schedules));
-}
-
+// Helper Functions
 function esc(value) {
-  return String(value ?? "").replace(/[&<>"']/g, (c) => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#39;"
-  }[c]));
+    return String(value ?? "").replace(/[&<>"']/g, (c) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+    }[c]));
 }
 
-function sections() {
-  return loadJson(SECTIONS_KEY);
-}
-
-function subjects() {
-  return loadJson(SUBJECTS_KEY);
-}
-
-function teacherName(t) {
-  return `${t.lastName}, ${t.firstName}`;
-}
-
-function adviserName(sec) {
-  if (!sec || !sec.adviserId) return "—";
-  const t = loadJson(TEACHERS_KEY).find((x) => x.id === sec.adviserId);
-  return t ? teacherName(t) : "—";
-}
-
-function activeSchoolYear() {
-  const sy = loadJson(SY_KEY).find((y) => y.status === "active");
-  return sy ? sy.year : "";
-}
-
-function fmtTime(t) {
-  const [h, m] = (t || "0:0").split(":").map(Number);
-  const suffix = h >= 12 ? "PM" : "AM";
-  const hour = h % 12 || 12;
-  return `${hour}:${String(m).padStart(2, "0")} ${suffix}`;
-}
-
-function shortDays(days) {
-  return DAYS.filter((d) => days.includes(d)).map((d) => DAY_LETTERS[d]).join("");
-}
-
-function fullDays(days) {
-  return DAYS.filter((d) => days.includes(d)).join(", ");
-}
-
-function shortTerm(term) {
-  return term === "1st Semester" ? "1st Sem" : "2nd Sem";
-}
-
-function overlaps(a, b) {
-  return a.from < b.to && b.from < a.to;
-}
-
-function sharesDay(a, b) {
-  return a.days.some((d) => b.days.includes(d));
+function debounce(fn, delay) {
+    let timer = null;
+    return (...args) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn(...args), delay);
+    };
 }
 
 function setMsg(text, type) {
-  schedMsg.textContent = text;
-  schedMsg.classList.remove("is-error", "is-success");
-  if (type) schedMsg.classList.add(type);
+    schedMsg.textContent = text;
+    schedMsg.classList.remove("is-error", "is-success");
+    if (type) schedMsg.classList.add(type);
 }
 
+function showLoading(show) {
+    const loadingModal = document.getElementById("loadingModal");
+    if (loadingModal) {
+        loadingModal.hidden = !show;
+    }
+}
+
+function getFullName(first, last) {
+    if (!first && !last) return "—";
+    return `${last || ''}${last && first ? ', ' : ''}${first || ''}`.trim() || "—";
+}
+
+function formatTime(time) {
+    if (!time) return "—";
+    const [h, m] = time.split(":").map(Number);
+    const suffix = h >= 12 ? "PM" : "AM";
+    const hour = h % 12 || 12;
+    return `${hour}:${String(m).padStart(2, "0")} ${suffix}`;
+}
+
+// ---------- API Helpers ----------
+async function apiGet(params) {
+    const cleanParams = {};
+    for (const [key, value] of Object.entries(params)) {
+        if (value !== null && value !== undefined && value !== '' && value !== 'null') {
+            cleanParams[key] = value;
+        }
+    }
+    
+    const url = `${SCHEDULE_URL}?${new URLSearchParams(cleanParams).toString()}`;
+    console.log("Fetching:", url);
+    
+    try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        console.log("Response data:", data);
+        return data;
+    } catch (e) {
+        console.error("API Error:", e);
+        throw e;
+    }
+}
+
+async function apiPost(params) {
+    const res = await fetch(SCHEDULE_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams(params).toString()
+    });
+    const text = await res.text();
+    console.log("Response:", text);
+    try {
+        return JSON.parse(text);
+    } catch {
+        if (text.includes("SUCCESS") || text.includes("success")) {
+            return { success: true, message: text };
+        }
+        return { success: false, message: text || "Unknown error" };
+    }
+}
+
+// ---------- Load Data ----------
+async function loadLookupData() {
+    showLoading(true);
+    try {
+        const data = await apiGet({ action: "lookup" });
+        sections = data.sections || [];
+        rooms = data.rooms || [];
+        teachers = data.teachers || [];
+        classSubjects = data.class_subjects || [];
+        populateDropdowns();
+        return data;
+    } catch (e) {
+        console.error("Failed to load lookup data:", e);
+        throw e;
+    } finally {
+        showLoading(false);
+    }
+}
+
+function populateDropdowns() {
+    // Populate section filter
+    if (sectionFilter) {
+        let html = '<option value="">All Sections</option>';
+        sections.forEach(s => {
+            html += `<option value="${s.section_id}">${esc(s.section_name)} (Grade ${s.grade_level})</option>`;
+        });
+        sectionFilter.innerHTML = html;
+    }
+
+    // Populate section dropdown in modal
+    const sectionSelect = document.getElementById("sectionSelect");
+    if (sectionSelect) {
+        let html = '<option value="" disabled selected>Select section</option>';
+        sections.forEach(s => {
+            html += `<option value="${s.section_id}">${esc(s.section_name)} (Grade ${s.grade_level})</option>`;
+        });
+        sectionSelect.innerHTML = html;
+    }
+
+    // Populate room dropdown in modal
+    const roomSelect = document.getElementById("roomSelect");
+    if (roomSelect) {
+        let html = '<option value="" disabled selected>Select room</option>';
+        rooms.forEach(r => {
+            html += `<option value="${r.room_id}">${esc(r.room_name)} (${esc(r.building)}) - Capacity: ${r.capacity}</option>`;
+        });
+        roomSelect.innerHTML = html;
+    }
+}
+
+function populateClassSubjects(selected) {
+    const sectionId = document.getElementById("sectionSelect")?.value;
+    const term = document.getElementById("termSelect")?.value;
+    const select = document.getElementById("classSubjectSelect");
+    
+    if (!sectionId) {
+        select.innerHTML = '<option value="" disabled selected>Select section first</option>';
+        return;
+    }
+
+    const filtered = classSubjects.filter(cs => 
+        cs.section_id == sectionId && 
+        (!term || cs.semester === term)
+    );
+
+    if (!filtered.length) {
+        select.innerHTML = '<option value="" disabled selected>No subjects found for this section</option>';
+        return;
+    }
+
+    let html = '<option value="" disabled selected>Select subject</option>';
+    filtered.forEach(cs => {
+        const teacherName = cs.teacher_first_name ? getFullName(cs.teacher_first_name, cs.teacher_last_name) : "No teacher assigned";
+        html += `<option value="${cs.class_subject_id}">${esc(cs.subject_code)} - ${esc(cs.subject_name)} (${esc(cs.subject_type)}) [${teacherName}]</option>`;
+    });
+    select.innerHTML = html;
+    
+    if (selected) {
+        select.value = selected;
+    }
+}
+
+// ---------- Load Schedules ----------
+async function loadSchedules() {
+    const filters = {};
+    
+    if (searchInput && searchInput.value.trim()) {
+        filters.keyword = searchInput.value.trim();
+    }
+    if (termFilter && termFilter.value) {
+        filters.term = termFilter.value;
+    }
+    if (sectionFilter && sectionFilter.value) {
+        filters.section_id = sectionFilter.value;
+    }
+    
+    filters.action = "list";
+
+    console.log("Loading schedules with filters:", filters);
+
+    showLoading(true);
+    try {
+        const response = await apiGet(filters);
+        schedules = Array.isArray(response) ? response : [];
+        console.log("Schedules loaded:", schedules.length);
+        render();
+    } catch (e) {
+        console.error("Failed to load schedules:", e);
+        schedules = [];
+        render();
+    } finally {
+        showLoading(false);
+    }
+}
+
+// ---------- Render ----------
 function pageList(current, pages) {
-  if (pages <= 7) return Array.from({ length: pages }, (_, i) => i + 1);
-  const wanted = [...new Set([1, 2, current - 1, current, current + 1, pages - 1, pages])]
-    .filter((p) => p >= 1 && p <= pages)
-    .sort((a, b) => a - b);
-  const out = [];
-  let prev = 0;
-  for (const p of wanted) {
-    if (p - prev > 1) out.push("…");
-    out.push(p);
-    prev = p;
-  }
-  return out;
+    if (pages <= 7) return Array.from({ length: pages }, (_, i) => i + 1);
+    const wanted = [...new Set([1, 2, current - 1, current, current + 1, pages - 1, pages])]
+        .filter((p) => p >= 1 && p <= pages)
+        .sort((a, b) => a - b);
+    const out = [];
+    let prev = 0;
+    for (const p of wanted) {
+        if (p - prev > 1) out.push("…");
+        out.push(p);
+        prev = p;
+    }
+    return out;
 }
 
 function renderPagination(total, pages, start, shown) {
-  if (total <= PAGE_SIZE) {
-    pagination.hidden = true;
-    return;
-  }
-  pagination.hidden = false;
-  pageInfo.textContent = `Showing ${start + 1}–${start + shown} of ${total}`;
-  const parts = [
-    `<button class="page-btn" data-page="${currentPage - 1}" ${currentPage === 1 ? "disabled" : ""} aria-label="Previous page">&lsaquo;</button>`
-  ];
-  for (const p of pageList(currentPage, pages)) {
-    parts.push(p === "…"
-      ? '<span class="page-ellipsis">…</span>'
-      : `<button class="page-btn${p === currentPage ? " is-current" : ""}" data-page="${p}">${p}</button>`);
-  }
-  parts.push(
-    `<button class="page-btn" data-page="${currentPage + 1}" ${currentPage === pages ? "disabled" : ""} aria-label="Next page">&rsaquo;</button>`
-  );
-  pageControls.innerHTML = parts.join("");
-}
-
-function fillSectionFilter() {
-  const opts = sections()
-    .slice()
-    .sort((a, b) => a.name.localeCompare(b.name))
-    .map((s) => `<option value="${esc(s.id)}">${esc(s.name)}</option>`)
-    .join("");
-  sectionFilter.innerHTML = '<option value="">All Sections</option>' + opts;
+    if (total <= PAGE_SIZE) {
+        pagination.hidden = true;
+        return;
+    }
+    pagination.hidden = false;
+    pageInfo.textContent = `Showing ${start + 1}–${start + shown} of ${total}`;
+    const parts = [
+        `<button class="page-btn" data-page="${currentPage - 1}" ${currentPage === 1 ? "disabled" : ""} aria-label="Previous page">&lsaquo;</button>`
+    ];
+    for (const p of pageList(currentPage, pages)) {
+        parts.push(p === "…"
+            ? '<span class="page-ellipsis">…</span>'
+            : `<button class="page-btn${p === currentPage ? " is-current" : ""}" data-page="${p}">${p}</button>`);
+    }
+    parts.push(
+        `<button class="page-btn" data-page="${currentPage + 1}" ${currentPage === pages ? "disabled" : ""} aria-label="Next page">&rsaquo;</button>`
+    );
+    pageControls.innerHTML = parts.join("");
 }
 
 function render() {
-  const q = searchInput.value.trim().toLowerCase();
-  const term = termFilter.value;
-  const sectionId = sectionFilter.value;
-  const secList = sections();
-  const subList = subjects();
-  const teachers = loadJson(TEACHERS_KEY);
+    const total = schedules.length;
+    const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+    if (currentPage > pages) currentPage = pages;
+    const start = (currentPage - 1) * PAGE_SIZE;
+    const pageItems = schedules.slice(start, start + PAGE_SIZE);
 
-  const enriched = schedules.map((entry) => {
-    const sec = secList.find((s) => s.id === entry.sectionId);
-    const sub = subList.find((s) => s.id === entry.subjectId);
-    const adviser = sec && sec.adviserId ? teachers.find((t) => t.id === sec.adviserId) : null;
-    return { entry, sec, sub, adviser };
-  });
+    if (pageItems.length === 0) {
+        schedRows.innerHTML = "";
+        emptyState.hidden = false;
+        const hasFilters = (searchInput && searchInput.value.trim()) || 
+                          (termFilter && termFilter.value) || 
+                          (sectionFilter && sectionFilter.value);
+        emptyState.textContent = hasFilters
+            ? "No schedules match your filters."
+            : 'No schedules yet. Click "Add Schedule" to get started.';
+        pagination.hidden = true;
+        return;
+    }
 
-  const list = enriched
-    .filter(({ entry, sec, sub, adviser }) => {
-      if (term && entry.term !== term) return false;
-      if (sectionId && entry.sectionId !== sectionId) return false;
-      if (!q) return true;
-      return (
-        (sub && (sub.code.toLowerCase().includes(q) || sub.title.toLowerCase().includes(q))) ||
-        (sec && (sec.name.toLowerCase().includes(q) || (sec.strand || "").toLowerCase().includes(q))) ||
-        (adviser && teacherName(adviser).toLowerCase().includes(q))
-      );
-    })
-    .sort((a, b) => {
-      const nameA = a.sec ? a.sec.name : "";
-      const nameB = b.sec ? b.sec.name : "";
-      return nameA.localeCompare(nameB) ||
-        a.entry.term.localeCompare(b.entry.term) ||
-        DAYS.indexOf(a.entry.days[0]) - DAYS.indexOf(b.entry.days[0]) ||
-        a.entry.from.localeCompare(b.entry.from);
-    });
+    emptyState.hidden = true;
 
-  const total = list.length;
-  const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  if (currentPage > pages) currentPage = pages;
-  const start = (currentPage - 1) * PAGE_SIZE;
-  const pageItems = list.slice(start, start + PAGE_SIZE);
+    schedRows.innerHTML = pageItems.map((s) => {
+        const teacherName = s.teacher_first_name ? getFullName(s.teacher_first_name, s.teacher_last_name) : "—";
+        const dayShort = DAYS[s.day_of_week] || s.day_of_week;
+        const startTime = formatTime(s.start_time);
+        const endTime = formatTime(s.end_time);
 
-  schedRows.innerHTML = pageItems.map(({ entry, sec, sub, adviser }) => `<tr>
-    <td>${sub ? `<span class="badge ${sub.type === "Core" ? "badge--core" : "badge--specialized"}">${esc(sub.type)}</span>` : "—"}</td>
-    <td>${sec ? esc(sec.strand || "—") : "—"}</td>
-    <td>
-      <span class="cell-name">${sec ? "Grade " + esc(sec.grade) : "—"}</span>
-      <span class="cell-sub">${esc(shortTerm(entry.term))}</span>
-    </td>
-    <td>${sec ? esc(sec.name) : "—"}</td>
-    <td>${adviser ? esc(teacherName(adviser)) : "—"}</td>
-    <td>
-      ${sub ? `<span class="chip">${esc(sub.code)}</span><span class="cell-sub">${esc(sub.title)}</span>` : "—"}
-    </td>
-    <td><span class="chip" title="${esc(fullDays(entry.days))}">${esc(shortDays(entry.days))}</span></td>
-    <td>${esc(fmtTime(entry.from))} – ${esc(fmtTime(entry.to))}</td>
-    <td>
-      <div class="row-actions">
-        <button class="btn btn--ghost btn--sm" data-action="edit" data-id="${entry.id}">Edit</button>
-        <button class="btn btn--danger btn--sm" data-action="delete" data-id="${entry.id}">Delete</button>
-      </div>
-    </td>
-  </tr>`).join("");
-
-  emptyState.hidden = total > 0;
-  emptyState.textContent = q || term || sectionId
-    ? "No schedules match your filters."
-    : 'No schedules yet. Click "Add Schedule" to get started.';
-
-  renderPagination(total, pages, start, pageItems.length);
-}
-
-function fillModalSections(selected) {
-  const select = schedForm.elements.sectionId;
-  const secList = sections().slice().sort((a, b) => a.name.localeCompare(b.name));
-  if (!secList.length) {
-    select.innerHTML = '<option value="" disabled selected>No sections yet — add sections first</option>';
-    return;
-  }
-  select.innerHTML = '<option value="" disabled>Select section</option>' +
-    secList.map((s) => `<option value="${esc(s.id)}">${esc(s.name)} (Grade ${esc(s.grade)} · ${esc(s.strand)})</option>`).join("");
-  select.value = selected || "";
-}
-
-function fillModalSubjects(selected) {
-  const select = schedForm.elements.subjectId;
-  const sec = sections().find((s) => s.id === schedForm.elements.sectionId.value);
-  if (!sec) {
-    select.innerHTML = '<option value="" disabled selected>Select a section first</option>';
-    return;
-  }
-  const subList = subjects()
-    .filter((s) => s.grade === sec.grade)
-    .sort((a, b) => a.code.localeCompare(b.code));
-  if (!subList.length) {
-    select.innerHTML = `<option value="" disabled selected>No Grade ${esc(sec.grade)} subjects — add SHS subjects first</option>`;
-    return;
-  }
-  select.innerHTML = '<option value="" disabled>Select subject</option>' +
-    subList.map((s) => `<option value="${esc(s.id)}">${esc(s.code)} — ${esc(s.title)} (${esc(s.type)})</option>`).join("");
-  select.value = selected || "";
-  if (select.value !== (selected || "")) select.selectedIndex = 0;
-}
-
-function setDays(days) {
-  schedForm.querySelectorAll('input[name="days"]').forEach((box) => {
-    box.checked = days.includes(box.value);
-  });
-}
-
-function openSchedModal(entry) {
-  editingId = entry ? entry.id : null;
-  modalTitle.textContent = entry ? "Edit Schedule" : "Add Schedule";
-  schedForm.reset();
-  setMsg("");
-  fillModalSections(entry ? entry.sectionId : "");
-  fillModalSubjects(entry ? entry.subjectId : "");
-  if (entry) {
-    schedForm.elements.term.value = entry.term;
-    setDays(entry.days);
-    schedForm.elements.from.value = entry.from;
-    schedForm.elements.to.value = entry.to;
-  } else {
-    schedForm.elements.term.selectedIndex = 0;
-    schedForm.elements.from.value = "07:30";
-    schedForm.elements.to.value = "08:30";
-  }
-  schedModal.hidden = false;
-  schedForm.elements.term.focus();
-}
-
-function findConflict(candidate) {
-  return schedules.find((other) => {
-    if (other.id === editingId) return false;
-    if (other.sectionId !== candidate.sectionId) return false;
-    if (other.term !== candidate.term) return false;
-    if (!sharesDay(other, candidate)) return false;
-    return overlaps(other, candidate);
-  });
-}
-
-function buildSheet() {
-  const sec = sections().find((s) => s.id === printSection.value);
-  const term = printTerm.value;
-  if (!sec) {
-    return '<p class="empty">No section selected. Add sections and schedules first.</p>';
-  }
-  const subList = subjects();
-  const entries = schedules
-    .filter((e) => e.sectionId === sec.id && e.term === term)
-    .sort((a, b) => a.from.localeCompare(b.from) || DAYS.indexOf(a.days[0]) - DAYS.indexOf(b.days[0]));
-
-  const sy = activeSchoolYear();
-  const meta = `
-    <div class="sheet-meta">
-      <div><span class="sheet-meta__label">Section</span><strong>${esc(sec.name)}</strong></div>
-      <div><span class="sheet-meta__label">Strand</span><strong>${esc(sec.strand || "—")}</strong></div>
-      <div><span class="sheet-meta__label">Year Level</span><strong>Grade ${esc(sec.grade)}</strong></div>
-      <div><span class="sheet-meta__label">Term</span><strong>${esc(term)}</strong></div>
-      <div><span class="sheet-meta__label">Adviser</span><strong>${esc(adviserName(sec))}</strong></div>
-      <div><span class="sheet-meta__label">School Year</span><strong>${sy ? "A.Y " + esc(sy) : "—"}</strong></div>
-    </div>`;
-
-  let body;
-  if (!entries.length) {
-    body = '<p class="empty">No schedule entries for this section and term yet.</p>';
-  } else {
-    const seen = new Set();
-    let totalUnits = 0;
-    const rows = entries.map((e) => {
-      const sub = subList.find((s) => s.id === e.subjectId);
-      if (sub && !seen.has(sub.id)) {
-        seen.add(sub.id);
-        totalUnits += Number(sub.units) || 0;
-      }
-      return `<tr>
-        <td>${sub ? esc(sub.code) : "—"}</td>
-        <td>${sub ? esc(sub.title) : "—"}</td>
-        <td>${sub ? esc(sub.type) : "—"}</td>
-        <td>${sub ? esc(sub.units) : "—"}</td>
-        <td>${esc(fullDays(e.days))}</td>
-        <td>${esc(fmtTime(e.from))} – ${esc(fmtTime(e.to))}</td>
-      </tr>`;
+        return `<tr>
+            <td><span class="cell-name">${esc(s.section_name)}</span></td>
+            <td>
+                <span class="chip">${esc(s.subject_code)}</span>
+                <span class="cell-sub">${esc(s.subject_name)}</span>
+            </td>
+            <td>${esc(teacherName)}</td>
+            <td><span class="chip">${esc(dayShort)}</span></td>
+            <td>${esc(startTime)} – ${esc(endTime)}</td>
+            <td>${esc(s.room_name)}</td>
+            <td>
+                <div class="row-actions">
+                    <button class="btn btn--ghost btn--sm" data-action="edit" data-id="${s.schedule_id}">Edit</button>
+                    <button class="btn btn--danger btn--sm" data-action="delete" data-id="${s.schedule_id}">Delete</button>
+                </div>
+            </td>
+        </tr>`;
     }).join("");
-    body = `<table class="sheet-table">
-      <thead>
-        <tr>
-          <th>Subject Code</th>
-          <th>Descriptive Title</th>
-          <th>Type</th>
-          <th>Unit(s)</th>
-          <th>Day(s)</th>
-          <th>Time</th>
-        </tr>
-      </thead>
-      <tbody>${rows}</tbody>
-      <tfoot>
-        <tr>
-          <td colspan="3">Total Units</td>
-          <td>${totalUnits}</td>
-          <td colspan="2"></td>
-        </tr>
-      </tfoot>
-    </table>`;
-  }
 
-  return `
-    <div class="sched-sheet__head">
-      <h3>Enrollment Management System</h3>
-      <p>Class Program${sy ? " · A.Y " + esc(sy) : ""}</p>
-    </div>
-    ${meta}
-    ${body}`;
+    renderPagination(total, pages, start, pageItems.length);
 }
 
-function refreshSheet() {
-  printSheet.innerHTML = buildSheet();
+// ---------- Check Conflicts ----------
+async function checkConflicts() {
+    const classSubjectId = document.getElementById("classSubjectSelect")?.value;
+    const dayOfWeek = document.getElementById("daySelect")?.value;
+    const startTime = document.getElementById("startTime")?.value;
+    const endTime = document.getElementById("endTime")?.value;
+    const roomId = document.getElementById("roomSelect")?.value;
+
+    const conflictWarning = document.getElementById("conflictWarning");
+    const conflictMsg = document.getElementById("conflictMsg");
+
+    if (!classSubjectId || !dayOfWeek || !startTime || !endTime || !roomId) {
+        conflictWarning.hidden = true;
+        return;
+    }
+
+    // Get the class subject details
+    const cs = classSubjects.find(c => c.class_subject_id == classSubjectId);
+    if (!cs) return;
+
+    const params = {
+        action: "check_conflicts",
+        section_id: cs.section_id,
+        teacher_id: cs.teacher_id || '',
+        room_id: roomId,
+        day_of_week: dayOfWeek,
+        start_time: startTime,
+        end_time: endTime
+    };
+
+    if (editingId) {
+        params.exclude_id = editingId;
+    }
+
+    try {
+        const conflicts = await apiGet(params);
+        let conflictMessages = [];
+
+        if (conflicts.section) {
+            conflictMessages.push("This section already has a class at this time.");
+        }
+        if (conflicts.teacher) {
+            conflictMessages.push("This teacher is already assigned to another class at this time.");
+        }
+        if (conflicts.room) {
+            conflictMessages.push("This room is already occupied at this time.");
+        }
+
+        if (conflictMessages.length > 0) {
+            conflictWarning.hidden = false;
+            conflictMsg.textContent = conflictMessages.join(" ");
+            return false;
+        } else {
+            conflictWarning.hidden = true;
+            return true;
+        }
+    } catch (e) {
+        console.error("Error checking conflicts:", e);
+        return true;
+    }
 }
 
-function openPrintModal() {
-  const secList = sections().slice().sort((a, b) => a.name.localeCompare(b.name));
-  printSection.innerHTML = secList.length
-    ? secList.map((s) => `<option value="${esc(s.id)}">${esc(s.name)}</option>`).join("")
-    : '<option value="">No sections</option>';
-  const filtered = sectionFilter.value;
-  if (filtered) printSection.value = filtered;
-  if (termFilter.value) printTerm.value = termFilter.value;
-  refreshSheet();
-  printModal.hidden = false;
+// ---------- Modal Functions ----------
+async function openSchedModal(s) {
+    await loadLookupData();
+    
+    editingId = s ? s.schedule_id : null;
+    modalTitle.textContent = s ? "Edit Schedule" : "Add Schedule";
+    schedForm.reset();
+    setMsg("");
+    document.getElementById("conflictWarning").hidden = true;
+
+    // Set term
+    const termSelect = document.getElementById("termSelect");
+    if (s) {
+        termSelect.value = s.semester || "";
+    } else {
+        termSelect.selectedIndex = 0;
+    }
+
+    // Set section and populate subjects
+    const sectionSelect = document.getElementById("sectionSelect");
+    if (s) {
+        sectionSelect.value = s.section_id;
+    } else {
+        sectionSelect.selectedIndex = 0;
+    }
+    populateClassSubjects(s ? s.class_subject_id : null);
+
+    // Set other fields
+    if (s) {
+        document.getElementById("daySelect").value = s.day_of_week || "";
+        document.getElementById("roomSelect").value = s.room_id || "";
+        document.getElementById("startTime").value = s.start_time || "";
+        document.getElementById("endTime").value = s.end_time || "";
+    } else {
+        document.getElementById("startTime").value = "08:00";
+        document.getElementById("endTime").value = "09:00";
+    }
+
+    schedModal.hidden = false;
 }
 
 function hideModals() {
-  schedModal.hidden = true;
-  deleteModal.hidden = true;
-  printModal.hidden = true;
-  document.body.classList.remove("print-sheet");
+    schedModal.hidden = true;
+    deleteModal.hidden = true;
+    printModal.hidden = true;
+    document.body.classList.remove("print-sheet");
 }
 
-searchInput.addEventListener("input", () => {
-  currentPage = 1;
-  render();
-});
-[termFilter, sectionFilter].forEach((el) => {
-  el.addEventListener("change", () => {
-    currentPage = 1;
-    render();
-  });
-});
-addSchedBtn.addEventListener("click", () => openSchedModal());
-printPreviewBtn.addEventListener("click", openPrintModal);
-closeSchedModal.addEventListener("click", hideModals);
-cancelSchedBtn.addEventListener("click", hideModals);
-closeDeleteModal.addEventListener("click", hideModals);
-cancelDeleteBtn.addEventListener("click", hideModals);
-closePrintModal.addEventListener("click", hideModals);
+// ---------- Print Functions ----------
+function buildSheet() {
+    const sectionId = printSection.value;
+    const term = printTerm.value;
+    
+    if (!sectionId) {
+        return '<p class="empty">No section selected.</p>';
+    }
 
-schedForm.elements.sectionId.addEventListener("change", () => fillModalSubjects(""));
+    const section = sections.find(s => s.section_id == sectionId);
+    const sectionSchedules = schedules.filter(s => s.section_id == sectionId && s.semester === term);
 
-[printSection, printTerm].forEach((el) => el.addEventListener("change", refreshSheet));
+    if (!sectionSchedules.length) {
+        return `<p class="empty">No schedules found for ${section ? esc(section.section_name) : 'this section'} - ${esc(term)}.</p>`;
+    }
 
-printBtn.addEventListener("click", () => {
-  document.body.classList.add("print-sheet");
-  window.print();
+    // Group by day
+    const grouped = {};
+    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    days.forEach(d => { grouped[d] = []; });
+    sectionSchedules.forEach(s => {
+        if (grouped[s.day_of_week]) {
+            grouped[s.day_of_week].push(s);
+        }
+    });
+
+    let tableRows = '';
+    days.forEach(day => {
+        const items = grouped[day] || [];
+        if (items.length) {
+            items.sort((a, b) => a.start_time.localeCompare(b.start_time));
+            items.forEach(s => {
+                const teacherName = s.teacher_first_name ? getFullName(s.teacher_first_name, s.teacher_last_name) : "—";
+                tableRows += `<tr>
+                    <td>${esc(DAYS[day] || day)}</td>
+                    <td>${esc(s.subject_code)}</td>
+                    <td>${esc(s.subject_name)}</td>
+                    <td>${esc(teacherName)}</td>
+                    <td>${esc(formatTime(s.start_time))} – ${esc(formatTime(s.end_time))}</td>
+                    <td>${esc(s.room_name)}</td>
+                </tr>`;
+            });
+        }
+    });
+
+    if (!tableRows) {
+        return `<p class="empty">No schedules found for ${section ? esc(section.section_name) : 'this section'} - ${esc(term)}.</p>`;
+    }
+
+    return `
+        <div class="sheet-header">
+            <h3>Class Program</h3>
+            <p><strong>Section:</strong> ${esc(section?.section_name || '')} | <strong>Grade:</strong> ${esc(section?.grade_level || '')} | <strong>Term:</strong> ${esc(term)}</p>
+        </div>
+        <table class="sheet-table">
+            <thead>
+                <tr>
+                    <th>Day</th>
+                    <th>Subject Code</th>
+                    <th>Subject Title</th>
+                    <th>Teacher</th>
+                    <th>Time</th>
+                    <th>Room</th>
+                </tr>
+            </thead>
+            <tbody>${tableRows}</tbody>
+        </table>
+    `;
+}
+
+function refreshSheet() {
+    printSheet.innerHTML = buildSheet();
+}
+
+function openPrintModal() {
+    // Populate section dropdown
+    let html = '<option value="">Select section</option>';
+    sections.forEach(s => {
+        html += `<option value="${s.section_id}">${esc(s.section_name)} (Grade ${s.grade_level})</option>`;
+    });
+    printSection.innerHTML = html;
+
+    // Set default term
+    if (termFilter && termFilter.value) {
+        printTerm.value = termFilter.value;
+    }
+
+    // Set default section
+    if (sectionFilter && sectionFilter.value) {
+        printSection.value = sectionFilter.value;
+    }
+
+    refreshSheet();
+    printModal.hidden = false;
+}
+
+// ---------- Event Listeners ----------
+// Search
+if (searchInput) {
+    searchInput.addEventListener("input", debounce(() => {
+        currentPage = 1;
+        loadSchedules();
+    }, 300));
+}
+
+// Filters
+[termFilter, sectionFilter].forEach(filter => {
+    if (filter) {
+        filter.addEventListener("change", () => {
+            currentPage = 1;
+            loadSchedules();
+        });
+    }
 });
+
+// Add Schedule Button
+if (addSchedBtn) {
+    addSchedBtn.addEventListener("click", () => openSchedModal());
+}
+
+// Print Preview Button
+if (printPreviewBtn) {
+    printPreviewBtn.addEventListener("click", openPrintModal);
+}
+
+// Modal Close Buttons
+if (closeSchedModal) closeSchedModal.addEventListener("click", hideModals);
+if (cancelSchedBtn) cancelSchedBtn.addEventListener("click", hideModals);
+if (closeDeleteModal) closeDeleteModal.addEventListener("click", hideModals);
+if (cancelDeleteBtn) cancelDeleteBtn.addEventListener("click", hideModals);
+if (closePrintModal) closePrintModal.addEventListener("click", hideModals);
+
+// Section/Subject selection in modal
+const sectionSelect = document.getElementById("sectionSelect");
+if (sectionSelect) {
+    sectionSelect.addEventListener("change", () => {
+        populateClassSubjects(null);
+        document.getElementById("conflictWarning").hidden = true;
+    });
+}
+
+const termSelect = document.getElementById("termSelect");
+if (termSelect) {
+    termSelect.addEventListener("change", () => {
+        populateClassSubjects(null);
+        document.getElementById("conflictWarning").hidden = true;
+    });
+}
+
+// Check conflicts on change
+['daySelect', 'roomSelect', 'startTime', 'endTime', 'classSubjectSelect'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+        el.addEventListener("change", () => {
+            checkConflicts();
+        });
+        if (id === 'startTime' || id === 'endTime') {
+            el.addEventListener("input", () => {
+                checkConflicts();
+            });
+        }
+    }
+});
+
+// Pagination
+if (pageControls) {
+    pageControls.addEventListener("click", (e) => {
+        const btn = e.target.closest("button[data-page]");
+        if (!btn || btn.disabled) return;
+        currentPage = Number(btn.dataset.page);
+        render();
+    });
+}
+
+// Click outside modal to close
+[schedModal, deleteModal, printModal].forEach((overlay) => {
+    if (overlay) {
+        overlay.addEventListener("click", (e) => {
+            if (e.target === overlay) hideModals();
+        });
+    }
+});
+
+// Escape key to close
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") hideModals();
+});
+
+// Print functionality
+if (printBtn) {
+    printBtn.addEventListener("click", () => {
+        document.body.classList.add("print-sheet");
+        window.print();
+    });
+}
 
 window.addEventListener("afterprint", () => {
-  document.body.classList.remove("print-sheet");
+    document.body.classList.remove("print-sheet");
 });
 
-pageControls.addEventListener("click", (e) => {
-  const btn = e.target.closest("button[data-page]");
-  if (!btn || btn.disabled) return;
-  currentPage = Number(btn.dataset.page);
-  render();
+[printSection, printTerm].forEach(el => {
+    if (el) {
+        el.addEventListener("change", refreshSheet);
+    }
 });
 
-[schedModal, deleteModal, printModal].forEach((overlay) => {
-  overlay.addEventListener("click", (e) => {
-    if (e.target === overlay) hideModals();
-  });
-});
+// ---------- Form Submit ----------
+if (schedForm) {
+    schedForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
 
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") hideModals();
-});
+        const formData = new FormData(schedForm);
+        const data = {
+            class_subject_id: formData.get("classSubjectId"),
+            room_id: formData.get("roomId"),
+            day_of_week: formData.get("dayOfWeek"),
+            start_time: formData.get("startTime"),
+            end_time: formData.get("endTime"),
+        };
 
-schedForm.addEventListener("submit", (e) => {
-  e.preventDefault();
-  const data = new FormData(schedForm);
-  const term = data.get("term") || "";
-  const sectionId = data.get("sectionId") || "";
-  const subjectId = data.get("subjectId") || "";
-  const days = data.getAll("days");
-  const from = data.get("from") || "";
-  const to = data.get("to") || "";
+        console.log("Submitting data:", data);
 
-  if (!term || !sectionId || !subjectId) {
-    return setMsg("Term, section, and subject are required.", "is-error");
-  }
-  if (!days.length) {
-    return setMsg("Pick at least one day.", "is-error");
-  }
-  if (!from || !to) {
-    return setMsg("Both start and end times are required.", "is-error");
-  }
-  if (from >= to) {
-    return setMsg("End time must be after start time.", "is-error");
-  }
+        // Validate
+        if (!data.class_subject_id) {
+            return setMsg("Please select a class subject.", "is-error");
+        }
+        if (!data.room_id) {
+            return setMsg("Please select a room.", "is-error");
+        }
+        if (!data.day_of_week) {
+            return setMsg("Please select a day.", "is-error");
+        }
+        if (!data.start_time || !data.end_time) {
+            return setMsg("Please set both start and end times.", "is-error");
+        }
+        if (data.start_time >= data.end_time) {
+            return setMsg("End time must be after start time.", "is-error");
+        }
 
-  const candidate = { sectionId, term, days, from, to };
-  const conflict = findConflict(candidate);
-  if (conflict) {
-    const sub = subjects().find((s) => s.id === conflict.subjectId);
-    return setMsg(
-      `Conflict: ${sub ? sub.code : "another subject"} is already scheduled ${shortDays(conflict.days)} ${fmtTime(conflict.from)} – ${fmtTime(conflict.to)} for this section.`,
-      "is-error"
-    );
-  }
+        // Check conflicts first
+        const conflictCheck = await checkConflicts();
+        if (!conflictCheck) {
+            return setMsg("Please resolve conflicts before saving.", "is-error");
+        }
 
-  if (editingId) {
-    const entry = schedules.find((x) => x.id === editingId);
-    Object.assign(entry, { term, sectionId, subjectId, days, from, to });
-  } else {
-    schedules.push({
-      id: Date.now().toString(36),
-      term,
-      sectionId,
-      subjectId,
-      days,
-      from,
-      to
+        const submitBtn = schedForm.querySelector('button[type="submit"]');
+        if (submitBtn) submitBtn.disabled = true;
+
+        const payload = {
+            action: editingId ? "update" : "create",
+            ...data
+        };
+        if (editingId) {
+            payload.schedule_id = editingId;
+        }
+
+        const response = await apiPost(payload);
+        if (submitBtn) submitBtn.disabled = false;
+
+        if (response.success) {
+            hideModals();
+            await loadSchedules();
+        } else {
+            setMsg(response.message || "Failed to save schedule.", "is-error");
+        }
     });
-  }
-  persist();
-  hideModals();
-  render();
+}
+
+// ---------- Row Actions ----------
+if (schedRows) {
+    schedRows.addEventListener("click", (e) => {
+        const btn = e.target.closest("button[data-action]");
+        if (!btn) return;
+
+        const s = schedules.find((x) => String(x.schedule_id) === btn.dataset.id);
+        if (!s) return;
+
+        if (btn.dataset.action === "edit") {
+            openSchedModal(s);
+        } else if (btn.dataset.action === "delete") {
+            deletingId = s.schedule_id;
+            const teacherName = s.teacher_first_name ? getFullName(s.teacher_first_name, s.teacher_last_name) : "—";
+            deleteName.textContent = `${s.subject_code} - ${s.section_name} (${DAYS[s.day_of_week] || s.day_of_week}, ${formatTime(s.start_time)} - ${formatTime(s.end_time)})`;
+            deleteModal.hidden = false;
+        }
+    });
+}
+
+// ---------- Confirm Delete ----------
+if (confirmDeleteBtn) {
+    confirmDeleteBtn.addEventListener("click", async () => {
+        if (!deletingId) return;
+
+        const response = await apiPost({
+            action: "delete",
+            schedule_id: deletingId
+        });
+
+        hideModals();
+
+        if (response.success) {
+            await loadSchedules();
+        } else {
+            alert(response.message || "Failed to delete schedule.");
+        }
+    });
+}
+
+// ---------- Clear Search ----------
+const searchClear = document.querySelector('.search-clear');
+if (searchClear && searchInput) {
+    searchInput.addEventListener('input', () => {
+        searchClear.hidden = !searchInput.value;
+    });
+    searchClear.addEventListener('click', () => {
+        searchInput.value = '';
+        searchClear.hidden = true;
+        currentPage = 1;
+        loadSchedules();
+    });
+}
+
+// ---------- Initialize ----------
+console.log("Initializing Schedule module...");
+loadLookupData().then(() => {
+    loadSchedules();
 });
-
-schedRows.addEventListener("click", (e) => {
-  const btn = e.target.closest("button[data-action]");
-  if (!btn) return;
-  const entry = schedules.find((x) => x.id === btn.dataset.id);
-  if (!entry) return;
-
-  if (btn.dataset.action === "edit") {
-    openSchedModal(entry);
-  } else {
-    deletingId = entry.id;
-    const sub = subjects().find((s) => s.id === entry.subjectId);
-    const sec = sections().find((s) => s.id === entry.sectionId);
-    deleteName.textContent = `${sub ? sub.code : "Subject"} — ${sec ? sec.name : "section"} (${shortTerm(entry.term)}, ${shortDays(entry.days)} ${fmtTime(entry.from)} – ${fmtTime(entry.to)})`;
-    deleteModal.hidden = false;
-  }
-});
-
-confirmDeleteBtn.addEventListener("click", () => {
-  schedules = schedules.filter((x) => x.id !== deletingId);
-  persist();
-  hideModals();
-  render();
-});
-
-fillSectionFilter();
-render();
