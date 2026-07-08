@@ -11,8 +11,8 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
     header("Content-Type: application/json");
 }
 
-require_once "../Dao/TeacherDAO.php";
-require_once "../Models/teachers_model.php";
+require_once __DIR__."/../../Dao/teacher/TeacherDAO.php";
+require_once __DIR__."/../../Models/teacher/teachers_model.php";
 
 $method = $_SERVER["REQUEST_METHOD"];
 $dao = new TeacherDAO();

@@ -1,4 +1,4 @@
-const SUBJECT_URL = "../Controllers/subjects_controllers.php";
+const SUBJECT_URL = "../../Controllers/subject/subjects_controllers.php";
 const PAGE_SIZE = 10;
 
 // DOM Elements

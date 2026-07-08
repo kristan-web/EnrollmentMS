@@ -1,8 +1,8 @@
 <?php
 // TeacherDAO.php - Updated with bug fixes and improvements
 
-require_once "../config/db.php";
-require_once "../Models/teachers_model.php";
+require_once __DIR__."/../../config/db.php";
+require_once __DIR__."/../../Models/teacher/teachers_model.php";
 
 class TeacherDAO {
 
