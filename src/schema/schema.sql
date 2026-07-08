@@ -3,13 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 05, 2026 at 05:49 PM
+-- Generation Time: Jul 08, 2026 at 01:07 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
-
-CREATE DATABASE IF NOT EXISTS enrollment_management_system;
-USE enrollment_management_system;
-
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -30,7 +26,6 @@ SET time_zone = "+00:00";
 --
 -- Table structure for table `applicants`
 --
-
 
 CREATE TABLE `applicants` (
   `applicant_id` int(11) NOT NULL,
@@ -66,6 +61,14 @@ CREATE TABLE `applicants` (
   `submitted_at` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `applicants`
+--
+
+INSERT INTO `applicants` (`applicant_id`, `reference_number`, `applicant_type`, `first_name`, `last_name`, `middle_name`, `gender`, `birthdate`, `address`, `contact_number`, `email`, `lrn`, `desired_grade_level`, `desired_strand_id`, `school_year`, `father_name`, `father_contact_number`, `mother_name`, `mother_contact_number`, `guardian_name`, `guardian_relationship`, `guardian_contact_number`, `emergency_contact_name`, `emergency_contact_relationship`, `emergency_contact_number`, `status`, `rejection_reason`, `reviewed_by`, `reviewed_at`, `converted_student_id`, `submitted_at`) VALUES
+(1, 'EMS-2026-938506', 'Transferee', 'Christine', 'Farley', 'Britanney Conner', 'Female', '1994-03-15', 'Irure dolore ullamco', '09999999999', 'jesihebec@mailinator.com', '211222222222', '11', 2, '2026-2027', 'Nigel Rodriquez', '09999999999', 'Idona Sharpe', '09999999999', 'Alden Branch', 'Minima minim tenetur', '09999999999', 'Daniel Lewis', 'Magnam mollit ea mol', '09999999999', 'Pending', NULL, NULL, NULL, NULL, '2026-07-06 00:19:00'),
+(2, 'EMS-2026-072083', 'Transferee', 'Dillon', 'Sampson', 'Denton Wilkerson', 'Female', '2013-09-22', 'Exercitationem disti', '09999999999', 'senylahoni@mailinator.com', '888888888888', '12', 1, '2026-2027', 'Iona Stout', '09999999999', 'Hiroko Mays', '09999999999', 'Caldwell Chen', 'Distinctio Voluptas', '09999999999', 'Yeo Pearson', 'Quo doloribus sapien', '09999999999', 'Pending', NULL, NULL, NULL, NULL, '2026-07-08 18:04:36');
+
 -- --------------------------------------------------------
 
 --
@@ -84,6 +87,22 @@ CREATE TABLE `applicant_documents` (
   `remarks` varchar(255) DEFAULT NULL,
   `uploaded_at` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `applicant_documents`
+--
+
+INSERT INTO `applicant_documents` (`document_id`, `applicant_id`, `document_type_id`, `file_path`, `original_filename`, `file_size`, `mime_type`, `status`, `remarks`, `uploaded_at`) VALUES
+(1, 1, 1, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-938506/4c1c7a5827e95a9cf9dbeafe153f2d3f.png', 'Schedule (11).png', 70070, 'image/png', 'Pending', NULL, '2026-07-06 00:19:00'),
+(2, 1, 2, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-938506/66f270d0c51662e0bfe482a7f360b80c.png', 'Schedule (11).png', 70070, 'image/png', 'Pending', NULL, '2026-07-06 00:19:00'),
+(3, 1, 3, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-938506/2e13e44872b0d0eb1533e5adf41ec360.png', 'Schedule (11).png', 70070, 'image/png', 'Pending', NULL, '2026-07-06 00:19:00'),
+(4, 1, 4, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-938506/59d37474dd3a1383ce97591af0e9e89e.png', 'Schedule (11).png', 70070, 'image/png', 'Pending', NULL, '2026-07-06 00:19:00'),
+(5, 1, 5, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-938506/5045393a9434439b74c56d07fcd0cb6a.png', 'Schedule (11).png', 70070, 'image/png', 'Pending', NULL, '2026-07-06 00:19:00'),
+(6, 2, 1, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-072083/ff773c347682430666ea3f3e2612a459.png', 'Schedule (11).png', 70070, 'image/png', 'Pending', NULL, '2026-07-08 18:04:36'),
+(7, 2, 2, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-072083/d16d0148615bf431f8f1ca66e88dfbe4.png', 'Schedule (11).png', 70070, 'image/png', 'Pending', NULL, '2026-07-08 18:04:36'),
+(8, 2, 3, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-072083/52ae21dfdb7730c5c94c8a07b01d2317.png', 'Schedule (11).png', 70070, 'image/png', 'Pending', NULL, '2026-07-08 18:04:36'),
+(9, 2, 4, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-072083/c926b6bcc9f14a927ad97710323921ab.png', 'Schedule (11).png', 70070, 'image/png', 'Pending', NULL, '2026-07-08 18:04:36'),
+(10, 2, 5, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-072083/cfcfad4fa15888e6b9e66b78b2da113d.png', 'Schedule (11).png', 70070, 'image/png', 'Pending', NULL, '2026-07-08 18:04:36');
 
 -- --------------------------------------------------------
 
@@ -113,9 +132,9 @@ INSERT INTO `class_sections` (`section_id`, `strand_id`, `adviser_id`, `grade_le
 (3, 5, NULL, '11', 'Jesse Case', '2027-2028', 47, 'Open', '2026-07-04 04:51:09'),
 (4, 3, NULL, '11', 'Priscilla Huff', '2027-2028', 77, 'Closed', '2026-07-04 04:51:24'),
 (5, 5, NULL, '12', 'Natalie Gonzalez', '2026-2027', 77, 'Open', '2026-07-04 05:05:01'),
-(6, 2, NULL, '11', 'asd', '2026-2027', 40, 'Open', '2026-07-04 05:06:26'),
-(7, 2, 1, '11', 'Lillian Gay', '2025-2026', 47, 'Closed', '2026-07-04 05:22:04'),
-(8, 2, 1, '11', 'asdasddas', '2026-2027', 40, 'Open', '2026-07-04 05:23:38');
+(6, 2, NULL, '11', 'asd', '2026-2027', 40, 'Cancelled', '2026-07-04 05:06:26'),
+(7, 2, 1, '11', 'Lillian Gay', '2025-2026', 47, 'Cancelled', '2026-07-04 05:22:04'),
+(8, 2, 1, '11', 'asdasddas', '2026-2027', 40, 'Cancelled', '2026-07-04 05:23:38');
 
 -- --------------------------------------------------------
 
@@ -275,7 +294,6 @@ INSERT INTO `strands` (`strand_id`, `track_id`, `strand_code`, `strand_name`, `d
 (1, 1, 'STEM', 'Science, Technology, Engineering and Mathematics', 'For students inclined toward science and engineering courses', '2026-07-04 03:08:34'),
 (2, 1, 'ABM', 'Accountancy, Business and Management', 'For students inclined toward business and finance-related courses', '2026-07-04 03:08:34'),
 (3, 1, 'HUMSS', 'Humanities and Social Sciences', 'For students inclined toward law, education, and social science courses', '2026-07-04 03:08:34'),
-(4, 1, 'GAS', 'General Academic Strand', 'For students who are undecided or want a broader set of electives', '2026-07-04 03:08:34'),
 (5, 2, 'ICT', 'Information and Communications Technology', 'Focuses on computer systems servicing, programming, and animation', '2026-07-04 03:08:34'),
 (6, 2, 'HE', 'Home Economics', 'Focuses on cookery, food & beverage services, and tourism-related skills', '2026-07-04 03:08:34');
 
@@ -312,6 +330,8 @@ CREATE TABLE `students` (
   `emergency_contact_name` varchar(100) NOT NULL,
   `emergency_contact_relationship` varchar(50) NOT NULL,
   `emergency_contact_number` varchar(20) NOT NULL,
+  `archive_reason` varchar(255) DEFAULT NULL,
+  `archived_at` datetime DEFAULT NULL,
   `created_at` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -319,14 +339,14 @@ CREATE TABLE `students` (
 -- Dumping data for table `students`
 --
 
-INSERT INTO `students` (`student_id`, `lrn`, `student_number`, `first_name`, `last_name`, `middle_name`, `gender`, `birthdate`, `address`, `contact_number`, `email`, `grade_level`, `status`, `father_name`, `father_contact_number`, `father_occupation`, `mother_name`, `mother_contact_number`, `mother_occupation`, `guardian_name`, `guardian_relationship`, `guardian_contact_number`, `guardian_address`, `emergency_contact_name`, `emergency_contact_relationship`, `emergency_contact_number`, `created_at`) VALUES
-(1, '123456789012', '2026-0001', 'Juan', 'Dela Cruz', 'Santos', 'Male', '2009-03-15', '123 Rizal St., Brgy. San Antonio, Dasmariñas, Cavite', '09171234501', 'juan.delacruz@example.com', '11', 'Active', 'Pedro Dela Cruz', '09171234502', 'Driver', 'Maria Dela Cruz', '09171234503', 'Vendor', NULL, NULL, NULL, NULL, 'Maria Dela Cruz', 'Mother', '09171234503', '2026-07-04 03:38:34'),
-(2, '123456789013', '2026-0002', 'Andrea', 'Santos', 'Reyes', 'Female', '2008-11-02', '45 Mabini Ave., Brgy. Zone 2, Dasmariñas, Cavite', '09171234504', 'andrea.santos@example.com', '12', 'Active', 'Roberto Santos', '09171234505', 'Engineer', 'Liza Santos', '09171234506', 'Teacher', NULL, NULL, NULL, NULL, 'Roberto Santos', 'Father', '09171234505', '2026-07-04 03:38:34'),
-(3, '123456789014', '2026-0003', 'Miguel', 'Ramos', NULL, 'Male', '2009-06-21', '78 Aguinaldo Hwy., Brgy. Salawag, Dasmariñas, Cavite', '09171234507', 'miguel.ramos@example.com', '11', 'Active', NULL, NULL, NULL, 'Carmela Ramos', '09171234508', 'Nurse', 'Carmela Ramos', 'Mother', '09171234508', '78 Aguinaldo Hwy., Brgy. Salawag, Dasmariñas, Cavite', 'Carmela Ramos', 'Mother', '09171234508', '2026-07-04 03:38:34'),
-(4, '123456789015', '2026-0004', 'Bianca', 'Torres', 'Mendoza', 'Female', '2008-09-09', '12 Molino Rd., Brgy. Molino III, Bacoor, Cavite', '09171234509', 'bianca.torres@example.com', '12', 'Active', 'Antonio Torres', '09171234510', 'Businessman', 'Grace Torres', '09171234511', 'Accountant', NULL, NULL, NULL, NULL, 'Grace Torres', 'Mother', '09171234511', '2026-07-04 03:38:34'),
-(5, '123456789016', '2026-0005', 'Josh', 'Villanueva', 'Cruz', 'Male', '2009-01-30', '89 Governor\'s Dr., Brgy. Malagasang, Imus, Cavite', '09171234512', 'josh.villanueva@example.com', '11', 'Active', 'Nestor Villanueva', '09171234513', 'OFW', 'Rosario Villanueva', '09171234514', 'Housewife', 'Elena Cruz', 'Aunt', '09171234515', '90 Governor\'s Dr., Brgy. Malagasang, Imus, Cavite', 'Rosario Villanueva', 'Mother', '09171234514', '2026-07-04 03:38:34'),
-(6, 'Non error al', '762', 'Whoopi', 'Villarreal', 'Arden Stephenson', 'Female', '2011-05-08', 'Cillum nobis do veli', '+1 (517) 876-6398', 'malelimaq@mailinator.com', '12', 'Active', 'Leroy Newton', '+1 (585) 175-3873', 'Et vero impedit fac', 'Clinton Ferguson', '+1 (686) 408-8277', 'Repudiandae necessit', 'Alexander Jones', 'Nihil commodo id nem', '+1 (986) 374-5567', 'Amet officia quae i', 'Stella Frazier', 'Explicabo Facere er', '+1 (339) 397-6779', '2026-07-04 04:06:34'),
-(7, 'Maiores dolo', '590', 'Merrill', 'Dotson', 'Nerea Holder', 'Female', '2024-08-30', 'Debitis doloremque q', '+1 (444) 222-8575', 'nofupe@mailinator.com', '11', 'Active', 'Yael Quinn', '+1 (645) 754-3951', 'In asperiores beatae', 'Xaviera Stout', '+1 (818) 853-1765', 'Amet officiis illum', 'Caleb Rivas', 'Adipisci ut aspernat', '+1 (275) 194-1103', 'Id accusantium neque', 'Winter Houston', 'Nostrud dolor qui et', '+1 (907) 754-4473', '2026-07-04 04:06:53');
+INSERT INTO `students` (`student_id`, `lrn`, `student_number`, `first_name`, `last_name`, `middle_name`, `gender`, `birthdate`, `address`, `contact_number`, `email`, `grade_level`, `status`, `father_name`, `father_contact_number`, `father_occupation`, `mother_name`, `mother_contact_number`, `mother_occupation`, `guardian_name`, `guardian_relationship`, `guardian_contact_number`, `guardian_address`, `emergency_contact_name`, `emergency_contact_relationship`, `emergency_contact_number`, `archive_reason`, `archived_at`, `created_at`) VALUES
+(1, '123456789012', '2026-0001', 'saddasadsdasdasdas', 'Dela Cruz', 'Santos', 'Male', '2009-03-15', '123 Rizal St., Brgy. San Antonio, Dasmariñas, Cavite', '09171234501', 'juan.delacruz@example.com', '11', 'Inactive', 'Pedro Dela Cruz', '09171234502', 'Driver', 'Maria Dela Cruz', '09171234503', 'Vendor', '', '', '', '', 'Maria Dela Cruz', 'Mother', '09171234503', 'Transferred Out', '2026-07-08 17:23:05', '2026-07-04 03:38:34'),
+(2, '123456789013', '2026-0002', 'Andrea', 'Santos', 'Reyes', 'Female', '2008-11-02', '45 Mabini Ave., Brgy. Zone 2, Dasmariñas, Cavite', '09171234504', 'andrea.santos@example.com', '12', 'Active', 'Roberto Santos', '09171234505', 'Engineer', 'Liza Santos', '09171234506', 'Teacher', NULL, NULL, NULL, NULL, 'Roberto Santos', 'Father', '09171234505', NULL, NULL, '2026-07-04 03:38:34'),
+(3, '123456789014', '2026-0003', 'Miguel', 'Ramos', NULL, 'Male', '2009-06-21', '78 Aguinaldo Hwy., Brgy. Salawag, Dasmariñas, Cavite', '09171234507', 'miguel.ramos@example.com', '11', 'Active', NULL, NULL, NULL, 'Carmela Ramos', '09171234508', 'Nurse', 'Carmela Ramos', 'Mother', '09171234508', '78 Aguinaldo Hwy., Brgy. Salawag, Dasmariñas, Cavite', 'Carmela Ramos', 'Mother', '09171234508', NULL, NULL, '2026-07-04 03:38:34'),
+(4, '123456789015', '2026-0004', 'Bianca', 'Torres', 'Mendoza', 'Female', '2008-09-09', '12 Molino Rd., Brgy. Molino III, Bacoor, Cavite', '09171234509', 'bianca.torres@example.com', '12', 'Active', 'Antonio Torres', '09171234510', 'Businessman', 'Grace Torres', '09171234511', 'Accountant', NULL, NULL, NULL, NULL, 'Grace Torres', 'Mother', '09171234511', NULL, NULL, '2026-07-04 03:38:34'),
+(5, '123456789016', '2026-0005', 'Josh', 'Villanueva', 'Cruz', 'Male', '2009-01-30', '89 Governor\'s Dr., Brgy. Malagasang, Imus, Cavite', '09171234512', 'josh.villanueva@example.com', '11', 'Active', 'Nestor Villanueva', '09171234513', 'OFW', 'Rosario Villanueva', '09171234514', 'Housewife', 'Elena Cruz', 'Aunt', '09171234515', '90 Governor\'s Dr., Brgy. Malagasang, Imus, Cavite', 'Rosario Villanueva', 'Mother', '09171234514', NULL, NULL, '2026-07-04 03:38:34'),
+(6, 'Non error al', '762', 'Whoopi', 'Villarreal', 'Arden Stephenson', 'Female', '2011-05-08', 'Cillum nobis do veli', '+1 (517) 876-6398', 'malelimaq@mailinator.com', '12', 'Active', 'Leroy Newton', '+1 (585) 175-3873', 'Et vero impedit fac', 'Clinton Ferguson', '+1 (686) 408-8277', 'Repudiandae necessit', 'Alexander Jones', 'Nihil commodo id nem', '+1 (986) 374-5567', 'Amet officia quae i', 'Stella Frazier', 'Explicabo Facere er', '+1 (339) 397-6779', NULL, NULL, '2026-07-04 04:06:34'),
+(7, 'Maiores dolo', '590', 'Merrill', 'Dotson', 'Nerea Holder', 'Female', '2024-08-30', 'Debitis doloremque q', '+1 (444) 222-8575', 'nofupe@mailinator.com', '11', 'Inactive', 'Yael Quinn', '+1 (645) 754-3951', 'In asperiores beatae', 'Xaviera Stout', '+1 (818) 853-1765', 'Amet officiis illum', 'Caleb Rivas', 'Adipisci ut aspernat', '+1 (275) 194-1103', 'Id accusantium neque', 'Winter Houston', 'Nostrud dolor qui et', '+1 (907) 754-4473', 'Transferred Out', '2026-07-08 17:23:07', '2026-07-04 04:06:53');
 
 -- --------------------------------------------------------
 
@@ -424,7 +444,8 @@ CREATE TABLE `users` (
 INSERT INTO `users` (`user_id`, `password_hash`, `full_name`, `email`, `role`, `created_at`) VALUES
 (1, '$2y$10$Y1vIULsMyjnhyUvOlJTku.IDLoR7mvehiLsT2uaNKGwQaocuqe8SC', 'Flavia Hunter', 'kadesu@mailinator.com', 'Staff', '2026-07-04 03:08:41'),
 (2, '$2y$10$qa4TqzVvxse8TfjH.YnZq.cVYSB5yACk8fQj726GBR35gk9ky6pki', 'Cooper Meadows', 'vupusyfuk@mailinator.com', 'Staff', '2026-07-04 03:08:50'),
-(3, '$2y$10$opj5udUgP27IsWmNJeDaMuxKaopL5XNK6FSMwE.PJ5WoLNDuiPfyS', 'kristan charles almario', 'kristan@gmail.com', 'Staff', '2026-07-04 03:09:23');
+(3, '$2y$10$opj5udUgP27IsWmNJeDaMuxKaopL5XNK6FSMwE.PJ5WoLNDuiPfyS', 'kristan charles almario', 'kristan@gmail.com', 'Staff', '2026-07-04 03:09:23'),
+(4, '$2y$10$E1c4ZhJ319I9NG1up5loWepxXI8PIIMSTidDfdnYwW/ullPoTNCoe', 'Alvin Rhodes', 'fawybeciw@mailinator.com', 'Staff', '2026-07-08 18:52:43');
 
 --
 -- Indexes for dumped tables
@@ -563,13 +584,13 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `applicants`
 --
 ALTER TABLE `applicants`
-  MODIFY `applicant_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `applicant_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `applicant_documents`
 --
 ALTER TABLE `applicant_documents`
-  MODIFY `document_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `document_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `class_sections`
@@ -653,7 +674,7 @@ ALTER TABLE `tracks`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- Constraints for dumped tables
