@@ -135,8 +135,8 @@ if(loginForm){
             const data = new FormData(loginForm);
 
             try {
-                // Path: from root directory to Controllers folder
-                const response = await fetch('../app/Accounts/Controller/user_controllers.php', {
+                // Path: from Views folder to Controllers folder
+                const response = await fetch('../Controller/user_controllers.php', {
                     method: 'POST',
                     body: data
                 });
