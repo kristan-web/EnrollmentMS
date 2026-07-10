@@ -81,8 +81,8 @@ if(accountCreation){
                 const data = new FormData(accountCreation);
 
                 try {
-                    // Path: Relative from public/assets/js/Accounts/Users.js to app/Accounts/Controller/user_controllers.php
-                    const response = await fetch('../../../../app/Accounts/Controller/user_controllers.php', {
+                    // Path: Absolute from web root to app/Accounts/Controller/user_controllers.php
+                    const response = await fetch('/app/Accounts/Controller/user_controllers.php', {
                         method: 'POST',
                         body: data
                     });
@@ -135,8 +135,8 @@ if(loginForm){
             const data = new FormData(loginForm);
 
             try {
-                // Path: Relative from public/assets/js/Accounts/Users.js to app/Accounts/Controller/user_controllers.php
-                const response = await fetch('../../../../app/Accounts/Controller/user_controllers.php', {
+                // Path: Absolute from web root to app/Accounts/Controller/user_controllers.php
+                const response = await fetch('/app/Accounts/Controller/user_controllers.php', {
                     method: 'POST',
                     body: data
                 });
@@ -194,8 +194,8 @@ if(changePassword){
                     const data = new FormData(changePassword);
 
                     try {
-                        // Path: Relative from public/assets/js/Accounts/Users.js to app/Accounts/Controller/user_controllers.php
-                        const response = await fetch('../../../../app/Accounts/Controller/user_controllers.php', {
+                        // Path: Absolute from web root to app/Accounts/Controller/user_controllers.php
+                        const response = await fetch('/app/Accounts/Controller/user_controllers.php', {
                             method: 'POST',
                             body: data
                         });
