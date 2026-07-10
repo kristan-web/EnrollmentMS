@@ -74,5 +74,5 @@ function validate() {
 
 form.addEventListener("submit", (event) => {
   event.preventDefault();
-  window.location.href = "/app/Dashboards/dashboard.php";
+  window.location.href = "/EnrollmentMs/app/Dashboards/dashboard.php";
 });

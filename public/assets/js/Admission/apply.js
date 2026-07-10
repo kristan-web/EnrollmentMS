@@ -11,8 +11,8 @@
 // const APPLICANTS_API_URL = "/Controllers/Admision/applicants_controllers.php";
 // const DOCUMENTS_API_URL = "/Controllers/application/applicant_documents_controllers.php";
 
-const APPLICANTS_API_URL = "/app/Admission/Controller/applicants_controllers.php";
-const DOCUMENTS_API_URL = "/app/Admission/Controller/applicant_documents_controllers.php";
+const APPLICANTS_API_URL = "/EnrollmentMS/app/Admission/Controller/applicants_controllers.php";
+const DOCUMENTS_API_URL = "/EnrollmentMS/app/Admission/Controller/applicant_documents_controllers.php";
 
 const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png", "application/pdf"];
 const MAX_FILE_BYTES = 5 * 1024 * 1024; // 5MB — must match the backend's limit

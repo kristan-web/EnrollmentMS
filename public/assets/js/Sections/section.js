@@ -1,4 +1,4 @@
-const SECTIONS_URL = "/app/Sections/Controller/sections_controllers.php";
+const SECTIONS_URL = "/EnrollmentMS/app/Sections/Controller/sections_controllers.php";
 const PAGE_SIZE = 10;
 
 // DOM Elements

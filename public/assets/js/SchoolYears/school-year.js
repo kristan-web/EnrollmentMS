@@ -1,5 +1,5 @@
 // API Configuration
-const API_BASE = '/app/SchoolYears/Controller/school_year_controllers.php';
+const API_BASE = '/EnrollmentMS/app/SchoolYears/Controller/school_year_controllers.php';
 
 const searchInput = document.getElementById('searchInput');
 const addSyBtn = document.getElementById('addSyBtn');

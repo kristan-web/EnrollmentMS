@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="assets/css/shared/styles.css" />
 </head>
 <body>
   <div class="blob blob--1"></div>
@@ -18,7 +18,7 @@
 
   <main class="login">
     <div class="brand">
-      <img class="brand__logo" src="src/images/logo.png" alt="Enrollment Management System crest" />
+      <img class="brand__logo" src="assets/images/logo.png" alt="Enrollment Management System crest" />
     </div>
 
     <h1 class="login__title">Welcome Back Admin</h1>
@@ -75,7 +75,7 @@
 
   <footer class="footer">&copy; 2026 Enrollment Management System</footer>
 
-  <script src="js/script.js"></script>
-  <script src="js/user/Users.js"></script>
+  <script src="assets/js/shared/script.js"></script>
+  <script src="assets/js/Accounts/Users.js"></script>
 </body>
 </html>

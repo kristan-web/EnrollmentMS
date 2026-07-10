@@ -1,4 +1,4 @@
-const STRANDS_URL = "/app/Strands/Controller/strands_controllers.php";
+const STRANDS_URL = "/EnrollmentMS/app/Strands/Controller/strands_controllers.php";
 const PAGE_SIZE = 10;
 
 // DOM Elements
