@@ -1,7 +1,7 @@
 <?php
 
-require_once __DIR__ . "/../../Dao/school_year/SchoolYearDAO.php";
-require_once __DIR__ . "/../../Models/school_year/school_year_model.php";
+require_once __DIR__."/../DAO/SchoolYearDAO.php";
+require_once __DIR__."/../Model/school_year_model.php";
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);

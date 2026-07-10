@@ -1,7 +1,7 @@
 <?php
 
-require_once __DIR__ . "/../../config/db.php";
-require_once __DIR__ . "/../../Models/strand/strands_model.php";
+require_once __DIR__ . "/../../../config/db.php";
+require_once __DIR__."/../Model/strands_model.php";
 
 class StrandDAO {
 

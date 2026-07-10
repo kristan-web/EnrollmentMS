@@ -1,6 +1,6 @@
 <?php
-require_once __DIR__ ."/../../config/db.php";
-require_once __DIR__ . "/../../Models/student/students_model.php";
+require_once __DIR__ ."/../../../config/db.php";
+require_once __DIR__."/../Model/students_model.php";
 
 class StudentDAO {
 

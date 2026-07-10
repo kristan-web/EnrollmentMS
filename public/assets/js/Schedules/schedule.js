@@ -1,4 +1,4 @@
-const SCHEDULE_URL = "../Controllers/schedule_controllers.php";
+const SCHEDULE_URL = "/app/Schedules/Controller/schedule_controllers.php";
 const PAGE_SIZE = 10;
 
 const DAYS = {

@@ -1,7 +1,7 @@
 <?php
 
-require_once __DIR__."/../../Dao/enrollment/EnrollmentDAO.php";
-require_once __DIR__."/../../Models/enrollment/enrollment_model.php";
+require_once __DIR__."/../DAO/EnrollmentDAO.php";
+require_once __DIR__."/../Model/enrollment_model.php";
 
 $method = $_SERVER["REQUEST_METHOD"];
 $dao    = new EnrollmentDAO();

@@ -1,7 +1,6 @@
 <?php
-
-require_once __DIR__ . "/../../config/db.php";
-require_once __DIR__ ."/../../Models/school_year/school_year_model.php";
+require_once __DIR__ . "/../../../config/db.php";
+require_once __DIR__ ."/../Model/school_year_model.php";
 
 class SchoolYearDAO {
 

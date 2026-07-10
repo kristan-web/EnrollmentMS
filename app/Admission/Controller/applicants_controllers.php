@@ -1,15 +1,9 @@
 <?php
 
-require_once "../../Dao/application/ApplicantDAO.php";
-require_once "../../Dao/strand/StrandDAO.php";
-require_once "../../Dao/SchoolYearDAO.php";
-require_once "../../Models/application/applicant_model.php";
-
-
-// require_once "../Dao/ApplicantDAO.php";
-// require_once "../Dao/StrandDAO.php";
-// require_once "../Dao/SchoolYearDAO.php";
-// require_once "../Models/applicant_model.php";
+require_once __DIR__."/../DAO/ApplicantDAO.php";
+require_once __DIR__."/../../Strands/DAO/StrandDAO.php";
+require_once __DIR__."/../../SchoolYears/DAO/SchoolYearDAO.php";
+require_once __DIR__."/../Model/applicant_model.php"; 
 
 header("Content-Type: application/json");
 header("Access-Control-Allow-Origin: *");

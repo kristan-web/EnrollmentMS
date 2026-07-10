@@ -3,7 +3,7 @@
  * Connects frontend UI to backend PHP API
  */
 
-const STUDENTS_API_URL = "../../Controllers/student/students_controllers.php";
+const STUDENTS_API_URL = "/app/Students/Controller/students_controllers.php";
 
 // DOM Elements
 const tabs = document.querySelectorAll(".tab");

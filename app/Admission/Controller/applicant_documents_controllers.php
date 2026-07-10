@@ -1,7 +1,7 @@
 <?php
-require_once "../../Dao/application/ApplicantDocumentDAO.php";
-require_once "../../Dao/application/DocumentTypeDAO.php";
-require_once "../../Models/application/applicant_documents_model.php";
+require_once __DIR__."/../DAO/ApplicantDocumentDAO.php";
+require_once __DIR__."/../DAO/DocumentTypeDAO.php";
+require_once __DIR__."/../Model/applicant_documents_model.php";
 
 header("Content-Type: application/json");
 header("Access-Control-Allow-Origin: *");

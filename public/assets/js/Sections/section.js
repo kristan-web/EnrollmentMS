@@ -1,4 +1,4 @@
-const SECTIONS_URL = "../../Controllers/section/sections_controllers.php";
+const SECTIONS_URL = "/app/Sections/Controller/sections_controllers.php";
 const PAGE_SIZE = 10;
 
 // DOM Elements

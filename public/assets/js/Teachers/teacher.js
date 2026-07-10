@@ -1,5 +1,5 @@
 // teacher.js - Complete CRUD with backend API integration
-const API_BASE = "../../Controllers/teacher/teachers_controllers.php";
+const API_BASE = "/app/Teachers/Controller/teachers_controllers.php";
 
 const searchInput = document.getElementById("searchInput");
 const addTeacherBtn = document.getElementById("addTeacherBtn");

@@ -1,7 +1,7 @@
 <?php
 
-require_once __DIR__."/../../config/db.php";
-require_once __DIR__."/../../Models/enrollment/enrollment_model.php";
+require_once __DIR__."/../../../config/db.php";
+require_once __DIR__."/../Model/enrollment_model.php";
 
 class EnrollmentDAO {
 

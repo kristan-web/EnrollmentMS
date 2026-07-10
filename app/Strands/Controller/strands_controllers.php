@@ -1,7 +1,6 @@
 <?php
-
-require_once __DIR__."/../../Dao/strand/StrandDAO.php";
-require_once __DIR__."/../../Models/strand/strands_model.php";
+require_once __DIR__."/../DAO/StrandDAO.php";
+require_once __DIR__."/../Model/strands_model.php";
 
 header("Content-Type: application/json");
 header("Access-Control-Allow-Origin: *");

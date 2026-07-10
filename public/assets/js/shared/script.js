@@ -74,5 +74,5 @@ function validate() {
 
 form.addEventListener("submit", (event) => {
   event.preventDefault();
-  window.location.href = "views/dashboard.html";
+  window.location.href = "/app/Dashboards/dashboard.php";
 });

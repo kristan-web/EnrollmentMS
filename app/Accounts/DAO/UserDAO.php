@@ -1,7 +1,7 @@
 <?php 
 
-require_once __DIR__.'/../../config/db.php';
-require_once __DIR__.'/../../Models/user/users_model.php';
+require_once __DIR__.'/../../../config/db.php';
+require_once __DIR__.'/../Model/users_model.php';
 
 class UserDAO{
 
@@ -9,6 +9,7 @@ class UserDAO{
 
     public function __construct(){
         $database = new Database();
+
         $this->conn = $database->connect();
     }
 

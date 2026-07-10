@@ -1,7 +1,7 @@
 <?php
 
-require_once "../../config/db.php";
-require_once "../../Models/application/applicant_model.php";
+require_once __DIR__."/../../../config/db.php";
+require_once __DIR__."/../Model/applicant_model.php";
 
 class ApplicantDAO {
 

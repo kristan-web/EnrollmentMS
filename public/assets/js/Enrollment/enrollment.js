@@ -1,4 +1,4 @@
-const ENROLLMENT_URL = "../../Controllers/enrollment/enrollment_controllers.php";
+const ENROLLMENT_URL = "/app/Enrollment/Controller/enrollment_controllers.php";
 
 const searchInput = document.getElementById("searchInput");
 const printBtn = document.getElementById("printBtn");

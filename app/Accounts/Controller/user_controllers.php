@@ -1,6 +1,6 @@
 <?PHP 
-    include_once __DIR__.'/../../Models/user/users_model.php';
-    include_once __DIR__.'/../../Dao/user/UserDAO.php';
+    include_once __DIR__.'/../Model/users_model.php';
+    include_once __DIR__.'/../DAO/UserDAO.php';
 
     // Set JSON response header
     header('Content-Type: application/json');
