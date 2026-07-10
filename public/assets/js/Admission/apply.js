@@ -8,8 +8,8 @@
  * this file lives at .../public/controllers/apply.js and the PHP backend's
  * Controllers/ folder lives at the project root, i.e. two levels up.
  */
-const APPLICANTS_API_URL = "../../Controllers/application/applicants_controllers.php";
-const DOCUMENTS_API_URL = "../../Controllers/application/applicant_documents_controllers.php";
+const APPLICANTS_API_URL = "/Controllers/application/applicants_controllers.php";
+const DOCUMENTS_API_URL = "/Controllers/application/applicant_documents_controllers.php";
 
 const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png", "application/pdf"];
 const MAX_FILE_BYTES = 5 * 1024 * 1024; // 5MB — must match the backend's limit
