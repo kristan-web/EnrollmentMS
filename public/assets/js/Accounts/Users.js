@@ -82,7 +82,7 @@ if(accountCreation){
 
                 try {
                     // Path: from Views folder to Controllers folder
-                    const response = await fetch('../../Controllers/user/user_controllers.php', {
+                    const response = await fetch('../Controller/user_controllers.php', {
                         method: 'POST',
                         body: data
                     });
@@ -136,7 +136,7 @@ if(loginForm){
 
             try {
                 // Path: from root directory to Controllers folder
-                const response = await fetch('Controllers/user/user_controllers.php', {
+                const response = await fetch('../app/Accounts/Controller/user_controllers.php', {
                     method: 'POST',
                     body: data
                 });
@@ -147,7 +147,7 @@ if(loginForm){
                 if(status.success){
                     showAlert('Login successful! Redirecting...', 'success');
                     setTimeout(() => {
-                        window.location.href = 'Views/dashboard.html';
+                        window.location.href = '../app/Dashboards/dashboard.php';
                     }, 1000);
                     return;
                 }
@@ -195,7 +195,7 @@ if(changePassword){
 
                     try {
                         // Path: from Views folder to Controllers folder
-                        const response = await fetch('../Controllers/user/user_controllers.php', {
+                        const response = await fetch('../Controller/user_controllers.php', {
                             method: 'POST',
                             body: data
                         });
