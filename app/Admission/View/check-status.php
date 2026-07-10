@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../assets/css/portal.css" />
+  <link rel="stylesheet" href="../../../public/assets/css/shared/portal.css" />
 </head>
 <body>
   <div class="blob blob--1"></div>
@@ -16,8 +16,8 @@
 
   <div class="wrap wrap--status">
     <header class="topbar">
-      <a class="topbar__brand" href="../index.html" aria-label="Student Portal home">
-        <img class="topbar__logo" src="../assets/img/logo.png" alt="School crest" />
+      <a class="topbar__brand" href="index.php" aria-label="Student Portal home">
+        <img class="topbar__logo" src="../../../public/assets/images/logo.png" alt="School crest" />
         <span class="topbar__name">
           <strong>Enrollment Management System</strong>
           <span class="topbar__tag">Student Portal</span>
@@ -37,7 +37,7 @@
             <li class="lang__opt" role="option" data-lang="tgl">Taglish</li>
           </ul>
         </div>
-        <a class="topbar__login" href="apply.html">
+        <a class="topbar__login" href="apply.php">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
           <span>Apply Now</span>
         </a>
@@ -71,8 +71,8 @@
 
   <footer class="footer">&copy; 2026 Enrollment Management System</footer>
 
-  <script src="../models/applicant-model.js"></script>
-  <script src="../models/translator.js"></script>
-  <script src="../controllers/check-status.js"></script>
+  <script src="../../../public/assets/js/Admission/applicant-model.js"></script>
+  <script src="../../../public/assets/js/Admission/translator.js"></script>
+  <script src="../../../public/assets/js/Admission/check-status.js"></script>
 </body>
 </html>

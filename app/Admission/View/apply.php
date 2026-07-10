@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../../assets/css/portal.css" />
+  <link rel="stylesheet" href="../../../public/assets/css/shared/portal.css" />
 </head>
 <body>
   <div class="blob blob--1"></div>
@@ -16,8 +16,8 @@
 
   <div class="wrap wrap--apply">
     <header class="topbar">
-      <a class="topbar__brand" href="index.html" aria-label="Student Portal home">
-        <img class="topbar__logo" src="../../assets/img/logo.png" alt="School crest" />
+      <a class="topbar__brand" href="index.php" aria-label="Student Portal home">
+        <img class="topbar__logo" src="../../../public/assets/images/logo.png" alt="School crest" />
         <span class="topbar__name">
           <strong>Enrollment Management System</strong>
           <span class="topbar__tag">Student Portal</span>
@@ -37,7 +37,7 @@
             <li class="lang__opt" role="option" data-lang="tgl">Taglish</li>
           </ul>
         </div>
-        <a class="topbar__login" href="check-status.html">
+        <a class="topbar__login" href="check-status.php">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
           <span>Check Status</span>
         </a>
@@ -341,8 +341,8 @@
             </li>
           </ul>
           <div class="wizard-nav">
-            <a class="btn btn--primary" href="check-status.html">Check Application Status</a>
-            <a class="btn btn--ghost" href="../index.html">Back to Portal</a>
+            <a class="btn btn--primary" href="check-status.php">Check Application Status</a>
+            <a class="btn btn--ghost" href="index.php">Back to Portal</a>
           </div>
         </div>
       </div>
@@ -351,7 +351,7 @@
 
   <footer class="footer">&copy; 2026 Enrollment Management System</footer>
 
-  <script src="../../js/application/translator.js"></script>
-  <script src="../../js/application/apply.js"></script>
+  <script src="../../../public/assets/js/Admission/translator.js"></script>
+  <script src="../../../public/assets/js/Admission/apply.js"></script>
 </body>
 </html>

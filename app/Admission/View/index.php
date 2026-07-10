@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../../assets/css/portal.css" />
+  <link rel="stylesheet" href="../../../public/assets/css/shared/portal.css" />
 </head>
 <body>
   <div class="blob blob--1"></div>
@@ -18,8 +18,8 @@
 
   <div class="wrap">
     <header class="topbar">
-      <a class="topbar__brand" href="index.html" aria-label="Student Portal home">
-        <img class="topbar__logo" src="../../assets/img/logo.png" alt="School crest" />
+      <a class="topbar__brand" href="index.php" aria-label="Student Portal home">
+        <img class="topbar__logo" src="../../../public/assets/images/logo.png" alt="School crest" />
         <span class="topbar__name">
           <strong>Enrollment Management System</strong>
           <span class="topbar__tag">Student Portal</span>
@@ -39,11 +39,11 @@
             <li class="lang__opt" role="option" data-lang="tgl">Taglish</li>
           </ul>
         </div>
-        <a class="topbar__login" href="index.html">
+        <a class="topbar__login" href="index.php">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
           <span>Staff Login</span>
         </a>
-        <a class="topbar__cta" href="get-started.html">
+        <a class="topbar__cta" href="get-started.php">
           <span>Get Started</span>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
         </a>
@@ -120,7 +120,7 @@
         <div class="need__panel">
           <h2>What you'll need</h2>
           <p>Prepare these documents before you start. Take clear, well-lit photos where all text is readable — blurry uploads may be returned with remarks.</p>
-          <a class="btn btn--submit" href="views/apply.html">Start your application</a>
+          <a class="btn btn--submit" href="apply.php">Start your application</a>
         </div>
         <ul class="need__list" id="reqList"></ul>
       </div>
@@ -129,8 +129,8 @@
 
   <footer class="footer">&copy; 2026 Enrollment Management System</footer>
 
-  <script src="../../js/application/applicant-model.js"></script>
-  <script src="../../js/application/translator.js"></script>
-  <script src="../../js/application/home.js"></script>
+  <script src="../../../public/assets/js/Admission/applicant-model.js"></script>
+  <script src="../../../public/assets/js/Admission/translator.js"></script>
+  <script src="../../../public/assets/js/Admission/home.js"></script>
 </body>
 </html>

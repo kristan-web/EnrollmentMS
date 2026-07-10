@@ -3,17 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Maintenance &middot; Enrollment Management System</title>
+  <title>Archive &middot; Enrollment Management System</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../../css/dashboard.css" />
+  <link rel="stylesheet" href="../../../public/assets/css/shared/dashboard.css" />
 </head>
 <body>
   <aside class="sidebar" id="sidebar">
     <div class="sidebar__brand">
       <div class="sidebar__logo">
-        <img src="../../src/images/logo.png" alt="Enrollment Management System crest" />
+        <img src="../../../public/assets/images/logo.png" alt="Enrollment Management System crest" />
       </div>
       <p class="sidebar__title">Admission</p>
     </div>
@@ -30,31 +30,31 @@
       </button>
 
       <ul class="nav__submenu is-open" id="dashMenu">
-        <li><a href="data-entry.html">
+        <li><a href="../../Dashboards/Views/RegistrarSide/data-entry.php">
           <span class="submenu__icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
           </span>
           <span>Data entry</span>
         </a></li>
-        <li><a href="transaction.html">
+        <li><a href="../../Dashboards/Views/RegistrarSide/transaction.php">
           <span class="submenu__icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m17 2 4 4-4 4"/><path d="M3 6h18"/><path d="m7 22-4-4 4-4"/><path d="M21 18H3"/></svg>
           </span>
           <span>Transaction</span>
         </a></li>
-        <li><a href="settings.html">
+        <li><a href="../../Dashboards/Views/AdminSide/settings.php">
           <span class="submenu__icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
           </span>
           <span>Settings</span>
         </a></li>
-        <li><a href="maintenance.html" class="is-active">
+        <li><a href="../../Dashboards/Views/AdminSide/maintenance.php">
           <span class="submenu__icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76Z"/></svg>
           </span>
           <span>Maintenance</span>
         </a></li>
-        <li><a href="records.html">
+        <li><a href="../../Dashboards/Views/RegistrarSide/records.php" class="is-active">
           <span class="submenu__icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>
           </span>
@@ -63,7 +63,7 @@
       </ul>
     </nav>
 
-    <a class="sidebar__logout" href="../../index.html">
+    <a class="sidebar__logout" href="../../../public/index.php">
       <span class="nav__icon" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
       </span>
@@ -80,35 +80,67 @@
       </span>
     </button>
 
-    <h1 class="main__title main__title--hero">Maintenance</h1>
-    <p class="main__subtitle">Set up school years, strands, sections, and subjects</p>
+    <h1 class="main__title">Archive</h1>
 
-    <section class="page-links">
-      <a class="page-card" href="../school_year/school-year.html">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/></svg>
-        <span>School Year</span>
-      </a>
-      <a class="page-card" href="../strand/strand.html">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" x2="6" y1="3" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>
-        <span>Strand</span>
-      </a>
-      <a class="page-card" href="../section/section.html">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-        <span>Section</span>
-      </a>
-      <a class="page-card" href="../subject/shs-subject.html">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
-        <span>SHS Subject</span>
-      </a>
-      <a class="page-card" href="jhs-subject.html">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-        <span>JHS Subject</span>
-      </a>
+    <section class="content">
+      <div class="toolbar">
+        <select class="filter-select" id="filterReason">
+          <option value="">All Reasons</option>
+          <option>Transferred Out</option>
+          <option>Stopped Education</option>
+        </select>
+        <div class="search-box">
+          <svg class="search-box__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="search" id="searchInput" class="search" placeholder="Search archived students..." />
+          <button type="button" class="search-clear" aria-label="Clear search" hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Student No.</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Gender</th>
+                <th>Contact</th>
+                <th>Reason</th>
+                <th>Date Archived</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="archiveRows"></tbody>
+          </table>
+        </div>
+        <p class="empty" id="emptyState" hidden></p>
+      </div>
     </section>
 
     <footer class="main__footer">&copy; 2026 Enrollment Management System</footer>
   </div>
 
-  <script src="../../js/dashboard.js"></script>
+  <div class="modal-overlay" id="restoreModal" hidden>
+    <div class="modal modal--small" role="dialog" aria-modal="true" aria-labelledby="restoreTitle">
+      <div class="modal__head">
+        <h2 id="restoreTitle">Restore Student</h2>
+        <button class="modal__close" id="closeRestoreModal" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal__body">
+        <p class="archive-name" id="restoreName"></p>
+        <p class="archive-note">The student will be moved back to the active list in Data Entry &rsaquo; Student and can be enrolled again.</p>
+        <div class="form-actions">
+          <button type="button" class="btn btn--ghost" id="cancelRestoreBtn">Cancel</button>
+          <button type="button" class="btn btn--primary" id="confirmRestoreBtn">Restore</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../../public/assets/js/shared/dashboard.js"></script>
+  <script src="../../../public/assets/js/Archives/archive.js"></script>
 </body>
 </html>

@@ -1,20 +1,19 @@
-<!-- teacher.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Teacher &middot; Enrollment Management System</title>
+  <title>Strand &middot; Enrollment Management System</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../../css/dashboard.css" />
+  <link rel="stylesheet" href="../../../public/assets/css/shared/dashboard.css" />
 </head>
 <body>
   <aside class="sidebar" id="sidebar">
     <div class="sidebar__brand">
       <div class="sidebar__logo">
-        <img src="../../src/images/logo.png" alt="Enrollment Management System crest" />
+        <img src="../../../public/assets/images/logo.png" alt="Enrollment Management System crest" />
       </div>
       <p class="sidebar__title">Admission</p>
     </div>
@@ -31,31 +30,31 @@
       </button>
 
       <ul class="nav__submenu is-open" id="dashMenu">
-        <li><a href="../data-entry.html">
+        <li><a href="../../Dashboards/Views/RegistrarSide/data-entry.php">
           <span class="submenu__icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
           </span>
           <span>Data entry</span>
         </a></li>
-        <li><a href="../transaction.html">
+        <li><a href="../../Dashboards/Views/RegistrarSide/transaction.php">
           <span class="submenu__icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m17 2 4 4-4 4"/><path d="M3 6h18"/><path d="m7 22-4-4 4-4"/><path d="M21 18H3"/></svg>
           </span>
           <span>Transaction</span>
         </a></li>
-        <li><a href="../settings/settings.html">
+        <li><a href="../../Dashboards/Views/AdminSide/settings.php">
           <span class="submenu__icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
           </span>
           <span>Settings</span>
         </a></li>
-        <li><a href="../maintenance.html">
+        <li><a href="../../Dashboards/Views/AdminSide/maintenance.php" class="is-active">
           <span class="submenu__icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76Z"/></svg>
           </span>
           <span>Maintenance</span>
         </a></li>
-        <li><a href="../records.html">
+        <li><a href="../../Dashboards/Views/RegistrarSide/records.php">
           <span class="submenu__icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>
           </span>
@@ -64,7 +63,7 @@
       </ul>
     </nav>
 
-    <a class="sidebar__logout" href="../index.html">
+    <a class="sidebar__logout" href="../../../public/index.php">
       <span class="nav__icon" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
       </span>
@@ -81,20 +80,28 @@
       </span>
     </button>
 
-    <h1 class="main__title">Teacher</h1>
+    <section class="content content--settings">
+      <header class="page-head">
+        <nav class="page-head__crumbs" aria-label="Breadcrumb">
+          <a href="../../Dashboards/Views/AdminSide/maintenance.php">Maintenance</a>
+          <span aria-hidden="true">/</span>
+          <span aria-current="page">Strand</span>
+        </nav>
+        <h1 class="page-head__title">Strand</h1>
+        <p class="page-head__desc">Manage the senior high school strands offered by the school.</p>
+      </header>
 
-    <section class="content">
       <div class="toolbar">
         <div class="search-box">
           <svg class="search-box__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-          <input type="search" id="searchInput" class="search" placeholder="Search by name, email, or specialization..." />
+          <input type="search" id="searchInput" class="search" placeholder="Search by code or name..." />
           <button type="button" class="search-clear" aria-label="Clear search" hidden>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
           </button>
         </div>
-        <button class="btn btn--primary" id="addTeacherBtn">
+        <button class="btn btn--primary" id="addStrandBtn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-          Add Teacher
+          Add Strand
         </button>
       </div>
 
@@ -103,72 +110,45 @@
           <table class="data-table">
             <thead>
               <tr>
-                <th>Teacher ID</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Contact Number</th>
-                <th>Specialization</th>
+                <th>Strand Code</th>
+                <th>Strand Name</th>
                 <th>Actions</th>
               </tr>
             </thead>
-            <tbody id="teacherRows"></tbody>
+            <tbody id="strandRows"></tbody>
           </table>
         </div>
-        <p class="empty" id="emptyState" hidden>No teachers yet. Click "Add Teacher" to get started.</p>
+        <p class="empty" id="emptyState" hidden>No strands yet. Click "Add Strand" to get started.</p>
+        <div class="pagination" id="pagination" hidden>
+          <span class="pagination__info" id="pageInfo"></span>
+          <div class="pagination__controls" id="pageControls"></div>
+        </div>
       </div>
     </section>
 
     <footer class="main__footer">&copy; 2026 Enrollment Management System</footer>
   </div>
 
-  <div class="modal-overlay" id="teacherModal" hidden>
+  <div class="modal-overlay" id="strandModal" hidden>
     <div class="modal modal--small" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
       <div class="modal__head">
-        <h2 id="modalTitle">Add Teacher</h2>
-        <button class="modal__close" id="closeTeacherModal" aria-label="Close">&times;</button>
+        <h2 id="modalTitle">Add Strand</h2>
+        <button class="modal__close" id="closeStrandModal" aria-label="Close">&times;</button>
       </div>
       <div class="modal__body">
-        <form id="teacherForm" class="settings-form" novalidate>
-          <input type="hidden" name="id" id="editId" />
+        <form id="strandForm" class="settings-form" novalidate>
           <label class="field">
-            <span>First Name</span>
-            <input type="text" name="firstName" id="firstName" required />
-            <small class="field-error" id="firstNameError"></small>
+            <span>Strand Code</span>
+            <input type="text" name="code" placeholder="e.g. STEM" autocomplete="off" maxlength="12" required />
           </label>
           <label class="field">
-            <span>Last Name</span>
-            <input type="text" name="lastName" id="lastName" required />
-            <small class="field-error" id="lastNameError"></small>
+            <span>Strand Name</span>
+            <input type="text" name="name" placeholder="e.g. Science, Technology, Engineering, and Mathematics" autocomplete="off" required />
           </label>
-          <label class="field">
-            <span>Email</span>
-            <input type="email" name="email" id="email" placeholder="name@school.edu.ph" />
-            <small class="field-error" id="emailError"></small>
-          </label>
-          <label class="field">
-            <span>Contact Number</span>
-            <input type="tel" name="contact" id="contact" placeholder="09XXXXXXXXX" />
-            <small class="field-error" id="contactError"></small>
-          </label>
-          <label class="field">
-            <span>Specialization</span>
-            <input type="text" name="specialization" id="specialization" list="specializations" placeholder="e.g. Mathematics" />
-            <datalist id="specializations">
-              <option>Mathematics</option>
-              <option>Science</option>
-              <option>English</option>
-              <option>Filipino</option>
-              <option>Social Studies</option>
-              <option>Physical Education</option>
-              <option>TLE / ICT</option>
-              <option>Values Education</option>
-            </datalist>
-            <small class="field-error" id="specializationError"></small>
-          </label>
-          <p class="form-msg" id="teacherMsg" role="status"></p>
+          <p class="form-msg" id="strandMsg" role="status"></p>
           <div class="form-actions">
-            <button type="button" class="btn btn--ghost" id="cancelTeacherBtn">Cancel</button>
-            <button type="submit" class="btn btn--primary" id="saveTeacherBtn">Save Teacher</button>
+            <button type="button" class="btn btn--ghost" id="cancelStrandBtn">Cancel</button>
+            <button type="submit" class="btn btn--primary">Save Strand</button>
           </div>
         </form>
       </div>
@@ -178,12 +158,12 @@
   <div class="modal-overlay" id="deleteModal" hidden>
     <div class="modal modal--small" role="dialog" aria-modal="true" aria-labelledby="deleteTitle">
       <div class="modal__head">
-        <h2 id="deleteTitle">Delete Teacher</h2>
+        <h2 id="deleteTitle">Delete Strand</h2>
         <button class="modal__close" id="closeDeleteModal" aria-label="Close">&times;</button>
       </div>
       <div class="modal__body">
         <p class="archive-name" id="deleteName"></p>
-        <p class="archive-note">This permanently removes the teacher record. This cannot be undone.</p>
+        <p class="archive-note" id="deleteNote">This permanently removes the strand. This cannot be undone.</p>
         <div class="form-actions">
           <button type="button" class="btn btn--ghost" id="cancelDeleteBtn">Cancel</button>
           <button type="button" class="btn btn--danger" id="confirmDeleteBtn">Delete</button>
@@ -192,7 +172,7 @@
     </div>
   </div>
 
-  <script src="../../js/dashboard.js"></script>
-  <script src="../../js/teacher/teacher.js"></script>
+  <script src="../../../public/assets/js/shared/dashboard.js"></script>
+  <script src="../../../public/assets/js/Strands/strand.js"></script>
 </body>
 </html>
