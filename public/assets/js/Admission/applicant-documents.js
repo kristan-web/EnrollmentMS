@@ -3,7 +3,7 @@
  * Connects the "Documents" wizard step to applicant_documents_controllers.php
  */
 
-const DOCUMENTS_API_URL = "../../Controllers/application/applicant_documents_controllers.php";
+const DOCUMENTS_API_URL = "../../../../app/Admission/Controller/applicant_documents_controllers.php";
 
 // Filled in once Step 1 finishes (POST to applicants_controllers.php returns these)
 let applicantId = null;
