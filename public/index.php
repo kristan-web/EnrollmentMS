@@ -75,7 +75,7 @@
 
   <footer class="footer">&copy; 2026 Enrollment Management System</footer>
 
-  <script src="assets/js/shared/script.js"></script>
+  <!-- <script src="assets/js/shared/script.js"></script> -->
   <script src="assets/js/Accounts/Users.js"></script>
 </body>
 </html>

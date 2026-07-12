@@ -27,6 +27,9 @@ SET time_zone = "+00:00";
 -- Table structure for table `applicants`
 --
 
+CREATE DATABASE `enrollment_management_system`;
+USE  `enrollment_management_system`;
+
 CREATE TABLE `applicants` (
   `applicant_id` int(11) NOT NULL,
   `reference_number` varchar(20) NOT NULL,
@@ -433,7 +436,7 @@ CREATE TABLE `users` (
   `password_hash` varchar(255) NOT NULL,
   `full_name` varchar(100) NOT NULL,
   `email` varchar(100) NOT NULL,
-  `role` enum('Admin','Staff') NOT NULL DEFAULT 'Admin',
+  `role` enum('Admin', 'Registrar', 'Accounting') NOT NULL DEFAULT 'Admin',
   `created_at` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

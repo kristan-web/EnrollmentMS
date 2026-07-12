@@ -150,9 +150,13 @@
                   </div>
                 </label>
               </div>
-              <div class="strength" id="createStrength" data-level="0">
-                <div class="strength__bars"><i></i><i></i><i></i><i></i></div>
-                <span class="strength__label">&nbsp;</span>
+              <div class="input-wrap">
+                <select name="accountRole" id="accountRole" style="width: 100%; height: 40px; outline: none; border: 1.5px solid rgba(22, 36, 79, 0.12); font-family: inherit;">
+                  <option value="" selected disabled>Select account role</option>
+                  <option value="1">Admin</option>
+                  <option value="2">Registrar</option>
+                  <option value="3">Accounting</option>
+                </select>
               </div>
               <p class="form-msg" id="createMsg" role="status"></p>
               <button type="submit" class="btn btn--primary btn--block btn--tall">

@@ -5,29 +5,51 @@
     // Set JSON response header
     header('Content-Type: application/json');
 
+    function hashPassword($passwordData){
+        return password_hash($passwordData, PASSWORD_DEFAULT);
+    }
+
+    function insertRegistrationDataToUserClass(Users $user, $fullname, $email, $password, $role){
+        $user->setFullname($fullname);
+        $user->setEmail($email);
+        $user->setPassword($password);
+        $user->setRole($role);
+
+        return $user;
+    }
+
+    function insertLoginDataToUserClass(Users $user, $email, $password){
+        $user->setEmail($email);
+        $user->setPassword($password);
+
+        return $user;
+    }
+
+    function verifyPassword($inputPassword, $databasePassword){
+        return password_verify($inputPassword, $databasePassword);
+    }
+
+    function setNewHashedPassword(Users $user, $password){
+        $hashedpassword = password_hash($password, PASSWORD_DEFAULT);
+        $user->setPassword($hashedpassword);
+
+        return $user;
+    }
+
+
+
     if($_SERVER['REQUEST_METHOD'] == "POST"){
-        // Account Creation Form
         if($_POST['form_type'] == 'creation'){
-            // Instance of Users class
             $user = new Users();
 
-            // Hash the password;
-            $password = $_POST['passwordCreation'];
-            $hashedpassword = password_hash($password, PASSWORD_DEFAULT);
+            $hashedpassword = hashPassword($_POST['passwordCreation']);
 
-            // Store POST data to Users instance
-            $user->setFullname($_POST['fullnameCreation']);
-            $user->setEmail($_POST['emailCreation']);
-            $user->setPassword($hashedpassword);
-            $user->setRole("Staff");
+            $account = insertRegistrationDataToUserClass($user, $_POST['fullnameCreation'], $_POST['emailCreation'], $hashedpassword, $_POST['accountRole']);
 
-            // Instance of User DAO
             $dao = new UserDAO();
 
-            // Check if email exists
-            $result = $dao->VerifyUser($user);
+            $result = $dao->VerifyUser($account);
 
-            // If result returns true, email exists.
             if($result){
                 echo json_encode([
                     "success" => false,
@@ -53,27 +75,22 @@
 
         // Login Form
         if($_POST['form_type'] == 'login'){
-            // Instance of users class
             $user = new Users();
 
-            // Pass POST data to the instance
-            $user->setEmail($_POST['emailLogin']);
-            $user->setPassword($_POST['passwordLogin']);
+            $account = insertLoginDataToUserClass($user, $_POST['emailLogin'], $_POST['passwordLogin']);
 
             // Create DAO instance
             $dao = new UserDAO();
 
-            $result = $dao->VerifyUser($user);
+            $result = $dao->VerifyUser($account);
 
             if($result){
-                // If user input password matches the one stored in database
-                if(password_verify($user->getPassword(), $result['password_hash'])){
+                if(verifyPassword($account->getPassword(), $result['password_hash'])){
                     echo json_encode([
                         "success" => true,
                         "message" => 'Account Verified'
                     ]);
                 }
-                // If password is incorrect
                 else{
                     echo json_encode([
                         "success" => false,
@@ -94,28 +111,19 @@
             // Create user instance
             $user = new Users();
 
-            // Pass POST data to the instance
-            $user->setEmail($_POST['emailReset']);
-            $user->setPassword($_POST['passwordReset']);
+            $account = insertLoginDataToUserClass($user, $_POST['emailReset'], $_POST['passwordReset']);
 
-            // Create DAO instance
             $dao = new UserDAO();
 
-            // Check the database if account exists
-            $result = $dao->VerifyUser($user);
+            $result = $dao->VerifyUser($account);
 
             // If account is found in the database
             if($result){
                 // Check if password from database matches the user input.
-                if(password_verify($user->getPassword(), $result['password_hash'])){
-                    $newpassword = $_POST['newpassReset'];
-                    $hashedpassword = password_hash($newpassword, PASSWORD_DEFAULT);
-
-                    $user->setPassword($hashedpassword);
+                if(verifyPassword($account->getPassword(), $result['password_hash'])){
+                    $account = setNewHashedPassword($user, $_POST['newPassReset']);
+                    $result = $dao->ChangePassword($account);
                     
-                    $result = $dao->ChangePassword($user);
-                    
-                    // If password change succeeds
                     if($result){
                         echo json_encode([
                             "success" => true,
@@ -129,7 +137,6 @@
                         ]);
                     }
                 }
-                // If user input password does not match database password
                 else{
                     echo json_encode([
                         "success" => false,
