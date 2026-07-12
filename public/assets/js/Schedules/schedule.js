@@ -46,7 +46,7 @@ const printSheet = document.getElementById("printSheet");
 
 // State
 let schedules = [];
-let classSubjects = [];
+let subjects = [];
 let sections = [];
 let rooms = [];
 let teachers = [];
@@ -149,7 +149,7 @@ async function loadLookupData() {
         sections = data.sections || [];
         rooms = data.rooms || [];
         teachers = data.teachers || [];
-        classSubjects = data.class_subjects || [];
+        subjects = data.subjects || [];
         populateDropdowns();
         return data;
     } catch (e) {
@@ -189,35 +189,53 @@ function populateDropdowns() {
         });
         roomSelect.innerHTML = html;
     }
+
+    // Populate teacher dropdown in modal
+    const teacherSelect = document.getElementById("teacherSelect");
+    if (teacherSelect) {
+        let html = '<option value="" disabled selected>Select teacher</option>';
+        teachers.forEach(t => {
+            html += `<option value="${t.teacher_id}">${esc(t.last_name)}, ${esc(t.first_name)}</option>`;
+        });
+        teacherSelect.innerHTML = html;
+    }
 }
 
-function populateClassSubjects(selected) {
+// Fetches subjects that apply to the selected section (grade level + strand,
+// or common subjects), optionally narrowed by term. Replaces the old
+// client-side class_subjects filtering since subjects now come straight
+// from the `subjects` table via the lookup endpoint.
+async function populateSubjects(selected) {
     const sectionId = document.getElementById("sectionSelect")?.value;
     const term = document.getElementById("termSelect")?.value;
-    const select = document.getElementById("classSubjectSelect");
-    
+    const select = document.getElementById("subjectSelect");
+
     if (!sectionId) {
         select.innerHTML = '<option value="" disabled selected>Select section first</option>';
         return;
     }
 
-    const filtered = classSubjects.filter(cs => 
-        cs.section_id == sectionId && 
-        (!term || cs.semester === term)
-    );
+    select.innerHTML = '<option value="" disabled selected>Loading subjects...</option>';
 
-    if (!filtered.length) {
+    try {
+        const data = await apiGet({ action: "lookup", section_id: sectionId, term: term });
+        subjects = data.subjects || [];
+    } catch (e) {
+        console.error("Failed to load subjects:", e);
+        subjects = [];
+    }
+
+    if (!subjects.length) {
         select.innerHTML = '<option value="" disabled selected>No subjects found for this section</option>';
         return;
     }
 
     let html = '<option value="" disabled selected>Select subject</option>';
-    filtered.forEach(cs => {
-        const teacherName = cs.teacher_first_name ? getFullName(cs.teacher_first_name, cs.teacher_last_name) : "No teacher assigned";
-        html += `<option value="${cs.class_subject_id}">${esc(cs.subject_code)} - ${esc(cs.subject_name)} (${esc(cs.subject_type)}) [${teacherName}]</option>`;
+    subjects.forEach(sub => {
+        html += `<option value="${sub.subject_id}">${esc(sub.subject_code)} - ${esc(sub.subject_name)} (${esc(sub.subject_type)})</option>`;
     });
     select.innerHTML = html;
-    
+
     if (selected) {
         select.value = selected;
     }
@@ -345,7 +363,8 @@ function render() {
 
 // ---------- Check Conflicts ----------
 async function checkConflicts() {
-    const classSubjectId = document.getElementById("classSubjectSelect")?.value;
+    const sectionId = document.getElementById("sectionSelect")?.value;
+    const teacherId = document.getElementById("teacherSelect")?.value;
     const dayOfWeek = document.getElementById("daySelect")?.value;
     const startTime = document.getElementById("startTime")?.value;
     const endTime = document.getElementById("endTime")?.value;
@@ -354,19 +373,15 @@ async function checkConflicts() {
     const conflictWarning = document.getElementById("conflictWarning");
     const conflictMsg = document.getElementById("conflictMsg");
 
-    if (!classSubjectId || !dayOfWeek || !startTime || !endTime || !roomId) {
+    if (!sectionId || !dayOfWeek || !startTime || !endTime || !roomId) {
         conflictWarning.hidden = true;
         return;
     }
 
-    // Get the class subject details
-    const cs = classSubjects.find(c => c.class_subject_id == classSubjectId);
-    if (!cs) return;
-
     const params = {
         action: "check_conflicts",
-        section_id: cs.section_id,
-        teacher_id: cs.teacher_id || '',
+        section_id: sectionId,
+        teacher_id: teacherId || '',
         room_id: roomId,
         day_of_week: dayOfWeek,
         start_time: startTime,
@@ -423,14 +438,24 @@ async function openSchedModal(s) {
         termSelect.selectedIndex = 0;
     }
 
-    // Set section and populate subjects
+    // Set section and populate the subjects that apply to it
     const sectionSelect = document.getElementById("sectionSelect");
     if (s) {
         sectionSelect.value = s.section_id;
     } else {
         sectionSelect.selectedIndex = 0;
     }
-    populateClassSubjects(s ? s.class_subject_id : null);
+    await populateSubjects(s ? s.subject_id : null);
+
+    // Set teacher
+    const teacherSelect = document.getElementById("teacherSelect");
+    if (teacherSelect) {
+        if (s) {
+            teacherSelect.value = s.teacher_id || "";
+        } else {
+            teacherSelect.selectedIndex = 0;
+        }
+    }
 
     // Set other fields
     if (s) {
@@ -589,7 +614,7 @@ if (closePrintModal) closePrintModal.addEventListener("click", hideModals);
 const sectionSelect = document.getElementById("sectionSelect");
 if (sectionSelect) {
     sectionSelect.addEventListener("change", () => {
-        populateClassSubjects(null);
+        populateSubjects(null);
         document.getElementById("conflictWarning").hidden = true;
     });
 }
@@ -597,13 +622,13 @@ if (sectionSelect) {
 const termSelect = document.getElementById("termSelect");
 if (termSelect) {
     termSelect.addEventListener("change", () => {
-        populateClassSubjects(null);
+        populateSubjects(null);
         document.getElementById("conflictWarning").hidden = true;
     });
 }
 
 // Check conflicts on change
-['daySelect', 'roomSelect', 'startTime', 'endTime', 'classSubjectSelect'].forEach(id => {
+['daySelect', 'roomSelect', 'startTime', 'endTime', 'subjectSelect', 'teacherSelect'].forEach(id => {
     const el = document.getElementById(id);
     if (el) {
         el.addEventListener("change", () => {
@@ -666,7 +691,9 @@ if (schedForm) {
 
         const formData = new FormData(schedForm);
         const data = {
-            class_subject_id: formData.get("classSubjectId"),
+            section_id: formData.get("sectionId"),
+            subject_id: formData.get("subjectId"),
+            teacher_id: formData.get("teacherId"),
             room_id: formData.get("roomId"),
             day_of_week: formData.get("dayOfWeek"),
             start_time: formData.get("startTime"),
@@ -676,8 +703,14 @@ if (schedForm) {
         console.log("Submitting data:", data);
 
         // Validate
-        if (!data.class_subject_id) {
-            return setMsg("Please select a class subject.", "is-error");
+        if (!data.section_id) {
+            return setMsg("Please select a section.", "is-error");
+        }
+        if (!data.subject_id) {
+            return setMsg("Please select a subject.", "is-error");
+        }
+        if (!data.teacher_id) {
+            return setMsg("Please select a teacher.", "is-error");
         }
         if (!data.room_id) {
             return setMsg("Please select a room.", "is-error");

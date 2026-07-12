@@ -92,14 +92,24 @@ class Schedule {
     public static function validate($data) {
         $errors = [];
 
-        $class_subject_id = $data['class_subject_id'] ?? '';
+        $section_id = $data['section_id'] ?? '';
+        $subject_id = $data['subject_id'] ?? '';
+        $teacher_id = $data['teacher_id'] ?? '';
         $room_id = $data['room_id'] ?? '';
         $day_of_week = $data['day_of_week'] ?? '';
         $start_time = $data['start_time'] ?? '';
         $end_time = $data['end_time'] ?? '';
 
-        if (empty($class_subject_id)) {
-            $errors[] = "Please select a class subject.";
+        if (empty($section_id)) {
+            $errors[] = "Please select a section.";
+        }
+
+        if (empty($subject_id)) {
+            $errors[] = "Please select a subject.";
+        }
+
+        if (empty($teacher_id)) {
+            $errors[] = "Please select a teacher.";
         }
 
         if (empty($room_id)) {

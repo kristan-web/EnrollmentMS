@@ -25,14 +25,14 @@ if ($method == "GET") {
         echo json_encode($dao->getAll($filters));
 
     } else if ($action == "lookup") {
+        $sectionId = isset($_GET["section_id"]) ? $_GET["section_id"] : null;
+        $term = isset($_GET["term"]) ? $_GET["term"] : null;
+
         echo json_encode([
             "sections" => $dao->getAllSections(),
             "rooms" => $dao->getAllRooms(),
             "teachers" => $dao->getAllTeachers(),
-            "class_subjects" => $dao->getAllClassSubjects([
-                "section_id" => isset($_GET["section_id"]) ? $_GET["section_id"] : null,
-                "term" => isset($_GET["term"]) ? $_GET["term"] : null,
-            ])
+            "subjects" => $sectionId ? $dao->getSubjectsForSection($sectionId, $term) : [],
         ]);
 
     } else if ($action == "get") {
@@ -98,12 +98,21 @@ if ($method == "GET") {
             exit;
         }
 
-        // Get class subject details for conflict checking
-        $classSubject = $dao->getClassSubjectById($_POST["class_subject_id"]);
-        if (!$classSubject) {
+        $sectionId = $_POST["section_id"];
+        $subjectId = $_POST["subject_id"];
+        $teacherId = $_POST["teacher_id"];
+        $roomId = $_POST["room_id"];
+        $dayOfWeek = $_POST["day_of_week"];
+        $startTime = $_POST["start_time"];
+        $endTime = $_POST["end_time"];
+
+        // Resolve (or create) the class_subjects link row behind the
+        // scenes so the form can work straight off the `subjects` table.
+        $classSubjectId = $dao->findOrCreateClassSubject($sectionId, $subjectId, $teacherId);
+        if (!$classSubjectId) {
             echo json_encode([
                 "success" => false,
-                "message" => "Invalid class subject selected."
+                "message" => "Unable to link this subject to the section."
             ]);
             exit;
         }
@@ -112,7 +121,7 @@ if ($method == "GET") {
         $excludeId = ($action == "update" && !empty($_POST["schedule_id"])) ? $_POST["schedule_id"] : null;
 
         // Check section conflict
-        if ($dao->checkSectionConflict($classSubject['section_id'], $_POST["day_of_week"], $_POST["start_time"], $_POST["end_time"], $excludeId)) {
+        if ($dao->checkSectionConflict($sectionId, $dayOfWeek, $startTime, $endTime, $excludeId)) {
             echo json_encode([
                 "success" => false,
                 "message" => "This section already has a class at that time."
@@ -121,7 +130,7 @@ if ($method == "GET") {
         }
 
         // Check teacher conflict
-        if ($classSubject['teacher_id'] && $dao->checkTeacherConflict($classSubject['teacher_id'], $_POST["day_of_week"], $_POST["start_time"], $_POST["end_time"], $excludeId)) {
+        if ($teacherId && $dao->checkTeacherConflict($teacherId, $dayOfWeek, $startTime, $endTime, $excludeId)) {
             echo json_encode([
                 "success" => false,
                 "message" => "This teacher is already assigned to another class at that time."
@@ -130,7 +139,7 @@ if ($method == "GET") {
         }
 
         // Check room conflict
-        if ($dao->checkRoomConflict($_POST["room_id"], $_POST["day_of_week"], $_POST["start_time"], $_POST["end_time"], $excludeId)) {
+        if ($dao->checkRoomConflict($roomId, $dayOfWeek, $startTime, $endTime, $excludeId)) {
             echo json_encode([
                 "success" => false,
                 "message" => "This room is already occupied at that time."
@@ -139,11 +148,11 @@ if ($method == "GET") {
         }
 
         $schedule = new Schedule();
-        $schedule->setClassSubjectId($_POST["class_subject_id"]);
-        $schedule->setRoomId($_POST["room_id"]);
-        $schedule->setDayOfWeek($_POST["day_of_week"]);
-        $schedule->setStartTime($_POST["start_time"]);
-        $schedule->setEndTime($_POST["end_time"]);
+        $schedule->setClassSubjectId($classSubjectId);
+        $schedule->setRoomId($roomId);
+        $schedule->setDayOfWeek($dayOfWeek);
+        $schedule->setStartTime($startTime);
+        $schedule->setEndTime($endTime);
 
         try {
             if ($action == "update") {

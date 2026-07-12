@@ -169,12 +169,20 @@
               </select>
             </label>
           </div>
-          <label class="field">
-            <span>Class Subject <span class="required">*</span></span>
-            <select name="classSubjectId" id="classSubjectSelect" required>
-              <option value="" disabled selected>Select section first</option>
-            </select>
-          </label>
+          <div class="form-row">
+            <label class="field">
+              <span>Subject <span class="required">*</span></span>
+              <select name="subjectId" id="subjectSelect" required>
+                <option value="" disabled selected>Select section first</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Teacher <span class="required">*</span></span>
+              <select name="teacherId" id="teacherSelect" required>
+                <option value="" disabled selected>Select teacher</option>
+              </select>
+            </label>
+          </div>
           <div class="form-row">
             <label class="field">
               <span>Day <span class="required">*</span></span>
