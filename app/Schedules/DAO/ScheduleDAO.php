@@ -281,6 +281,99 @@ class ScheduleDAO {
         return $stmt->execute();
     }
 
+    // GET SECTION INFO (grade_level + strand_id) - used to filter subjects
+    public function getSectionInfo($sectionId) {
+        $query = "
+        SELECT section_id, strand_id, grade_level, school_year
+        FROM class_sections
+        WHERE section_id = :id
+        ";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindValue(':id', $sectionId);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    // GET SUBJECTS APPLICABLE TO A SECTION
+    // Matches the section's grade level, and either the section's own
+    // strand or a "common" subject (strand_id IS NULL applies to every
+    // strand). Optionally narrowed further by term/semester.
+    public function getSubjectsForSection($sectionId, $term = null) {
+        $section = $this->getSectionInfo($sectionId);
+        if (!$section) {
+            return [];
+        }
+
+        $query = "
+        SELECT subject_id, subject_code, subject_name, subject_type, grade_level, semester, units
+        FROM subjects
+        WHERE status = 'Active'
+        AND grade_level = :grade_level
+        AND (strand_id = :strand_id OR strand_id IS NULL)
+        ";
+
+        $params = [
+            ':grade_level' => $section['grade_level'],
+            ':strand_id' => $section['strand_id'],
+        ];
+
+        if ($term) {
+            $query .= " AND semester = :term ";
+            $params[':term'] = $term;
+        }
+
+        $query .= " ORDER BY subject_type, subject_name ";
+
+        $stmt = $this->conn->prepare($query);
+        foreach ($params as $key => $value) {
+            $stmt->bindValue($key, $value);
+        }
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // FIND OR CREATE THE class_subjects LINK ROW for (section, subject)
+    // The Schedule form now picks straight from the official `subjects`
+    // table plus a teacher; this quietly creates/reuses the linking row
+    // instead of requiring it to be set up separately beforehand.
+    public function findOrCreateClassSubject($sectionId, $subjectId, $teacherId = null) {
+        $query = "
+        SELECT class_subject_id FROM class_subjects
+        WHERE section_id = :section_id AND subject_id = :subject_id
+        ";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindValue(':section_id', $sectionId);
+        $stmt->bindValue(':subject_id', $subjectId);
+        $stmt->execute();
+        $existing = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($existing) {
+            // Keep the teacher assignment in sync in case it was changed
+            $update = $this->conn->prepare("
+                UPDATE class_subjects SET teacher_id = :teacher_id
+                WHERE class_subject_id = :id
+            ");
+            $update->bindValue(':teacher_id', $teacherId);
+            $update->bindValue(':id', $existing['class_subject_id']);
+            $update->execute();
+
+            return $existing['class_subject_id'];
+        }
+
+        $insert = $this->conn->prepare("
+            INSERT INTO class_subjects (section_id, subject_id, teacher_id)
+            VALUES (:section_id, :subject_id, :teacher_id)
+        ");
+        $insert->bindValue(':section_id', $sectionId);
+        $insert->bindValue(':subject_id', $subjectId);
+        $insert->bindValue(':teacher_id', $teacherId);
+        $insert->execute();
+
+        return $this->conn->lastInsertId();
+    }
+
     // GET ALL CLASS SUBJECTS (for dropdown)
     public function getAllClassSubjects($filters = []) {
         $query = "
