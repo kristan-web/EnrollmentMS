@@ -149,7 +149,6 @@ async function loadLookupData() {
         sections = data.sections || [];
         rooms = data.rooms || [];
         teachers = data.teachers || [];
-        subjects = data.subjects || [];
         populateDropdowns();
         return data;
     } catch (e) {
@@ -195,30 +194,32 @@ function populateDropdowns() {
     if (teacherSelect) {
         let html = '<option value="" disabled selected>Select teacher</option>';
         teachers.forEach(t => {
-            html += `<option value="${t.teacher_id}">${esc(t.last_name)}, ${esc(t.first_name)}</option>`;
+            html += `<option value="${t.teacher_id}">${esc(getFullName(t.first_name, t.last_name))}</option>`;
         });
         teacherSelect.innerHTML = html;
     }
 }
 
 // Fetches subjects that apply to the selected section (grade level + strand,
-// or common subjects), optionally narrowed by term. Replaces the old
-// client-side class_subjects filtering since subjects now come straight
-// from the `subjects` table via the lookup endpoint.
-async function populateSubjects(selected) {
+// or "common" subjects with no strand), optionally narrowed by term, and
+// populates the Subject dropdown. This replaces the old class_subjects
+// dropdown — subjects come straight from the official `subjects` table now.
+async function populateSubjects(selectedSubjectId) {
     const sectionId = document.getElementById("sectionSelect")?.value;
     const term = document.getElementById("termSelect")?.value;
     const select = document.getElementById("subjectSelect");
+    if (!select) return;
 
     if (!sectionId) {
         select.innerHTML = '<option value="" disabled selected>Select section first</option>';
+        subjects = [];
         return;
     }
 
-    select.innerHTML = '<option value="" disabled selected>Loading subjects...</option>';
+    select.innerHTML = '<option value="" disabled selected>Loading subjects…</option>';
 
     try {
-        const data = await apiGet({ action: "lookup", section_id: sectionId, term: term });
+        const data = await apiGet({ action: "lookup", section_id: sectionId, term: term || null });
         subjects = data.subjects || [];
     } catch (e) {
         console.error("Failed to load subjects:", e);
@@ -236,11 +237,12 @@ async function populateSubjects(selected) {
     });
     select.innerHTML = html;
 
-    if (selected) {
-        select.value = selected;
+    if (selectedSubjectId) {
+        select.value = selectedSubjectId;
     }
 }
 
+// ---------- Load Schedules ----------
 // ---------- Load Schedules ----------
 async function loadSchedules() {
     const filters = {};
@@ -257,13 +259,33 @@ async function loadSchedules() {
     
     filters.action = "list";
 
-    console.log("Loading schedules with filters:", filters);
+    // DEBUG: Log the exact filters being sent
+    console.log("=== LOAD SCHEDULES FILTERS ===");
+    console.log("filters:", filters);
+    console.log("searchInput value:", searchInput ? searchInput.value : 'null');
+    console.log("termFilter value:", termFilter ? termFilter.value : 'null');
+    console.log("sectionFilter value:", sectionFilter ? sectionFilter.value : 'null');
 
     showLoading(true);
     try {
         const response = await apiGet(filters);
+        console.log("Raw response from API:", response);
+        console.log("Response type:", typeof response);
+        console.log("Is array?", Array.isArray(response));
+        
         schedules = Array.isArray(response) ? response : [];
         console.log("Schedules loaded:", schedules.length);
+        
+        if (schedules.length > 0) {
+            console.log("First schedule:", schedules[0]);
+        } else {
+            console.log("No schedules returned. Response content:", response);
+            
+            // If response is an object with an error, show it
+            if (response && response.error) {
+                console.error("API Error:", response.error);
+            }
+        }
         render();
     } catch (e) {
         console.error("Failed to load schedules:", e);
@@ -365,6 +387,7 @@ function render() {
 async function checkConflicts() {
     const sectionId = document.getElementById("sectionSelect")?.value;
     const teacherId = document.getElementById("teacherSelect")?.value;
+    const subjectId = document.getElementById("subjectSelect")?.value;
     const dayOfWeek = document.getElementById("daySelect")?.value;
     const startTime = document.getElementById("startTime")?.value;
     const endTime = document.getElementById("endTime")?.value;
@@ -373,7 +396,7 @@ async function checkConflicts() {
     const conflictWarning = document.getElementById("conflictWarning");
     const conflictMsg = document.getElementById("conflictMsg");
 
-    if (!sectionId || !dayOfWeek || !startTime || !endTime || !roomId) {
+    if (!sectionId || !subjectId || !teacherId || !dayOfWeek || !startTime || !endTime || !roomId) {
         conflictWarning.hidden = true;
         return;
     }
@@ -381,7 +404,7 @@ async function checkConflicts() {
     const params = {
         action: "check_conflicts",
         section_id: sectionId,
-        teacher_id: teacherId || '',
+        teacher_id: teacherId,
         room_id: roomId,
         day_of_week: dayOfWeek,
         start_time: startTime,
@@ -438,7 +461,7 @@ async function openSchedModal(s) {
         termSelect.selectedIndex = 0;
     }
 
-    // Set section and populate the subjects that apply to it
+    // Set section and populate subjects for that section/term
     const sectionSelect = document.getElementById("sectionSelect");
     if (s) {
         sectionSelect.value = s.section_id;
@@ -450,11 +473,7 @@ async function openSchedModal(s) {
     // Set teacher
     const teacherSelect = document.getElementById("teacherSelect");
     if (teacherSelect) {
-        if (s) {
-            teacherSelect.value = s.teacher_id || "";
-        } else {
-            teacherSelect.selectedIndex = 0;
-        }
+        teacherSelect.value = s ? (s.teacher_id || "") : "";
     }
 
     // Set other fields
@@ -685,6 +704,7 @@ window.addEventListener("afterprint", () => {
 });
 
 // ---------- Form Submit ----------
+// ---------- Form Submit ----------
 if (schedForm) {
     schedForm.addEventListener("submit", async (e) => {
         e.preventDefault();
@@ -723,6 +743,16 @@ if (schedForm) {
         }
         if (data.start_time >= data.end_time) {
             return setMsg("End time must be after start time.", "is-error");
+        }
+
+        // Validate school hours (9:00 AM - 5:00 PM)
+        const schoolStart = "09:00";
+        const schoolEnd = "17:00";
+        if (data.start_time < schoolStart) {
+            return setMsg("School hours start at 9:00 AM. Please set a valid start time.", "is-error");
+        }
+        if (data.end_time > schoolEnd) {
+            return setMsg("School hours end at 5:00 PM. Please set a valid end time.", "is-error");
         }
 
         // Check conflicts first

@@ -204,14 +204,16 @@
             </label>
           </div>
           <div class="form-row">
-            <label class="field">
-              <span>Start Time <span class="required">*</span></span>
-              <input type="time" name="startTime" id="startTime" required />
-            </label>
-            <label class="field">
-              <span>End Time <span class="required">*</span></span>
-              <input type="time" name="endTime" id="endTime" required />
-            </label>
+              <label class="field">
+                  <span>Start Time <span class="required">*</span></span>
+                  <input type="time" name="startTime" id="startTime" required min="09:00" max="16:30" />
+                  <small class="field-hint">School hours: 9:00 AM - 5:00 PM</small>
+              </label>
+              <label class="field">
+                  <span>End Time <span class="required">*</span></span>
+                  <input type="time" name="endTime" id="endTime" required min="09:30" max="17:00" />
+                  <small class="field-hint">School hours: 9:00 AM - 5:00 PM</small>
+              </label>
           </div>
           <div id="conflictWarning" class="conflict-warning" hidden>
             <p class="form-msg is-error" id="conflictMsg"></p>

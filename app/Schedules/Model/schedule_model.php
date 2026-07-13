@@ -3,22 +3,32 @@
 class Schedule {
 
     private $schedule_id;
-    private $class_subject_id;
+    private $section_id;
+    private $subject_id;
+    private $teacher_id;
     private $room_id;
     private $day_of_week;
     private $start_time;
     private $end_time;
     private $created_at;
 
+    // School hours constants
+    const SCHOOL_START = '09:00:00';
+    const SCHOOL_END = '17:00:00';
+
     // Constructor
     public function __construct(
-        $class_subject_id = null,
+        $section_id = null,
+        $subject_id = null,
+        $teacher_id = null,
         $room_id = null,
         $day_of_week = null,
         $start_time = null,
         $end_time = null
     ) {
-        $this->class_subject_id = $class_subject_id;
+        $this->section_id = $section_id;
+        $this->subject_id = $subject_id;
+        $this->teacher_id = $teacher_id;
         $this->room_id = $room_id;
         $this->day_of_week = $day_of_week;
         $this->start_time = $start_time;
@@ -30,8 +40,16 @@ class Schedule {
         return $this->schedule_id;
     }
 
-    public function getClassSubjectId() {
-        return $this->class_subject_id;
+    public function getSectionId() {
+        return $this->section_id;
+    }
+
+    public function getSubjectId() {
+        return $this->subject_id;
+    }
+
+    public function getTeacherId() {
+        return $this->teacher_id;
     }
 
     public function getRoomId() {
@@ -59,8 +77,16 @@ class Schedule {
         $this->schedule_id = $schedule_id;
     }
 
-    public function setClassSubjectId($class_subject_id) {
-        $this->class_subject_id = $class_subject_id;
+    public function setSectionId($section_id) {
+        $this->section_id = $section_id;
+    }
+
+    public function setSubjectId($subject_id) {
+        $this->subject_id = $subject_id;
+    }
+
+    public function setTeacherId($teacher_id) {
+        $this->teacher_id = $teacher_id;
     }
 
     public function setRoomId($room_id) {
@@ -86,6 +112,24 @@ class Schedule {
     // Allowed days of week
     public static function allowedDays() {
         return ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    }
+
+    // Check if time is within school hours
+    public static function isWithinSchoolHours($start_time, $end_time) {
+        // Convert to timestamps for comparison
+        $school_start = strtotime(self::SCHOOL_START);
+        $school_end = strtotime(self::SCHOOL_END);
+        $start = strtotime($start_time);
+        $end = strtotime($end_time);
+
+        // Check if start time is before school starts OR end time is after school ends
+        if ($start < $school_start) {
+            return false;
+        }
+        if ($end > $school_end) {
+            return false;
+        }
+        return true;
     }
 
     // Validation
@@ -130,6 +174,13 @@ class Schedule {
 
         if (!empty($start_time) && !empty($end_time) && $start_time >= $end_time) {
             $errors[] = "End time must be after start time.";
+        }
+
+        // Validate school hours (9:00 AM - 5:00 PM)
+        if (!empty($start_time) && !empty($end_time)) {
+            if (!self::isWithinSchoolHours($start_time, $end_time)) {
+                $errors[] = "School hours are from 9:00 AM to 5:00 PM only. Please adjust the time.";
+            }
         }
 
         return $errors;

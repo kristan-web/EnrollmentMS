@@ -8,6 +8,10 @@ header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, POST");
 header("Access-Control-Allow-Headers: Content-Type");
 
+// Enable error reporting for debugging
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 $method = $_SERVER["REQUEST_METHOD"];
 $dao = new ScheduleDAO();
 
@@ -22,18 +26,84 @@ if ($method == "GET") {
             "teacher_id" => isset($_GET["teacher_id"]) ? $_GET["teacher_id"] : null,
             "day_of_week" => isset($_GET["day_of_week"]) ? $_GET["day_of_week"] : null,
         ];
-        echo json_encode($dao->getAll($filters));
+        
+        // DEBUG: Log the filters
+        error_log("=== LIST ACTION FILTERS ===");
+        error_log(print_r($filters, true));
+        
+        try {
+            $results = $dao->getAll($filters);
+            
+            // DEBUG: Log the results
+            error_log("=== LIST ACTION RESULTS ===");
+            error_log("Count: " . count($results));
+            if (count($results) > 0) {
+                error_log("First result: " . print_r($results[0], true));
+            }
+            
+            // Make sure we're returning an array
+            if (!is_array($results)) {
+                error_log("ERROR: getAll did not return an array!");
+                $results = [];
+            }
+            
+            echo json_encode($results);
+        } catch (Exception $e) {
+            error_log("EXCEPTION in list action: " . $e->getMessage());
+            echo json_encode(["error" => $e->getMessage()]);
+        }
+        exit;
 
     } else if ($action == "lookup") {
         $sectionId = isset($_GET["section_id"]) ? $_GET["section_id"] : null;
         $term = isset($_GET["term"]) ? $_GET["term"] : null;
 
-        echo json_encode([
-            "sections" => $dao->getAllSections(),
-            "rooms" => $dao->getAllRooms(),
-            "teachers" => $dao->getAllTeachers(),
-            "subjects" => $sectionId ? $dao->getSubjectsForSection($sectionId, $term) : [],
-        ]);
+        // Debug: Log what we're getting
+        error_log("=== LOOKUP REQUEST ===");
+        error_log("section_id: " . ($sectionId ?? 'null'));
+        error_log("term: " . ($term ?? 'null'));
+
+        $sections = $dao->getAllSections();
+        $rooms = $dao->getAllRooms();
+        $teachers = $dao->getAllTeachers();
+        
+        // Debug: Log counts
+        error_log("Sections found: " . count($sections));
+        error_log("Rooms found: " . count($rooms));
+        error_log("Teachers found: " . count($teachers));
+
+        $response = [
+            "sections" => $sections,
+            "rooms" => $rooms,
+            "teachers" => $teachers,
+            "subjects" => []
+        ];
+
+        if ($sectionId) {
+            // Get section info for debugging
+            $sectionInfo = $dao->getSectionInfo($sectionId);
+            error_log("Section Info: " . print_r($sectionInfo, true));
+            
+            $subjects = $dao->getSubjectsForSection($sectionId, $term);
+            error_log("Subjects found: " . count($subjects));
+            if (count($subjects) > 0) {
+                error_log("First subject: " . print_r($subjects[0], true));
+            }
+            
+            $response["subjects"] = $subjects;
+        } else {
+            error_log("No section_id provided, skipping subject lookup");
+        }
+
+        // If teachers or subjects are empty, add debug info to response
+        if (empty($teachers)) {
+            $response["_debug_teachers"] = "No active teachers found in database";
+        }
+        if (empty($response["subjects"])) {
+            $response["_debug_subjects"] = "No subjects match the section criteria";
+        }
+
+        echo json_encode($response);
 
     } else if ($action == "get") {
         $id = isset($_GET["id"]) ? $_GET["id"] : null;
@@ -80,6 +150,14 @@ if ($method == "GET") {
 
         echo json_encode($conflicts);
 
+    } else if ($action == "debug_schedules") {
+        $schedules = $dao->debugGetAllSchedules();
+        echo json_encode([
+            "count" => count($schedules),
+            "schedules" => $schedules
+        ]);
+        exit;
+
     } else {
         echo json_encode(["error" => "Invalid action"]);
     }
@@ -106,13 +184,11 @@ if ($method == "GET") {
         $startTime = $_POST["start_time"];
         $endTime = $_POST["end_time"];
 
-        // Resolve (or create) the class_subjects link row behind the
-        // scenes so the form can work straight off the `subjects` table.
-        $classSubjectId = $dao->findOrCreateClassSubject($sectionId, $subjectId, $teacherId);
-        if (!$classSubjectId) {
+        // Additional validation: School hours (9:00 AM - 5:00 PM)
+        if (!Schedule::isWithinSchoolHours($startTime, $endTime)) {
             echo json_encode([
                 "success" => false,
-                "message" => "Unable to link this subject to the section."
+                "message" => "School hours are from 9:00 AM to 5:00 PM only. Please adjust the time."
             ]);
             exit;
         }
@@ -148,7 +224,9 @@ if ($method == "GET") {
         }
 
         $schedule = new Schedule();
-        $schedule->setClassSubjectId($classSubjectId);
+        $schedule->setSectionId($sectionId);
+        $schedule->setSubjectId($subjectId);
+        $schedule->setTeacherId($teacherId);
         $schedule->setRoomId($roomId);
         $schedule->setDayOfWeek($dayOfWeek);
         $schedule->setStartTime($startTime);
@@ -174,6 +252,7 @@ if ($method == "GET") {
                 ]);
             }
         } catch (PDOException $e) {
+            error_log("PDOException in save: " . $e->getMessage());
             echo json_encode([
                 "success" => false,
                 "message" => "Unable to save schedule. Please check your inputs."

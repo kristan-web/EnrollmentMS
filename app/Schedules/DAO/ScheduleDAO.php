@@ -17,15 +17,14 @@ class ScheduleDAO {
         $query = "
         SELECT 
             s.schedule_id,
-            s.class_subject_id,
+            s.section_id,
+            s.subject_id,
+            s.teacher_id,
             s.room_id,
             s.day_of_week,
             s.start_time,
             s.end_time,
             s.created_at,
-            cs.section_id,
-            cs.subject_id,
-            cs.teacher_id,
             sec.section_name,
             sec.grade_level,
             sec.school_year,
@@ -40,18 +39,18 @@ class ScheduleDAO {
             st.strand_code,
             st.strand_name
         FROM schedules s
-        INNER JOIN class_subjects cs ON cs.class_subject_id = s.class_subject_id
-        INNER JOIN class_sections sec ON sec.section_id = cs.section_id
-        INNER JOIN subjects sub ON sub.subject_id = cs.subject_id
-        INNER JOIN strands st ON st.strand_id = sec.strand_id
-        LEFT JOIN teachers t ON t.teacher_id = cs.teacher_id
-        INNER JOIN rooms r ON r.room_id = s.room_id
+        LEFT JOIN class_sections sec ON sec.section_id = s.section_id
+        LEFT JOIN subjects sub ON sub.subject_id = s.subject_id
+        LEFT JOIN teachers t ON t.teacher_id = s.teacher_id
+        LEFT JOIN rooms r ON r.room_id = s.room_id
+        LEFT JOIN strands st ON st.strand_id = sec.strand_id
         WHERE 1=1
         ";
 
         $params = [];
 
-        if (!empty($filters['keyword'])) {
+        // Only apply filters if they have actual values
+        if (!empty($filters['keyword']) && $filters['keyword'] !== 'null') {
             $query .= " AND (
                 sub.subject_code LIKE :keyword
                 OR sub.subject_name LIKE :keyword
@@ -61,34 +60,51 @@ class ScheduleDAO {
             $params[':keyword'] = "%" . $filters['keyword'] . "%";
         }
 
-        if (!empty($filters['section_id'])) {
-            $query .= " AND sec.section_id = :section_id ";
+        if (!empty($filters['section_id']) && $filters['section_id'] !== 'null') {
+            $query .= " AND s.section_id = :section_id ";
             $params[':section_id'] = $filters['section_id'];
         }
 
-        if (!empty($filters['term'])) {
+        if (!empty($filters['term']) && $filters['term'] !== 'null') {
             $query .= " AND sub.semester = :term ";
             $params[':term'] = $filters['term'];
         }
 
-        if (!empty($filters['teacher_id'])) {
-            $query .= " AND cs.teacher_id = :teacher_id ";
+        if (!empty($filters['teacher_id']) && $filters['teacher_id'] !== 'null') {
+            $query .= " AND s.teacher_id = :teacher_id ";
             $params[':teacher_id'] = $filters['teacher_id'];
         }
 
-        if (!empty($filters['day_of_week'])) {
+        if (!empty($filters['day_of_week']) && $filters['day_of_week'] !== 'null') {
             $query .= " AND s.day_of_week = :day_of_week ";
             $params[':day_of_week'] = $filters['day_of_week'];
         }
 
-        $query .= " ORDER BY s.day_of_week, s.start_time ";
+        $query .= " ORDER BY FIELD(s.day_of_week, 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'), s.start_time ";
+
+        // Debug: Log the query
+        error_log("=== getAll QUERY ===");
+        error_log("Query: " . $query);
+        error_log("Params: " . print_r($params, true));
 
         $stmt = $this->conn->prepare($query);
         foreach ($params as $key => $value) {
             $stmt->bindValue($key, $value);
         }
+        
         $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Debug: Log results
+        error_log("Results found: " . count($results));
+        if (count($results) > 0) {
+            error_log("First result: " . print_r($results[0], true));
+        } else {
+            error_log("No results found. Checking if query returned false...");
+            error_log("Results type: " . gettype($results));
+        }
+        
+        return $results;
     }
 
     // GET SCHEDULE BY ID
@@ -111,14 +127,14 @@ class ScheduleDAO {
             sub.subject_code,
             sub.subject_name,
             sub.subject_type,
+            sub.semester,
             t.first_name AS teacher_first_name,
             t.last_name AS teacher_last_name,
             r.room_name
         FROM schedules s
-        INNER JOIN class_subjects cs ON cs.class_subject_id = s.class_subject_id
-        INNER JOIN subjects sub ON sub.subject_id = cs.subject_id
-        INNER JOIN class_sections sec ON sec.section_id = cs.section_id
-        LEFT JOIN teachers t ON t.teacher_id = cs.teacher_id
+        INNER JOIN subjects sub ON sub.subject_id = s.subject_id
+        INNER JOIN class_sections sec ON sec.section_id = s.section_id
+        LEFT JOIN teachers t ON t.teacher_id = s.teacher_id
         INNER JOIN rooms r ON r.room_id = s.room_id
         WHERE sec.section_id = :section_id
         ";
@@ -141,17 +157,16 @@ class ScheduleDAO {
     // CHECK CONFLICT - SECTION
     public function checkSectionConflict($sectionId, $dayOfWeek, $startTime, $endTime, $excludeId = null) {
         $query = "
-        SELECT COUNT(*) FROM schedules s
-        INNER JOIN class_subjects cs ON cs.class_subject_id = s.class_subject_id
-        WHERE cs.section_id = :section_id
-        AND s.day_of_week = :day_of_week
+        SELECT COUNT(*) FROM schedules
+        WHERE section_id = :section_id
+        AND day_of_week = :day_of_week
         AND (
-            (s.start_time < :end_time AND s.end_time > :start_time)
+            (start_time < :end_time AND end_time > :start_time)
         )
         ";
 
         if ($excludeId) {
-            $query .= " AND s.schedule_id != :exclude_id ";
+            $query .= " AND schedule_id != :exclude_id ";
         }
 
         $stmt = $this->conn->prepare($query);
@@ -169,17 +184,16 @@ class ScheduleDAO {
     // CHECK CONFLICT - TEACHER
     public function checkTeacherConflict($teacherId, $dayOfWeek, $startTime, $endTime, $excludeId = null) {
         $query = "
-        SELECT COUNT(*) FROM schedules s
-        INNER JOIN class_subjects cs ON cs.class_subject_id = s.class_subject_id
-        WHERE cs.teacher_id = :teacher_id
-        AND s.day_of_week = :day_of_week
+        SELECT COUNT(*) FROM schedules
+        WHERE teacher_id = :teacher_id
+        AND day_of_week = :day_of_week
         AND (
-            (s.start_time < :end_time AND s.end_time > :start_time)
+            (start_time < :end_time AND end_time > :start_time)
         )
         ";
 
         if ($excludeId) {
-            $query .= " AND s.schedule_id != :exclude_id ";
+            $query .= " AND schedule_id != :exclude_id ";
         }
 
         $stmt = $this->conn->prepare($query);
@@ -226,7 +240,9 @@ class ScheduleDAO {
         $query = "
         INSERT INTO schedules
         (
-            class_subject_id,
+            section_id,
+            subject_id,
+            teacher_id,
             room_id,
             day_of_week,
             start_time,
@@ -234,7 +250,9 @@ class ScheduleDAO {
         )
         VALUES
         (
-            :class_subject_id,
+            :section_id,
+            :subject_id,
+            :teacher_id,
             :room_id,
             :day_of_week,
             :start_time,
@@ -243,7 +261,9 @@ class ScheduleDAO {
         ";
 
         $stmt = $this->conn->prepare($query);
-        $stmt->bindValue(':class_subject_id', $schedule->getClassSubjectId());
+        $stmt->bindValue(':section_id', $schedule->getSectionId());
+        $stmt->bindValue(':subject_id', $schedule->getSubjectId());
+        $stmt->bindValue(':teacher_id', $schedule->getTeacherId());
         $stmt->bindValue(':room_id', $schedule->getRoomId());
         $stmt->bindValue(':day_of_week', $schedule->getDayOfWeek());
         $stmt->bindValue(':start_time', $schedule->getStartTime());
@@ -255,7 +275,9 @@ class ScheduleDAO {
     public function update(Schedule $schedule) {
         $query = "
         UPDATE schedules SET
-            class_subject_id = :class_subject_id,
+            section_id = :section_id,
+            subject_id = :subject_id,
+            teacher_id = :teacher_id,
             room_id = :room_id,
             day_of_week = :day_of_week,
             start_time = :start_time,
@@ -265,7 +287,9 @@ class ScheduleDAO {
 
         $stmt = $this->conn->prepare($query);
         $stmt->bindValue(':schedule_id', $schedule->getScheduleId());
-        $stmt->bindValue(':class_subject_id', $schedule->getClassSubjectId());
+        $stmt->bindValue(':section_id', $schedule->getSectionId());
+        $stmt->bindValue(':subject_id', $schedule->getSubjectId());
+        $stmt->bindValue(':teacher_id', $schedule->getTeacherId());
         $stmt->bindValue(':room_id', $schedule->getRoomId());
         $stmt->bindValue(':day_of_week', $schedule->getDayOfWeek());
         $stmt->bindValue(':start_time', $schedule->getStartTime());
@@ -296,9 +320,6 @@ class ScheduleDAO {
     }
 
     // GET SUBJECTS APPLICABLE TO A SECTION
-    // Matches the section's grade level, and either the section's own
-    // strand or a "common" subject (strand_id IS NULL applies to every
-    // strand). Optionally narrowed further by term/semester.
     public function getSubjectsForSection($sectionId, $term = null) {
         $section = $this->getSectionInfo($sectionId);
         if (!$section) {
@@ -324,96 +345,6 @@ class ScheduleDAO {
         }
 
         $query .= " ORDER BY subject_type, subject_name ";
-
-        $stmt = $this->conn->prepare($query);
-        foreach ($params as $key => $value) {
-            $stmt->bindValue($key, $value);
-        }
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    // FIND OR CREATE THE class_subjects LINK ROW for (section, subject)
-    // The Schedule form now picks straight from the official `subjects`
-    // table plus a teacher; this quietly creates/reuses the linking row
-    // instead of requiring it to be set up separately beforehand.
-    public function findOrCreateClassSubject($sectionId, $subjectId, $teacherId = null) {
-        $query = "
-        SELECT class_subject_id FROM class_subjects
-        WHERE section_id = :section_id AND subject_id = :subject_id
-        ";
-
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindValue(':section_id', $sectionId);
-        $stmt->bindValue(':subject_id', $subjectId);
-        $stmt->execute();
-        $existing = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if ($existing) {
-            // Keep the teacher assignment in sync in case it was changed
-            $update = $this->conn->prepare("
-                UPDATE class_subjects SET teacher_id = :teacher_id
-                WHERE class_subject_id = :id
-            ");
-            $update->bindValue(':teacher_id', $teacherId);
-            $update->bindValue(':id', $existing['class_subject_id']);
-            $update->execute();
-
-            return $existing['class_subject_id'];
-        }
-
-        $insert = $this->conn->prepare("
-            INSERT INTO class_subjects (section_id, subject_id, teacher_id)
-            VALUES (:section_id, :subject_id, :teacher_id)
-        ");
-        $insert->bindValue(':section_id', $sectionId);
-        $insert->bindValue(':subject_id', $subjectId);
-        $insert->bindValue(':teacher_id', $teacherId);
-        $insert->execute();
-
-        return $this->conn->lastInsertId();
-    }
-
-    // GET ALL CLASS SUBJECTS (for dropdown)
-    public function getAllClassSubjects($filters = []) {
-        $query = "
-        SELECT 
-            cs.class_subject_id,
-            cs.section_id,
-            cs.subject_id,
-            cs.teacher_id,
-            sec.section_name,
-            sec.grade_level,
-            sec.school_year,
-            sub.subject_code,
-            sub.subject_name,
-            sub.subject_type,
-            sub.semester,
-            t.first_name AS teacher_first_name,
-            t.last_name AS teacher_last_name,
-            st.strand_code,
-            st.strand_name
-        FROM class_subjects cs
-        INNER JOIN class_sections sec ON sec.section_id = cs.section_id
-        INNER JOIN subjects sub ON sub.subject_id = cs.subject_id
-        INNER JOIN strands st ON st.strand_id = sec.strand_id
-        LEFT JOIN teachers t ON t.teacher_id = cs.teacher_id
-        WHERE 1=1
-        ";
-
-        $params = [];
-
-        if (!empty($filters['section_id'])) {
-            $query .= " AND cs.section_id = :section_id ";
-            $params[':section_id'] = $filters['section_id'];
-        }
-
-        if (!empty($filters['term'])) {
-            $query .= " AND sub.semester = :term ";
-            $params[':term'] = $filters['term'];
-        }
-
-        $query .= " ORDER BY sec.section_name, sub.subject_code ";
 
         $stmt = $this->conn->prepare($query);
         foreach ($params as $key => $value) {
@@ -450,7 +381,7 @@ class ScheduleDAO {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // GET ALL TEACHERS (for filter dropdown)
+    // GET ALL TEACHERS (for dropdown)
     public function getAllTeachers() {
         $query = "
         SELECT teacher_id, first_name, last_name
@@ -464,15 +395,11 @@ class ScheduleDAO {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // GET CLASS SUBJECT BY ID
-    public function getClassSubjectById($id) {
-        $query = "
-        SELECT * FROM class_subjects WHERE class_subject_id = :id
-        ";
-
+    // TEMPORARY DEBUG METHOD - Check all schedules
+    public function debugGetAllSchedules() {
+        $query = "SELECT * FROM schedules";
         $stmt = $this->conn->prepare($query);
-        $stmt->bindValue(':id', $id);
         $stmt->execute();
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }

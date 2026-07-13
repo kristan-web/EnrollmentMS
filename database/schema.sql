@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 12, 2026 at 11:55 AM
+-- Generation Time: Jul 13, 2026 at 09:48 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -232,6 +232,32 @@ CREATE TABLE `rooms` (
   `created_at` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `rooms`
+--
+
+INSERT INTO `rooms` (`room_id`, `room_name`, `building`, `capacity`, `created_at`) VALUES
+(1, 'SHS-101', 'Main Building', 40, '2026-07-14 03:07:53'),
+(2, 'SHS-102', 'Main Building', 40, '2026-07-14 03:07:53'),
+(3, 'SHS-103', 'Main Building', 45, '2026-07-14 03:07:53'),
+(4, 'SHS-104', 'Main Building', 45, '2026-07-14 03:07:53'),
+(5, 'SHS-105', 'Main Building', 40, '2026-07-14 03:07:53'),
+(6, 'SHS-106', 'Main Building', 35, '2026-07-14 03:07:53'),
+(7, 'SHS-201', 'Main Building', 40, '2026-07-14 03:07:53'),
+(8, 'SHS-202', 'Main Building', 40, '2026-07-14 03:07:53'),
+(9, 'SHS-203', 'Main Building', 45, '2026-07-14 03:07:53'),
+(10, 'SHS-204', 'Main Building', 40, '2026-07-14 03:07:53'),
+(11, 'SHS-301', 'Science Building', 35, '2026-07-14 03:07:53'),
+(12, 'SHS-302', 'Science Building', 35, '2026-07-14 03:07:53'),
+(13, 'SHS-303', 'Science Building', 30, '2026-07-14 03:07:53'),
+(14, 'SHS-401', 'TVL Building', 30, '2026-07-14 03:07:53'),
+(15, 'SHS-402', 'TVL Building', 30, '2026-07-14 03:07:53'),
+(16, 'SHS-403', 'TVL Building', 25, '2026-07-14 03:07:53'),
+(17, 'SHS-404', 'TVL Building', 25, '2026-07-14 03:07:53'),
+(18, 'SHS-501', 'Annex Building', 40, '2026-07-14 03:07:53'),
+(19, 'SHS-502', 'Annex Building', 40, '2026-07-14 03:07:53'),
+(20, 'SHS-503', 'Annex Building', 35, '2026-07-14 03:07:53');
+
 -- --------------------------------------------------------
 
 --
@@ -240,13 +266,24 @@ CREATE TABLE `rooms` (
 
 CREATE TABLE `schedules` (
   `schedule_id` int(11) NOT NULL,
-  `class_subject_id` int(11) NOT NULL,
+  `section_id` int(11) NOT NULL,
+  `subject_id` int(11) NOT NULL,
+  `teacher_id` int(11) DEFAULT NULL,
   `room_id` int(11) NOT NULL,
   `day_of_week` enum('Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday') NOT NULL,
   `start_time` time NOT NULL,
   `end_time` time NOT NULL,
   `created_at` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `schedules`
+--
+
+INSERT INTO `schedules` (`schedule_id`, `section_id`, `subject_id`, `teacher_id`, `room_id`, `day_of_week`, `start_time`, `end_time`, `created_at`) VALUES
+(1, 5, 5, 4, 1, 'Monday', '01:00:00', '09:00:00', '2026-07-14 03:17:12'),
+(2, 5, 6, 4, 14, 'Monday', '10:00:00', '11:00:00', '2026-07-14 03:26:05'),
+(3, 5, 6, 4, 13, 'Monday', '11:00:00', '12:00:00', '2026-07-14 03:38:00');
 
 -- --------------------------------------------------------
 
@@ -452,7 +489,10 @@ CREATE TABLE `teachers` (
 --
 
 INSERT INTO `teachers` (`teacher_id`, `first_name`, `last_name`, `email`, `contact_number`, `specialization`, `status`, `created_at`) VALUES
-(1, 'Rajah', 'Palmer', 'jewucugyk@mailinator.com', '123123123', 'Id et doloribus atqu', 'Inactive', '2026-07-04 05:21:29');
+(1, 'Rajah', 'Palmer', 'jewucugyk@mailinator.com', '123123123', 'Id et doloribus atqu', 'Inactive', '2026-07-04 05:21:29'),
+(2, 'Maria', 'Santos', 'maria.santos@school.edu', '09171234567', 'Mathematics', 'Active', '2026-07-14 03:16:25'),
+(3, 'Jose', 'Reyes', 'jose.reyes@school.edu', '09171234568', 'Science', 'Active', '2026-07-14 03:16:25'),
+(4, 'Ana', 'Cruz', 'ana.cruz@school.edu', '09171234569', 'English', 'Active', '2026-07-14 03:16:25');
 
 -- --------------------------------------------------------
 
@@ -565,7 +605,9 @@ ALTER TABLE `rooms`
 --
 ALTER TABLE `schedules`
   ADD PRIMARY KEY (`schedule_id`),
-  ADD KEY `class_subject_id` (`class_subject_id`),
+  ADD KEY `section_id` (`section_id`),
+  ADD KEY `subject_id` (`subject_id`),
+  ADD KEY `teacher_id` (`teacher_id`),
   ADD KEY `room_id` (`room_id`);
 
 --
@@ -665,13 +707,13 @@ ALTER TABLE `payments`
 -- AUTO_INCREMENT for table `rooms`
 --
 ALTER TABLE `rooms`
-  MODIFY `room_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `room_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT for table `schedules`
 --
 ALTER TABLE `schedules`
-  MODIFY `schedule_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `schedule_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `school_years`
@@ -701,7 +743,7 @@ ALTER TABLE `subjects`
 -- AUTO_INCREMENT for table `teachers`
 --
 ALTER TABLE `teachers`
-  MODIFY `teacher_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `teacher_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `tracks`
@@ -759,8 +801,10 @@ ALTER TABLE `payments`
 -- Constraints for table `schedules`
 --
 ALTER TABLE `schedules`
-  ADD CONSTRAINT `schedules_ibfk_1` FOREIGN KEY (`class_subject_id`) REFERENCES `class_subjects` (`class_subject_id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `schedules_ibfk_2` FOREIGN KEY (`room_id`) REFERENCES `rooms` (`room_id`) ON UPDATE CASCADE;
+  ADD CONSTRAINT `schedules_ibfk_1` FOREIGN KEY (`section_id`) REFERENCES `class_sections` (`section_id`) ON UPDATE CASCADE,
+  ADD CONSTRAINT `schedules_ibfk_2` FOREIGN KEY (`subject_id`) REFERENCES `subjects` (`subject_id`) ON UPDATE CASCADE,
+  ADD CONSTRAINT `schedules_ibfk_3` FOREIGN KEY (`teacher_id`) REFERENCES `teachers` (`teacher_id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  ADD CONSTRAINT `schedules_ibfk_4` FOREIGN KEY (`room_id`) REFERENCES `rooms` (`room_id`) ON UPDATE CASCADE;
 
 --
 -- Constraints for table `strands`
