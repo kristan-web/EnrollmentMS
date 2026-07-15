@@ -65,6 +65,7 @@
         <div class="tabs">
           <button class="tab is-active" data-tab="active">Active <span class="tab__count" id="activeCount">0</span></button>
           <button class="tab" data-tab="archived">Archived <span class="tab__count" id="archivedCount">0</span></button>
+          <a class="tab" href="applications.php">Applications</a>
         </div>
         <div class="search-box">
           <svg class="search-box__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>

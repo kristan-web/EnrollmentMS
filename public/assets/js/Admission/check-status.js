@@ -1,6 +1,10 @@
 const statusForm = document.getElementById("statusForm");
 const lookupMsg = document.getElementById("lookupMsg");
 const statusResult = document.getElementById("statusResult");
+const submitBtn = statusForm.querySelector("button[type=submit]");
+
+// Adjust if your controller lives somewhere else relative to this view.
+const CONTROLLER_URL = "../Controller/applicants_controllers.php";
 
 const STATUS_CLASS = {
   "Pending": "pending",
@@ -48,9 +52,18 @@ function setMsg(text, type) {
   if (type) lookupMsg.classList.add(type);
 }
 
-function formatDate(iso) {
-  if (!iso) return "—";
-  return new Date(iso).toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" });
+function setLoading(isLoading) {
+  if (!submitBtn) return;
+  submitBtn.disabled = isLoading;
+  submitBtn.textContent = isLoading ? "Searching…" : "View Status";
+}
+
+function formatDate(value) {
+  if (!value) return "—";
+  // MySQL datetimes ("2026-07-16 10:23:00") need a "T" for reliable Date parsing.
+  const d = new Date(String(value).replace(" ", "T"));
+  if (isNaN(d.getTime())) return value;
+  return d.toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" });
 }
 
 function timelineFor(status) {
@@ -69,7 +82,34 @@ function timelineFor(status) {
   }));
 }
 
-statusForm.addEventListener("submit", (e) => {
+// Maps the DAO's raw row (snake_case, joined with strands) into the shape
+// the rendering code below expects.
+function normalizeApplicant(raw) {
+  const strandLabel = raw.strand_name
+    ? raw.strand_code
+      ? `${raw.strand_name} (${raw.strand_code})`
+      : raw.strand_name
+    : "—";
+
+  return {
+    id: raw.applicant_id,
+    referenceNumber: raw.reference_number,
+    firstName: raw.first_name,
+    lastName: raw.last_name,
+    desiredGradeLevel: raw.desired_grade_level,
+    desiredStrand: strandLabel,
+    schoolYear: raw.school_year,
+    submittedAt: raw.submitted_at,
+    status: raw.status,
+    rejectionReason: raw.rejection_reason,
+    // Not returned by findByReferenceAndEmail() yet — stays empty until a
+    // documents endpoint/DAO method is added. Rendering below skips the
+    // documents block gracefully if this is empty.
+    documents: Array.isArray(raw.documents) ? raw.documents : []
+  };
+}
+
+statusForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   statusResult.hidden = true;
   statusResult.innerHTML = "";
@@ -80,14 +120,32 @@ statusForm.addEventListener("submit", (e) => {
     return setMsg("Both reference number and email address are required.", "is-error");
   }
 
-  const app = ApplicantModel.findByReference(ref, email);
-  if (!app) {
-    return setMsg("No application found for that reference number and email combination. Please double-check both and try again.", "is-error");
+  setMsg("Looking up your application…");
+  setLoading(true);
+
+  let data;
+  try {
+    const url = `${CONTROLLER_URL}?action=status&reference_number=${encodeURIComponent(ref)}&email=${encodeURIComponent(email)}`;
+    const res = await fetch(url, { headers: { Accept: "application/json" } });
+    data = await res.json();
+  } catch (err) {
+    setLoading(false);
+    return setMsg("Could not reach the server. Please check your connection and try again.", "is-error");
+  }
+  setLoading(false);
+
+  if (!data || data.error || !data.applicant) {
+    return setMsg(
+      (data && data.error) || "No application found for that reference number and email combination. Please double-check both and try again.",
+      "is-error"
+    );
   }
 
   setMsg("");
-  const status = ApplicantModel.effectiveStatus(app);
-  const docs = ApplicantModel.documentsFor(app.id);
+
+  const app = normalizeApplicant(data.applicant);
+  const status = app.status;
+  const docs = app.documents;
 
   const timelineHtml = `<ol class="timeline">
     ${timelineFor(status).map((t) => `

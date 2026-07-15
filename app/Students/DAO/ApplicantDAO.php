@@ -120,5 +120,102 @@ class ApplicantDAO {
         $stmt->bindValue(":id", $applicantId);
         return $stmt->execute();
     }
+
+    // ADMIN: list every applicant (optionally filtered by status / keyword),
+    // oldest submission first so the review queue reads chronologically.
+    public function getAll($filters = []) {
+        $query = "
+        SELECT a.*, s.strand_code, s.strand_name
+        FROM applicants a
+        LEFT JOIN strands s ON s.strand_id = a.desired_strand_id
+        WHERE 1=1
+        ";
+        $params = [];
+
+        if (!empty($filters["status"])) {
+            $query .= " AND a.status = :status ";
+            $params[":status"] = $filters["status"];
+        }
+
+        if (!empty($filters["keyword"])) {
+            $query .= " AND (
+                a.reference_number LIKE :keyword
+                OR a.first_name LIKE :keyword
+                OR a.last_name LIKE :keyword
+                OR a.email LIKE :keyword
+                OR a.lrn LIKE :keyword
+            ) ";
+            $params[":keyword"] = "%" . $filters["keyword"] . "%";
+        }
+
+        $query .= " ORDER BY a.submitted_at ASC ";
+
+        $stmt = $this->conn->prepare($query);
+        foreach ($params as $key => $value) {
+            $stmt->bindValue($key, $value);
+        }
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // ADMIN: fetch a single applicant by id (no email required — unlike
+    // findByReferenceAndEmail(), which is the public/self-service lookup).
+    public function getById($applicantId) {
+        $query = "
+        SELECT a.*, s.strand_code, s.strand_name
+        FROM applicants a
+        LEFT JOIN strands s ON s.strand_id = a.desired_strand_id
+        WHERE a.applicant_id = :id
+        LIMIT 1
+        ";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindValue(":id", $applicantId);
+        $stmt->execute();
+        $applicant = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($applicant) {
+            $applicant['documents'] = $this->getDocumentsByApplicantId($applicantId);
+        }
+        
+        return $applicant;
+    }
+
+    // ADMIN: change an applicant's status (Pending/Under Review/Approved/
+    // Rejected/Enrolled per the schema ENUM), stamping who reviewed it and when.
+    public function updateStatus($applicantId, $status, $rejectionReason, $reviewedBy) {
+        $query = "
+        UPDATE applicants
+        SET status = :status,
+            rejection_reason = :rejection_reason,
+            reviewed_by = :reviewed_by,
+            reviewed_at = NOW()
+        WHERE applicant_id = :id
+        ";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindValue(":status", $status);
+        $stmt->bindValue(":rejection_reason", $rejectionReason);
+        if ($reviewedBy === null) {
+            $stmt->bindValue(":reviewed_by", null, PDO::PARAM_NULL);
+        } else {
+            $stmt->bindValue(":reviewed_by", $reviewedBy, PDO::PARAM_INT);
+        }
+        $stmt->bindValue(":id", $applicantId);
+        return $stmt->execute();
+    }
+
+    // Fetch all documents for a specific applicant
+    public function getDocumentsByApplicantId($applicantId) {
+        $query = "
+        SELECT d.*, dt.name as document_type_name
+        FROM applicant_documents d
+        LEFT JOIN document_types dt ON dt.document_type_id = d.document_type_id
+        WHERE d.applicant_id = :id
+        ORDER BY d.uploaded_at DESC
+        ";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindValue(":id", $applicantId);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }
 ?>
