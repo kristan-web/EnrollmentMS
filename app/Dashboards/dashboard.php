@@ -1,3 +1,10 @@
+<?php 
+  $projectFilePath = 'C:/xampp/htdocs/EnrollmentMS';
+  include_once "$projectFilePath/config/session.php";
+
+  safeStartSession();
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -29,7 +36,7 @@
         </span>
       </button>
 
-      <!-- <ul class="nav__submenu" id="dashMenu">
+      <ul class="nav__submenu" id="dashMenu">
         <li><a href="Views/RegistrarSide/data-entry.php">
           <span class="submenu__icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
@@ -61,7 +68,7 @@
           <span>Records &amp; reports</span>
         </a></li>
       </ul>
-    </nav> -->
+    </nav>
 
     <a class="sidebar__logout" href="../../public/index.php">
       <span class="nav__icon" aria-hidden="true">
@@ -87,5 +94,6 @@
   </div>
 
   <script src="../../public/assets/js/shared/dashboard.js"></script>
+  <script src="../../public/assets/js/shared/sidebar.js"></script>
 </body>
 </html>

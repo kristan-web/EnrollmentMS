@@ -21,7 +21,7 @@
 
     function redirectToLoginPage(){
         if(!isset($_SESSION['role'])){
-            header('Location:  . $loginPageFilePath . /public/index.php ');
+            header("Location: $loginPageFilePath/public/index.php ");
         }
     }
     

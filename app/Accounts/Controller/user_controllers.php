@@ -1,6 +1,8 @@
 <?PHP 
-    include_once __DIR__.'/../Model/users_model.php';
-    include_once __DIR__.'/../DAO/UserDAO.php';
+    $projectFilePath = 'C:/xampp/htdocs/EnrollmentMS';
+    include_once "$projectFilePath/config/session.php";
+
+    safeStartSession();
 
     // Set JSON response header
     header('Content-Type: application/json');
@@ -68,6 +70,7 @@
             if($result){
                 // If user input password matches the one stored in database
                 if(password_verify($user->getPassword(), $result['password_hash'])){
+                    setSessionValues($result['']);
                     echo json_encode([
                         "success" => true,
                         "message" => 'Account Verified'

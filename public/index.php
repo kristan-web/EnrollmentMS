@@ -1,3 +1,10 @@
+<?php 
+  $projectFilePath = 'C:/xampp/htdocs/EnrollmentMS';
+  include_once "$projectFilePath/config/session.php";
+
+  safeStartSession();
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
