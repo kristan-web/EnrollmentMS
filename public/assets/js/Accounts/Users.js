@@ -49,6 +49,32 @@ function resetAccountCreationField(){
     fullnameCreation.value = '';
 }
 
+function checkEmptyField(fields){
+    for(const field of fields){
+        if(field.value.trim() === ''){
+            return true;
+        }
+    }
+
+    return false;
+}
+
+function checkPasswordMatch(password, confpass){
+    if(password.value.trim() === confpass.value.trim()){
+        return true;
+    }
+
+    return false;
+}
+
+function checkPasswordLength(password){
+    if(password.value.length <= 7 || password.value.length >= 20){
+        return false;
+    }
+
+    return true;
+}
+
 // Only process this if accountCreation form exists
 if(accountCreation){
     // Account Creation Elements
@@ -56,60 +82,59 @@ if(accountCreation){
     const passwordCreation = document.getElementById('passwordCreation');
     const confpassCreation = document.getElementById('confpassCreation');
     const fullnameCreation = document.getElementById('fullnameCreation');
+    const accountRole = document.getElementById('accountRole');
+
+    let fields = 
+    [
+        emailCreation,
+        passwordCreation, 
+        confpassCreation, 
+        fullnameCreation, 
+        accountRole
+    ]
 
     // Add event listener to form
     accountCreation.addEventListener('submit', async (e) =>{
         // Prevent default submission
         e.preventDefault();
 
-        // Check if any of the field is empty
-        if(emailCreation.value.trim() === ''  || passwordCreation.value.trim() === '' || confpassCreation.value.trim() === '' || fullnameCreation.value.trim() === ''){
-            showAlert('All fields are required.', 'error');
+        if(checkEmptyField(fields)){
+            showAlert("All fields are required", 'error');
             return;
         }
 
-        // Check if password and confirm password matches
-        if(passwordCreation.value === confpassCreation.value){
-            // Check if password <= 7 or >= 20
-            if(passwordCreation.value.length <= 7 || passwordCreation.value.length >= 20){
-                showAlert('Password must be longer than 7 and shorter than 20 characters', 'error');
+        if(!checkPasswordMatch(passwordCreation, confpassCreation)){
+            showAlert("Passwords do not match", 'error');
+            return;
+        }
+
+        if(!checkPasswordLength(passwordCreation)){
+            showAlert("Password should be longer than 7 and less than 20 characters", 'error');
+            return;
+        }
+        
+        const data = new FormData(accountCreation);
+
+        try{
+            const response = await fetch('/EnrollmentMS/app/Accounts/Controller/user_controllers.php', {
+                method: 'POST',
+                body: data
+            });
+
+            const status = await response.json();
+
+            if(status.success){
+                showAlert(status.message, 'success');
+                resetAccountCreationField();
                 return;
             }
-
-            // If password requirements are met
             else{
-                const data = new FormData(accountCreation);
-
-                try {
-                    // Path: Absolute from web root to app/Accounts/Controller/user_controllers.php
-                    const response = await fetch('/EnrollmentMS/app/Accounts/Controller/user_controllers.php', {
-                        method: 'POST',
-                        body: data
-                    });
-
-                    const status = await response.json();
-
-                    // If account is created successfully
-                    if(status.success){
-                        showAlert(status.message, 'success');
-                        resetAccountCreationField();
-                        return;
-                    }
-                    // If email exists
-                    else{
-                        showAlert(status.message, 'error');
-                        return;
-                    }
-                } catch (error) {
-                    showAlert('Network error. Please try again.', 'error');
-                    console.error('Error:', error);
-                }
+                showAlert(status.message, 'error');
+                return;
             }
-        }
-        // If passwords do not match
-        else{
-            showAlert('Passwords do not match', 'error');
-            return;
+        } catch (error) {
+            showAlert('Network error. Please try again.', 'error');
+            console.error('Error:', error);
         }
     });
 }
@@ -119,47 +144,48 @@ const loginForm = document.getElementById('loginForm');
 
 // Only process this if loginForm exists
 if(loginForm){
+    const emailLogin = document.getElementById('emailLogin');
+    const passwordLogin = document.getElementById('passwordLogin');
+    let fields = 
+    [
+        emailLogin, 
+        passwordLogin
+    ];
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        // Login Form Elements
-        const emailLogin = document.getElementById('emailLogin');
-        const passwordLogin = document.getElementById('passwordLogin');
-
         // Check if any of the field is empty
-        if(emailLogin.value.trim() === '' || passwordLogin.value.trim() === ''){
-            showAlert('All fields are required', 'error');
+        if(checkEmptyField(fields)){
+            showAlert("All fields are required", 'error');
             return;
         }
-        else{
-            const data = new FormData(loginForm);
 
-            try {
-                // Path: Absolute from web root to app/Accounts/Controller/user_controllers.php
-                const response = await fetch('/EnrollmentMS/app/Accounts/Controller/user_controllers.php', {
-                    method: 'POST',
-                    body: data
-                });
+        const data = new FormData(loginForm);
 
-                const status = await response.json();
+        try {
 
-                // If account is verified
-                if(status.success){
-                    showAlert('Login successful! Redirecting...', 'success');
-                    setTimeout(() => {
-                        window.location.href = '/EnrollmentMS/app/Dashboards/dashboard.php';
-                    }, 1000);
-                    return;
-                }
-                // If account not found
-                else{
-                    showAlert(status.message, 'error');
-                    return;
-                }
-            } catch (error) {
-                showAlert('Network error. Please try again.', 'error');
-                console.error('Error:', error);
+            const response = await fetch('/EnrollmentMS/app/Accounts/Controller/user_controllers.php', {
+                method: 'POST',
+                body: data
+            });
+
+            const status = await response.json();
+
+            // If account is verified
+            if(status.success){
+                showAlert('Login successful! Redirecting...', 'success');
+                setTimeout(() => {
+                    window.location.href = '/EnrollmentMS/app/Dashboards/dashboard.php';
+                }, 1000);
+                return;
             }
+            else{
+                showAlert(status.message, 'error');
+                return;
+            }
+        } catch (error) {
+            showAlert('Network error. Please try again.', 'error');
+            console.error('Error:', error);
         }
     });
 }

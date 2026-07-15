@@ -10,13 +10,9 @@
     }
 
     function setSessionValues($name, $email, $role){
-        if(!session_status() === PHP_SESSION_NONE){
-            $_SESSION['name'] = $name;
-            $_SESSION['email'] = $email;
-            $_SESSION['role'] = $role;   
-        }
-
-        return null;
+        $_SESSION['name'] = $name;
+        $_SESSION['email'] = $email;
+        $_SESSION['role'] = $role;   
     }
 
     function redirectToLoginPage(){
