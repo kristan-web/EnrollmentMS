@@ -1,5 +1,1 @@
-use-gemini.bat
-use-groq.bat
-.aider*
-.env
-AIprompt.txt
+todo.txt
