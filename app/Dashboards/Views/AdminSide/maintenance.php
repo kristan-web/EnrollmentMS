@@ -41,11 +41,11 @@
       </ul>
     </nav>
 
-    <a class="sidebar__logout" href="../../../../public/index.php">
-      <span class="nav__icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
-      </span>
-      <span>Logout</span>
+    <a class="sidebar__logout" onclick="window.location.href='/EnrollmentMS/config/destroysession.php'">
+    <span class="nav__icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
+    </span>
+    <span>Logout</span>
     </a>
   </aside>
 
@@ -83,6 +83,10 @@
     <footer class="main__footer">&copy; 2026 Enrollment Management System</footer>
   </div>
 
+  <script>
+    const sessionRole = <?php echo json_encode($_SESSION['role']); ?>
+  </script>
+  <script src="/EnrollmentMS/public/assets/js/shared/sidebar.js"></script>
   <script src="../../../../public/assets/js/shared/dashboard.js"></script>
 </body>
 </html>
