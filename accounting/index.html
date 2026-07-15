@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<!-- Accounting / Cashier landing page. Carousel is Bootstrap; theme is portal.css. -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="../assets/img/logo.png" />
+  <link rel="apple-touch-icon" href="../assets/img/logo.png" />
+  <title>Cashier &amp; Accounting &middot; Enrollment Management System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <!-- Bootstrap first so portal.css keeps the theme -->
+  <link rel="stylesheet" href="../src/bootstrap/bootstrap.min.css" />
+  <link rel="stylesheet" href="../student-portal/assets/css/portal.css" />
+  <link rel="stylesheet" href="assets/css/accounting.css" />
+</head>
+<body>
+  <div class="blob blob--1"></div>
+  <div class="blob blob--3"></div>
+  <div class="blob blob--5"></div>
+
+  <div class="wrap wrap--apply">
+    <header class="topbar">
+      <a class="topbar__brand" href="index.html" aria-label="Cashier home">
+        <img class="topbar__logo" src="../assets/img/logo.png" alt="School crest" />
+        <span class="topbar__name">
+          <strong>Enrollment Management System</strong>
+          <span class="topbar__tag topbar__tag--cashier">Cashier &amp; Accounting</span>
+        </span>
+      </a>
+      <div class="topbar__actions">
+        <a class="topbar__login" href="../student-portal/index.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+          <span>Student Portal</span>
+        </a>
+        <a class="topbar__login" href="../index.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+          <span>Staff Login</span>
+        </a>
+        <a class="topbar__cta" href="views/pay.html">
+          <span>Pay Now</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </a>
+      </div>
+    </header>
+
+    <!-- Bootstrap carousel: 3 slides, auto-sliding -->
+    <section class="acct-hero">
+      <div id="acctCarousel" class="carousel slide acct-carousel" data-bs-ride="carousel">
+        <div class="carousel-indicators">
+          <button type="button" data-bs-target="#acctCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+          <button type="button" data-bs-target="#acctCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+          <button type="button" data-bs-target="#acctCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
+        </div>
+
+        <div class="carousel-inner">
+          <div class="carousel-item active" data-bs-interval="6000">
+            <img src="assets/img/slide-pay.svg" class="d-block w-100 acct-carousel__img" alt="Paying school fees from a phone using an e-wallet" />
+            <div class="carousel-caption acct-caption">
+              <span class="acct-caption__eyebrow">Online Payments Open</span>
+              <h2>Settle your school fees online</h2>
+              <p>Pay tuition and miscellaneous fees with GCash, Maya, GrabPay or any card. No lining up at the cashier.</p>
+            </div>
+          </div>
+
+          <div class="carousel-item" data-bs-interval="6000">
+            <img src="assets/img/slide-statement.svg" class="d-block w-100 acct-carousel__img" alt="A statement of account showing the breakdown of school fees" />
+            <div class="carousel-caption acct-caption">
+              <span class="acct-caption__eyebrow">Know Before You Pay</span>
+              <h2>See your full breakdown first</h2>
+              <p>Check every fee line and your total assessment for the semester before you send a single peso.</p>
+            </div>
+          </div>
+
+          <div class="carousel-item" data-bs-interval="6000">
+            <img src="assets/img/slide-secure.svg" class="d-block w-100 acct-carousel__img" alt="Secure PayMongo checkout protecting card details" />
+            <div class="carousel-caption acct-caption">
+              <span class="acct-caption__eyebrow">Secure Checkout</span>
+              <h2>Your card details stay private</h2>
+              <p>Payments run on PayMongo's secure checkout — this site never sees your card number.</p>
+            </div>
+          </div>
+        </div>
+
+        <button class="carousel-control-prev" type="button" data-bs-target="#acctCarousel" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#acctCarousel" data-bs-slide="next">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Next</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Accepted payment methods -->
+    <section class="paylogos">
+      <span class="paylogos__label">We accept</span>
+      <ul class="paylogos__list">
+        <li class="paylogo"><img src="assets/img/gcash.svg" alt="GCash" /></li>
+        <li class="paylogo"><img src="assets/img/maya.svg" alt="Maya" /></li>
+        <li class="paylogo"><img src="assets/img/grab.svg" alt="GrabPay" /></li>
+        <li class="paylogo"><img src="assets/img/visa.svg" alt="Visa" /></li>
+        <li class="paylogo"><img src="assets/img/mastercard.svg" alt="Mastercard" /></li>
+      </ul>
+      <span class="paylogos__note">Powered by PayMongo</span>
+    </section>
+
+    <!-- Actions on the left, sample statement on the right -->
+    <section class="acct-main">
+      <div class="acct-main__actions">
+        <a class="portal-card portal-card--amber" href="views/pay.html">
+          <span class="portal-card__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/><path d="M6 15h4"/></svg>
+          </span>
+          <h2>Pay School Fees</h2>
+          <p>Load your statement of account and pay your tuition and other fees online in a few taps.</p>
+          <span class="portal-card__go">Start payment
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </span>
+        </a>
+
+        <a class="portal-card" href="views/status.html">
+          <span class="portal-card__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          </span>
+          <h2>Check a Payment</h2>
+          <p>Already paid? Enter your payment reference to confirm whether it went through.</p>
+          <span class="portal-card__go">Check payment
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </span>
+        </a>
+
+      </div>
+
+      <aside class="acct-main__preview">
+        <div class="card acct-preview">
+          <div class="step__head" style="margin-bottom:18px;">
+            <span class="step__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6"/><path d="M9 17h6"/></svg>
+            </span>
+            <div class="step__headtext">
+              <h2 class="step__title" style="font-size:20px;">Statement of Account</h2>
+              <p class="step__desc">S.Y. 2026–2027 &middot; 1st Semester</p>
+            </div>
+          </div>
+          <ul class="soa">
+            <li class="soa__row"><span class="soa__name">Tuition Fee</span><span class="soa__amount">₱12,000.00</span></li>
+            <li class="soa__row"><span class="soa__name">Miscellaneous Fee</span><span class="soa__amount">₱3,500.00</span></li>
+            <li class="soa__row"><span class="soa__name">Laboratory Fee</span><span class="soa__amount">₱1,800.00</span></li>
+            <li class="soa__row"><span class="soa__name">Other Fees</span><span class="soa__amount">₱2,000.00</span></li>
+          </ul>
+          <!-- home.js refreshes this total if the server is up. -->
+          <div class="soa__total">
+            <span class="soa__total-label">Total Assessment</span>
+            <span class="soa__total-amount">₱19,300.00</span>
+          </div>
+          <p class="acct-preview__note">Sample only — your own statement loads on the payment page.</p>
+        </div>
+      </aside>
+    </section>
+
+    <!-- 3 steps -->
+    <section class="how">
+      <div class="section-head section-head--center">
+        <h2>How paying online works</h2>
+        <p>Three quick steps — no account needed.</p>
+      </div>
+      <div class="how__panel">
+        <div class="how-step">
+          <div class="how-step__top">
+            <span class="how-step__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+            </span>
+            <span class="how-step__num">Step 1</span>
+          </div>
+          <h3>Review your assessment</h3>
+          <p>Enter your student number to load your statement of account and see the breakdown of your fees.</p>
+        </div>
+        <div class="how__arrow" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </div>
+        <div class="how-step">
+          <div class="how-step__top">
+            <span class="how-step__icon how-step__icon--amber" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </span>
+            <span class="how-step__num">Step 2</span>
+          </div>
+          <h3>Choose how much to pay</h3>
+          <p>Pay in full, pay the down payment, or enter your own amount for a partial payment.</p>
+        </div>
+        <div class="how__arrow" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </div>
+        <div class="how-step">
+          <div class="how-step__top">
+            <span class="how-step__icon how-step__icon--green" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+            </span>
+            <span class="how-step__num">Step 3</span>
+          </div>
+          <h3>Pay securely</h3>
+          <p>Finish on PayMongo's secure checkout, then you're sent back here with your receipt.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer class="footer">&copy; 2026 Enrollment Management System &middot; Cashier &amp; Accounting</footer>
+
+  <script src="../src/bootstrap/bootstrap.bundle.min.js"></script>
+  <script src="models/accounting-model.js"></script>
+  <script src="controllers/home.js"></script>
+</body>
+</html>

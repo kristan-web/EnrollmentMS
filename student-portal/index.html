@@ -58,23 +58,34 @@
     </header>
 
     <section class="hero">
-      <span class="hero__eyebrow"><i aria-hidden="true"></i><span id="syChip">Admissions Open</span></span>
-      <h1 class="hero__title">Start Your <em>Senior High</em> Journey Here</h1>
-      <p class="hero__sub">Apply for Grade 11 or 12 online — fill out the form, choose your strand, and upload your requirements. No account needed, and you can track everything with a single reference number.</p>
-      <div class="hero__meta">
-        <span class="meta-chip">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
-          Takes about 10 minutes
-        </span>
-        <span class="meta-chip">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-3.6 8-10V5l-8-3-8 3v7c0 6.4 8 10 8 10Z"/></svg>
-          Your info goes straight to the registrar
-        </span>
-        <span class="meta-chip">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
-          Grade 11 &amp; 12 &middot; All strands
-        </span>
+      <div class="hero__copy">
+        <span class="hero__eyebrow"><i aria-hidden="true"></i><span id="syChip">Admissions Open</span></span>
+        <h1 class="hero__title">Every <em>strand</em>, one simple application</h1>
+        <p class="hero__sub">Explore the Senior High tracks we offer for Grade 11 &amp; 12, then apply online and follow your status with a single reference number — no account needed.</p>
+        <dl class="hero__stats">
+          <div class="hero-stat">
+            <dt>~10 min</dt>
+            <dd>average to complete</dd>
+          </div>
+          <div class="hero-stat">
+            <dt>No account</dt>
+            <dd>needed to apply</dd>
+          </div>
+          <div class="hero-stat">
+            <dt>All strands</dt>
+            <dd>Grade 11 &amp; 12</dd>
+          </div>
+        </dl>
       </div>
+
+      <aside class="hero__preview">
+        <div class="carousel" id="strandCarousel" aria-roledescription="carousel" aria-label="Senior High strands">
+          <div class="carousel__viewport">
+            <ul class="carousel__track" id="strandTrack"></ul>
+          </div>
+          <div class="carousel__dots" id="strandDots" role="tablist" aria-label="Choose a strand"></div>
+        </div>
+      </aside>
     </section>
 
     <section class="how">
