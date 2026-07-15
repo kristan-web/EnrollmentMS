@@ -27,6 +27,9 @@ SET time_zone = "+00:00";
 -- Table structure for table `applicants`
 --
 
+CREATE DATABASE `enrollment_management_system`;
+USE `enrollment_management_system`; 
+
 CREATE TABLE `applicants` (
   `applicant_id` int(11) NOT NULL,
   `reference_number` varchar(20) NOT NULL,

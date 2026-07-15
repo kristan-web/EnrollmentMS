@@ -14,7 +14,7 @@ dashToggle.addEventListener("click", (e) => {
     const open = dashMenu.classList.toggle("is-open");
     dashToggle.setAttribute("aria-expanded", String(open));
   } else {
-    window.location.href = "../dashboard.html";
+    window.location.href = "/EnrollmentMS/app/Dashboards/dashboard.php";
   }
 });
 
