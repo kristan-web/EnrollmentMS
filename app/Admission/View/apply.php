@@ -351,7 +351,8 @@
 
   <footer class="footer">&copy; 2026 Enrollment Management System</footer>
 
-  <script src="../../../public/assets/js/Admission/translator.js"></script>
-  <script src="../../../public/assets/js/Admission/apply.js"></script>
+  <!-- <script src="/EnrollmentMS/public/assets/js/Admission/applicant-model.js"></script> -->
+  <script src="/EnrollmentMS/public/assets/js/Admission/translator.js"></script>
+  <script src="/EnrollmentMS/public/assets/js/Admission/apply.js"></script>
 </body>
 </html>

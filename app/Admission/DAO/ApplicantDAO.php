@@ -1,7 +1,8 @@
 <?php
+$projectFilePath = "C:/xampp/htdocs/EnrollmentMS";
 
-require_once __DIR__."/../../../config/db.php";
-require_once __DIR__."/../Model/applicant_model.php";
+require_once "$projectFilePath/config/db.php";
+require_once "$projectFilePath/app/Admission/Model/applicant_model.php";
 
 class ApplicantDAO {
 

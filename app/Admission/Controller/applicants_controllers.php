@@ -1,9 +1,10 @@
 <?php
+$projectFilePath = "C:/xampp/htdocs/EnrollmentMS";
 
-require_once __DIR__."/../DAO/ApplicantDAO.php";
-require_once __DIR__."/../../Strands/DAO/StrandDAO.php";
-require_once __DIR__."/../../SchoolYears/DAO/SchoolYearDAO.php";
-require_once __DIR__."/../Model/applicant_model.php"; 
+require_once "$projectFilePath/app/Admission/DAO/ApplicantDAO.php"; //ApplicantDAO
+require_once "$projectFilePath/app/Strands/DAO/StrandDAO.php"; //StrandDAO
+require_once "$projectFilePath/app/SchoolYears/DAO/SchoolYearDAO.php"; //SchoolYearDAO
+require_once "$projectFilePath/app/Admission/Model/applicant_model.php";  //applicant_model
 
 header("Content-Type: application/json");
 header("Access-Control-Allow-Origin: *");

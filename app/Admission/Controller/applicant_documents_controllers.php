@@ -1,7 +1,9 @@
 <?php
-require_once __DIR__."/../DAO/ApplicantDocumentDAO.php";
-require_once __DIR__."/../DAO/DocumentTypeDAO.php";
-require_once __DIR__."/../Model/applicant_documents_model.php";
+$projectFilePath = "C:/xampp/htdocs/EnrollmentMS";
+
+require_once "$projectFilePath/app/Admission/DAO/ApplicantDocumentDAO.php";
+require_once "$projectFilePath/app/Admission/DAO/DocumentTypeDAO.php";
+require_once "$projectFilePath/app/Admission/Model/applicant_documents_model.php";
 
 header("Content-Type: application/json");
 header("Access-Control-Allow-Origin: *");
