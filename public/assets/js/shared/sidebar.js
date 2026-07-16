@@ -2,10 +2,29 @@
 const menuDash = document.getElementById('dashMenu');
 
 // Functions
-
-console.log(sessionRole);
+// Check if sessionRole exists, if not use default
+if (typeof sessionRole === 'undefined') {
+    console.warn('sessionRole is not defined, using default');
+    var sessionRole = 'guest';
+} else {
+    console.log('Session role:', sessionRole);
+}
 
 function showDashMenu(role){
+    // If role is 'guest' or undefined, show default menu
+    if (role === 'guest' || !role) {
+        return `
+        <li>
+            <a href="/EnrollmentMS/app/Dashboards/Views/RegistrarSide/transaction.php">
+                <span class="submenu__icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m17 2 4 4-4 4"/><path d="M3 6h18"/><path d="m7 22-4-4 4-4"/><path d="M21 18H3"/></svg>
+                </span>
+                <span>Transaction</span>
+            </a>
+        </li>
+        `;
+    }
+    
     if(role === 'Registrar'){
         return `
         <li>
@@ -20,8 +39,7 @@ function showDashMenu(role){
         <li>
             <a href="/EnrollmentMS/app/Dashboards/Views/RegistrarSide/transaction.php">
                 <span class="submenu__icon" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"         stroke-linecap="round" stroke-linejoin="round"><path d="m17 2 4 4-4 4"/><path d="M3 6h18"/><path d="m7 22-4-4 4-4"/><path d="M21 18H3"/>
-                    </svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m17 2 4 4-4 4"/><path d="M3 6h18"/><path d="m7 22-4-4 4-4"/><path d="M21 18H3"/></svg>
                 </span>
             <span>Transaction</span>
             </a>
@@ -86,6 +104,20 @@ function showDashMenu(role){
         </li>
         `;
     }
+    
+    // Default fallback
+    return `
+    <li>
+        <a href="/EnrollmentMS/app/Dashboards/Views/RegistrarSide/transaction.php">
+            <span class="submenu__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m17 2 4 4-4 4"/><path d="M3 6h18"/><path d="m7 22-4-4 4-4"/><path d="M21 18H3"/></svg>
+            </span>
+            <span>Transaction</span>
+        </a>
+    </li>
+    `;
 }
 
-menuDash.innerHTML = showDashMenu(sessionRole); 
+if (menuDash) {
+    menuDash.innerHTML = showDashMenu(sessionRole);
+}

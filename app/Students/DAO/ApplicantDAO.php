@@ -180,27 +180,48 @@ class ApplicantDAO {
         return $applicant;
     }
 
-    // ADMIN: change an applicant's status (Pending/Under Review/Approved/
-    // Rejected/Enrolled per the schema ENUM), stamping who reviewed it and when.
+    // ADMIN: change an applicant's status. When the new status is "Approved",
+    // this also creates the matching `students` row (if one doesn't already
+    // exist) and links it via `converted_student_id`, all in one transaction
+    // so an applicant is never left half-converted.
     public function updateStatus($applicantId, $status, $rejectionReason, $reviewedBy) {
-        $query = "
-        UPDATE applicants
-        SET status = :status,
-            rejection_reason = :rejection_reason,
-            reviewed_by = :reviewed_by,
-            reviewed_at = NOW()
-        WHERE applicant_id = :id
-        ";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindValue(":status", $status);
-        $stmt->bindValue(":rejection_reason", $rejectionReason);
-        if ($reviewedBy === null) {
-            $stmt->bindValue(":reviewed_by", null, PDO::PARAM_NULL);
-        } else {
-            $stmt->bindValue(":reviewed_by", $reviewedBy, PDO::PARAM_INT);
+        $this->conn->beginTransaction();
+        try {
+            $convertedStudentId = null;
+
+            if ($status === "Approved") {
+                $convertedStudentId = $this->convertApplicantToStudent($applicantId);
+            }
+
+            $query = "
+            UPDATE applicants
+            SET status = :status,
+                rejection_reason = :rejection_reason,
+                reviewed_by = :reviewed_by,
+                reviewed_at = NOW()
+                " . ($convertedStudentId ? ", converted_student_id = :converted_student_id" : "") . "
+            WHERE applicant_id = :id
+            ";
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindValue(":status", $status);
+            $stmt->bindValue(":rejection_reason", $rejectionReason);
+            if ($reviewedBy === null) {
+                $stmt->bindValue(":reviewed_by", null, PDO::PARAM_NULL);
+            } else {
+                $stmt->bindValue(":reviewed_by", $reviewedBy, PDO::PARAM_INT);
+            }
+            if ($convertedStudentId) {
+                $stmt->bindValue(":converted_student_id", $convertedStudentId, PDO::PARAM_INT);
+            }
+            $stmt->bindValue(":id", $applicantId);
+            $stmt->execute();
+
+            $this->conn->commit();
+            return true;
+        } catch (Exception $e) {
+            $this->conn->rollBack();
+            throw $e;
         }
-        $stmt->bindValue(":id", $applicantId);
-        return $stmt->execute();
     }
 
     // Fetch all documents for a specific applicant
@@ -216,6 +237,90 @@ class ApplicantDAO {
         $stmt->bindValue(":id", $applicantId);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    // Generates a student number like "2026-0483" and guarantees it doesn't
+    // collide with an existing row before handing it back.
+    public function generateUniqueStudentNumber() {
+        do {
+            $candidate = date("Y") . "-" . str_pad((string) random_int(0, 9999), 4, "0", STR_PAD_LEFT);
+            $stmt = $this->conn->prepare("SELECT 1 FROM students WHERE student_number = :num LIMIT 1");
+            $stmt->bindValue(":num", $candidate);
+            $stmt->execute();
+            $exists = (bool) $stmt->fetchColumn();
+        } while ($exists);
+
+        return $candidate;
+    }
+
+// Converts an approved applicant into a student record. Idempotent: if
+// the applicant was already converted (converted_student_id is set),
+// it just hands back the existing student id instead of duplicating.
+// Throws RuntimeException with a user-facing message when conversion
+// can't proceed (e.g. missing LRN), so the caller can surface it instead
+// of silently approving with no student created.
+    private function convertApplicantToStudent($applicantId) {
+        $applicant = $this->getById($applicantId);
+        if (!$applicant) {
+            throw new RuntimeException("Applicant not found.");
+        }
+
+        if (!empty($applicant["converted_student_id"])) {
+            return $applicant["converted_student_id"];
+        }
+
+        if (empty($applicant["lrn"])) {
+            throw new RuntimeException("This applicant has no LRN on file. Please add one before approving.");
+        }
+
+        $studentNumber = $this->generateUniqueStudentNumber();
+
+        $query = "
+        INSERT INTO students
+        (
+            lrn, student_number, first_name, last_name, middle_name,
+            gender, birthdate, address, contact_number, email,
+            grade_level, status,
+            father_name, father_contact_number,
+            mother_name, mother_contact_number,
+            guardian_name, guardian_relationship, guardian_contact_number,
+            emergency_contact_name, emergency_contact_relationship, emergency_contact_number
+        )
+        VALUES
+        (
+            :lrn, :student_number, :first_name, :last_name, :middle_name,
+            :gender, :birthdate, :address, :contact_number, :email,
+            :grade_level, 'Active',
+            :father_name, :father_contact_number,
+            :mother_name, :mother_contact_number,
+            :guardian_name, :guardian_relationship, :guardian_contact_number,
+            :emergency_contact_name, :emergency_contact_relationship, :emergency_contact_number
+        )
+        ";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindValue(":lrn", $applicant["lrn"]);
+        $stmt->bindValue(":student_number", $studentNumber);
+        $stmt->bindValue(":first_name", $applicant["first_name"]);
+        $stmt->bindValue(":last_name", $applicant["last_name"]);
+        $stmt->bindValue(":middle_name", $applicant["middle_name"]);
+        $stmt->bindValue(":gender", $applicant["gender"]);
+        $stmt->bindValue(":birthdate", $applicant["birthdate"]);
+        $stmt->bindValue(":address", $applicant["address"]);
+        $stmt->bindValue(":contact_number", $applicant["contact_number"]);
+        $stmt->bindValue(":email", $applicant["email"]);
+        $stmt->bindValue(":grade_level", $applicant["desired_grade_level"]);
+        $stmt->bindValue(":father_name", $applicant["father_name"]);
+        $stmt->bindValue(":father_contact_number", $applicant["father_contact_number"]);
+        $stmt->bindValue(":mother_name", $applicant["mother_name"]);
+        $stmt->bindValue(":mother_contact_number", $applicant["mother_contact_number"]);
+        $stmt->bindValue(":guardian_name", $applicant["guardian_name"]);
+        $stmt->bindValue(":guardian_relationship", $applicant["guardian_relationship"]);
+        $stmt->bindValue(":guardian_contact_number", $applicant["guardian_contact_number"]);
+        $stmt->bindValue(":emergency_contact_name", $applicant["emergency_contact_name"]);
+        $stmt->bindValue(":emergency_contact_relationship", $applicant["emergency_contact_relationship"]);
+        $stmt->bindValue(":emergency_contact_number", $applicant["emergency_contact_number"]);
+        $stmt->execute();
+
+        return $this->conn->lastInsertId();
     }
 }
 ?>

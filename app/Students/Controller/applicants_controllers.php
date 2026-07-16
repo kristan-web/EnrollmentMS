@@ -372,10 +372,17 @@ if ($method == "GET") {
 
         $reviewedBy = $_SESSION["user_id"] ?? null;
 
-        if ($dao->updateStatus($applicantId, $status, $rejectionReason, $reviewedBy)) {
-            echo json_encode(["success" => true, "message" => "Application status updated."]);
-        } else {
-            echo json_encode(["success" => false, "message" => "Failed to update application status."]);
+        try {
+            if ($dao->updateStatus($applicantId, $status, $rejectionReason, $reviewedBy)) {
+                echo json_encode(["success" => true, "message" => "Application status updated."]);
+            } else {
+                echo json_encode(["success" => false, "message" => "Failed to update application status."]);
+            }
+        } catch (RuntimeException $e) {
+            // Expected, user-facing failures (e.g. missing LRN before approval)
+            echo json_encode(["success" => false, "message" => $e->getMessage()]);
+        } catch (PDOException $e) {
+            echo json_encode(["success" => false, "message" => "Could not update application status. Please try again."]);
         }
 
     } else {

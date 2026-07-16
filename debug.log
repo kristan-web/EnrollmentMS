@@ -208,3 +208,138 @@ POST: Array
 RESOLVED ACTION: serve-document
 === END REQUEST ===
 
+=== NEW REQUEST ===
+REQUEST_METHOD: GET
+QUERY_STRING: action=list
+REQUEST_URI: /EnrollmentMS/app/Students/Controller/applicants_controllers.php?action=list
+GET: Array
+(
+    [action] => list
+)
+
+POST: Array
+(
+)
+
+RESOLVED ACTION: list
+=== END REQUEST ===
+
+=== NEW REQUEST ===
+REQUEST_METHOD: GET
+QUERY_STRING: action=get&id=1
+REQUEST_URI: /EnrollmentMS/app/Students/Controller/applicants_controllers.php?action=get&id=1
+GET: Array
+(
+    [action] => get
+    [id] => 1
+)
+
+POST: Array
+(
+)
+
+RESOLVED ACTION: get
+=== END REQUEST ===
+
+=== NEW REQUEST ===
+REQUEST_METHOD: GET
+QUERY_STRING: action=serve-document&path=C%3A%2Fxampp%2Fenrollment_uploads%2Fapplicants%2FEMS-2026-938506%2F4c1c7a5827e95a9cf9dbeafe153f2d3f.png
+REQUEST_URI: /EnrollmentMS/app/Students/Controller/applicants_controllers.php?action=serve-document&path=C%3A%2Fxampp%2Fenrollment_uploads%2Fapplicants%2FEMS-2026-938506%2F4c1c7a5827e95a9cf9dbeafe153f2d3f.png
+GET: Array
+(
+    [action] => serve-document
+    [path] => C:/xampp/enrollment_uploads/applicants/EMS-2026-938506/4c1c7a5827e95a9cf9dbeafe153f2d3f.png
+)
+
+POST: Array
+(
+)
+
+RESOLVED ACTION: serve-document
+=== END REQUEST ===
+
+=== NEW REQUEST ===
+REQUEST_METHOD: GET
+QUERY_STRING: action=serve-document&path=C%3A%2Fxampp%2Fenrollment_uploads%2Fapplicants%2FEMS-2026-938506%2F66f270d0c51662e0bfe482a7f360b80c.png
+REQUEST_URI: /EnrollmentMS/app/Students/Controller/applicants_controllers.php?action=serve-document&path=C%3A%2Fxampp%2Fenrollment_uploads%2Fapplicants%2FEMS-2026-938506%2F66f270d0c51662e0bfe482a7f360b80c.png
+GET: Array
+(
+    [action] => serve-document
+    [path] => C:/xampp/enrollment_uploads/applicants/EMS-2026-938506/66f270d0c51662e0bfe482a7f360b80c.png
+)
+
+POST: Array
+(
+)
+
+RESOLVED ACTION: serve-document
+=== END REQUEST ===
+
+=== NEW REQUEST ===
+REQUEST_METHOD: GET
+QUERY_STRING: action=list
+REQUEST_URI: /EnrollmentMS/app/Students/Controller/applicants_controllers.php?action=list
+GET: Array
+(
+    [action] => list
+)
+
+POST: Array
+(
+)
+
+RESOLVED ACTION: list
+=== END REQUEST ===
+
+=== NEW REQUEST ===
+REQUEST_METHOD: GET
+QUERY_STRING: action=get&id=1
+REQUEST_URI: /EnrollmentMS/app/Students/Controller/applicants_controllers.php?action=get&id=1
+GET: Array
+(
+    [action] => get
+    [id] => 1
+)
+
+POST: Array
+(
+)
+
+RESOLVED ACTION: get
+=== END REQUEST ===
+
+=== NEW REQUEST ===
+REQUEST_METHOD: POST
+QUERY_STRING: 
+REQUEST_URI: /EnrollmentMS/app/Students/Controller/applicants_controllers.php
+GET: Array
+(
+)
+
+POST: Array
+(
+    [action] => update-status
+    [applicant_id] => 1
+    [status] => Approved
+    [rejection_reason] => 
+)
+
+RESOLVED ACTION: update-status
+=== END REQUEST ===
+
+=== NEW REQUEST ===
+REQUEST_METHOD: GET
+QUERY_STRING: action=list
+REQUEST_URI: /EnrollmentMS/app/Students/Controller/applicants_controllers.php?action=list
+GET: Array
+(
+    [action] => list
+)
+
+POST: Array
+(
+)
+
+RESOLVED ACTION: list
+=== END REQUEST ===
+

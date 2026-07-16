@@ -37,36 +37,7 @@
       </button>
 
       <ul class="nav__submenu is-open" id="dashMenu">
-        <li><a href="../../Dashboards/Views/RegistrarSide/data-entry.php">
-          <span class="submenu__icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
-          </span>
-          <span>Data entry</span>
-        </a></li>
-        <li><a href="../../Dashboards/Views/RegistrarSide/transaction.php" class="is-active">
-          <span class="submenu__icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m17 2 4 4-4 4"/><path d="M3 6h18"/><path d="m7 22-4-4 4-4"/><path d="M21 18H3"/></svg>
-          </span>
-          <span>Transaction</span>
-        </a></li>
-        <li><a href="../../Dashboards/Views/AdminSide/settings.php">
-          <span class="submenu__icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
-          </span>
-          <span>Settings</span>
-        </a></li>
-        <li><a href="../../Dashboards/Views/AdminSide/maintenance.php">
-          <span class="submenu__icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76Z"/></svg>
-          </span>
-          <span>Maintenance</span>
-        </a></li>
-        <li><a href="../../Dashboards/Views/RegistrarSide/records.php">
-          <span class="submenu__icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>
-          </span>
-          <span>Records &amp; reports</span>
-        </a></li>
+        <!-- Dynamically populated by sidebar.js -->
       </ul>
     </nav>
 
@@ -230,9 +201,51 @@
       </div>
     </div>
   </div>
+  <!-- Schedule Modal -->
+<div class="modal-overlay" id="scheduleModal" hidden>
+    <div class="modal modal--wide" role="dialog" aria-modal="true" aria-labelledby="scheduleTitle">
+        <div class="modal__head">
+            <h2 id="scheduleTitle">Student Schedule</h2>
+            <button class="modal__close" id="closeScheduleModal" aria-label="Close">&times;</button>
+        </div>
+        <div class="modal__body">
+            <div id="scheduleStudentInfo" class="schedule-student-info"></div>
+            <div class="schedule-actions">
+                <button class="btn btn--primary" id="printScheduleBtn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg>
+                    Print Schedule
+                </button>
+            </div>
+            <div class="table-wrap" id="scheduleTableWrap">
+                <table class="data-table" id="scheduleTable">
+                    <thead>
+                        <tr>
+                            <th>Subject Code</th>
+                            <th>Subject Name</th>
+                            <th>Day</th>
+                            <th>Time</th>
+                            <th>Room</th>
+                            <th>Teacher</th>
+                        </tr>
+                    </thead>
+                    <tbody id="scheduleRows">
+                        <tr>
+                            <td colspan="6" class="text-center">Loading schedule...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="schedule-summary" id="scheduleSummary"></div>
+            <div class="form-actions">
+                <button type="button" class="btn btn--ghost" id="closeScheduleModalBtn">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 
   <script>
-    const sessionRole = <?php echo json_encode($_SESSION['role']); ?>
+    // Check if session role exists, provide fallback
+    const sessionRole = <?php echo isset($_SESSION['role']) ? json_encode($_SESSION['role']) : json_encode('guest'); ?>;
   </script>
   <script src="/EnrollmentMS/public/assets/js/shared/sidebar.js"></script>
   <script src="../../../public/assets/js/shared/dashboard.js"></script>
