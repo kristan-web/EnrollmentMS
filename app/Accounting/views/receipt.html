@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<!-- Where PayMongo returns after paying. receipt.js reads the URL and renders. -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="../../assets/img/logo.png" />
+  <link rel="apple-touch-icon" href="../../assets/img/logo.png" />
+  <title>Payment Receipt &middot; Cashier</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../student-portal/assets/css/portal.css" />
+  <link rel="stylesheet" href="../assets/css/accounting.css" />
+</head>
+<body>
+  <div class="blob blob--1"></div>
+  <div class="blob blob--3"></div>
+  <div class="blob blob--5"></div>
+
+  <div class="wrap wrap--status">
+    <header class="topbar">
+      <a class="topbar__brand" href="../index.html" aria-label="Cashier home">
+        <img class="topbar__logo" src="../../assets/img/logo.png" alt="School crest" />
+        <span class="topbar__name">
+          <strong>Enrollment Management System</strong>
+          <span class="topbar__tag topbar__tag--cashier">Cashier &amp; Accounting</span>
+        </span>
+      </a>
+      <div class="topbar__actions">
+        <a class="topbar__login" href="../index.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9.5 12 3l9 6.5V21a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg>
+          <span>Cashier Home</span>
+        </a>
+      </div>
+    </header>
+
+    <div class="card">
+      <!-- everything below is drawn by receipt.js based on the URL -->
+      <div id="receiptBody" class="receipt">
+        <div class="acct-spinner"></div>
+        <p>Checking your payment…</p>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">&copy; 2026 Enrollment Management System &middot; Cashier &amp; Accounting</footer>
+
+  <script src="../models/accounting-model.js"></script>
+  <script src="../controllers/receipt.js"></script>
+</body>
+</html>

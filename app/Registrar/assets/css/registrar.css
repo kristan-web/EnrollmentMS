@@ -1,0 +1,384 @@
+/* registrar.css — module-specific styles for the registrar's admission console.
+   Layers on top of css/dashboard.css, the same stylesheet the admin
+   ("Admission") pages use, so this console gets the identical shell: navy
+   sidebar, hamburger, centered page title, toolbar, panels, tabs, tables,
+   buttons and modals. Only the console's own pieces live here.
+
+   dashboard.css defines just four tokens (--bg, --navy, --accent, --logout),
+   so the extra ones this file needs are declared below. They deliberately
+   match the values in student-portal/assets/css/portal.css, which is where the
+   rest of the module (the login page) still gets its theme. */
+
+:root {
+  --line: rgba(22, 36, 79, 0.1);
+  --ink-2: rgba(22, 36, 79, 0.65);
+  --ink-3: rgba(22, 36, 79, 0.5);
+  --blue: #2f5fd0;
+  --red: #c22a3a;
+  --ease: cubic-bezier(0.22, 0.8, 0.3, 1);
+  --shadow-sm: 0 1px 2px rgba(24, 47, 110, 0.06), 0 6px 18px rgba(24, 47, 110, 0.07);
+}
+
+/* ---- Primary buttons --------------------------------------------------- */
+/* dashboard.css makes .btn--primary a dark-navy gradient. On the registrar
+   pages we want the brand blue instead — lighter and more clearly clickable
+   against the white tables. Overrides the shared style for this module only. */
+.btn--primary {
+  background: linear-gradient(150deg, #3f7bef, #2f5fd0);
+  box-shadow: 0 8px 18px rgba(47, 95, 208, 0.28);
+}
+.btn--primary:hover {
+  box-shadow: 0 10px 22px rgba(47, 95, 208, 0.4), 0 0 0 2px rgba(55, 205, 255, 0.35);
+}
+
+/* ---- Page scroll ------------------------------------------------------- */
+/* Let the whole PAGE scroll (the normal browser scrollbar) as well. The shared
+   dashboard.css pins html/body to the viewport height, so .main can't grow
+   past one screen and the toolbar/table/pagination below the fold are
+   unreachable. Free the document height (this sheet loads after dashboard.css).
+   The table keeps its OWN scroll + sticky header from dashboard.css
+   (.table-wrap max-height + overflow:auto), so both scrolls coexist:
+   the table body scrolls its rows, the page scrolls to reach the pagination. */
+html, body {
+  height: auto;
+  min-height: 100%;
+}
+/* A touch shorter than the dashboard default so a full page of rows scrolls. */
+.table-wrap { max-height: min(58vh, 560px); }
+
+/* ---- Review queue table ------------------------------------------------ */
+/* The queue is a .data-table in a .panel, the same shape as the admin
+   Enrollment page. Clicking a row opens the application in a modal. */
+.reg-count {
+  margin: 0 0 0 auto;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-3);
+}
+
+.reg-row { cursor: pointer; }
+.reg-row:hover td { background: rgba(47, 95, 208, 0.04); }
+
+/* "2 missing" / "1 rejected" under the document count. */
+.reg-flag { color: #a16207; font-weight: 700; }
+
+/* Signed-in registrar, shown in the sidebar above Log out. */
+.sidebar__who {
+  margin: auto 14px 10px;
+  padding: 11px 13px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+.sidebar__who strong {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sidebar__who span {
+  font-size: 11.5px;
+  opacity: 0.7;
+}
+
+/* ---- Detail panel ------------------------------------------------------ */
+
+.reg-detail__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+.reg-detail__name {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 800;
+  color: var(--navy);
+}
+.reg-detail__meta {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--ink-3);
+}
+.reg-section-title {
+  margin: 22px 0 10px;
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-3);
+}
+.reg-muted { color: var(--ink-3); font-size: 13.5px; }
+.reg-empty {
+  padding: 14px;
+  border: 1.5px dashed var(--line);
+  border-radius: 12px;
+  color: var(--ink-3);
+  font-size: 13.5px;
+  text-align: center;
+}
+
+/* Applicant detail rows. */
+.info-grid { margin: 0 0 6px; }
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 2px;
+  border-bottom: 1px solid var(--line);
+}
+.info-row:last-child { border-bottom: none; }
+.info-row dt { color: var(--ink-3); font-size: 13.5px; }
+.info-row dd { margin: 0; font-weight: 600; text-align: right; font-size: 14px; }
+
+/* ---- Documents --------------------------------------------------------- */
+.reg-doc {
+  padding: 13px 14px;
+  border: 1.5px solid var(--line);
+  border-radius: 13px;
+  background: #fff;
+}
+.reg-doc + .reg-doc { margin-top: 8px; }
+.reg-doc__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.reg-doc__name { font-weight: 700; font-size: 14px; color: var(--navy); }
+.reg-doc__meta { margin: 3px 0 0; font-size: 12.5px; color: var(--ink-3); }
+.reg-doc__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 11px;
+}
+.reg-doc__remarks {
+  margin: 9px 0 0;
+  padding: 8px 11px;
+  border-radius: 9px;
+  background: rgba(194, 42, 58, 0.07);
+  color: var(--red);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+/* Field helpers dashboard.css doesn't ship. */
+.field__hint {
+  font-size: 12px;
+  color: var(--ink-3);
+}
+.required { color: var(--red); }
+
+.tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.tag--required { background: rgba(47, 95, 208, 0.12); color: #1e46a8; }
+.tag--optional { background: rgba(22, 36, 79, 0.08); color: var(--ink-3); }
+
+/* Required documents the applicant never uploaded. */
+.reg-missing {
+  margin: 10px 0 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(244, 179, 1, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(244, 179, 1, 0.3);
+}
+.reg-missing__title {
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-weight: 800;
+  color: #a16207;
+}
+.reg-missing ul { margin: 0; padding-left: 18px; font-size: 13.5px; color: #a16207; }
+
+/* ---- Section picker ---------------------------------------------------- */
+.reg-sections { display: grid; gap: 8px; }
+.reg-sec {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 13px;
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.16s var(--ease), box-shadow 0.16s var(--ease);
+}
+.reg-sec:hover:not(:disabled) { border-color: rgba(47, 95, 208, 0.4); }
+.reg-sec.is-active {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(47, 95, 208, 0.12);
+}
+.reg-sec:disabled { opacity: 0.55; cursor: not-allowed; }
+.reg-sec__name { font-weight: 700; font-size: 14px; color: var(--navy); }
+.reg-sec__meta { display: block; margin-top: 3px; font-size: 12.5px; color: var(--ink-3); }
+.reg-sec__slots { flex: none; font-size: 12.5px; font-weight: 700; color: var(--ink-2); }
+
+/* ---- Figures (assessment / paid / balance) ----------------------------- */
+.reg-figures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.reg-figure {
+  padding: 12px 13px;
+  border-radius: 12px;
+  background: rgba(47, 95, 208, 0.06);
+}
+.reg-figure__label {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-3);
+}
+.reg-figure__value {
+  display: block;
+  margin-top: 3px;
+  font-family: "Roboto Mono", monospace;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--navy);
+}
+.reg-figure--bal { background: rgba(244, 179, 1, 0.12); }
+.reg-figure--bal .reg-figure__value { color: #a16207; }
+
+/* ---- Status badges ----------------------------------------------------- */
+/* dashboard.css ships badge--active/archived/closed/core/specialized; the
+   admission statuses need their own, keyed to the same palette. */
+.badge--pending { background: rgba(244, 179, 1, 0.16); color: #a16207; }
+.badge--review { background: rgba(47, 95, 208, 0.12); color: #1e46a8; }
+.badge--approved { background: rgba(34, 197, 94, 0.14); color: #15803d; }
+.badge--rejected { background: rgba(194, 42, 58, 0.11); color: var(--red); }
+.badge--enrolled { background: rgba(13, 148, 136, 0.14); color: #0f766e; }
+.badge--verified { background: rgba(34, 197, 94, 0.14); color: #15803d; }
+
+/* ---- Buttons ----------------------------------------------------------- */
+/* dashboard.css has primary / ghost / danger / sm — these two are extra. */
+.btn--verify {
+  color: #fff;
+  background: linear-gradient(150deg, #34d073, #16a34a);
+  box-shadow: 0 8px 18px rgba(22, 163, 74, 0.25);
+}
+.btn--reject {
+  color: var(--red);
+  background: #fff;
+  box-shadow: inset 0 0 0 1.5px rgba(194, 42, 58, 0.4);
+}
+.reg-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 12px;
+}
+
+/* ---- Flash message ----------------------------------------------------- */
+.reg-flash {
+  margin: 0 0 16px;
+  padding: 12px 15px;
+  border-radius: 13px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.reg-flash.is-success {
+  color: #0f7a37;
+  background: rgba(22, 163, 74, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(22, 163, 74, 0.22);
+}
+.reg-flash.is-error {
+  color: var(--red);
+  background: rgba(194, 42, 58, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(194, 42, 58, 0.2);
+}
+
+/* ---- Reports page ------------------------------------------------------ */
+/* The report tables are plain .data-table (dashboard.css) in .panel, same as
+   the queue. These add the numeric right-align and the per-table headings. */
+.reg-report-title {
+  margin: 8px 0 0;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--navy);
+}
+.data-table th.reg-num,
+.data-table td.reg-num {
+  text-align: right;
+  font-family: "Roboto Mono", monospace;
+}
+.data-table tfoot td {
+  font-weight: 800;
+  color: var(--navy);
+  border-top: 2px solid var(--line);
+}
+
+/* ---- Temporary report card --------------------------------------------- */
+/* Hidden on screen; shown alone when printing (body.print-card). */
+.reg-print-card { display: none; }
+@media print {
+  body.print-card .main,
+  body.print-card .modal-overlay { display: none !important; }
+  body.print-card .reg-print-card { display: block; }
+}
+.report-card-doc {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 26px;
+  color: #16244f;
+  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+}
+.report-card-doc__head {
+  text-align: center;
+  border-bottom: 2px solid #16244f;
+  padding-bottom: 12px;
+  margin-bottom: 18px;
+}
+.report-card-doc__head h1 { margin: 0; font-size: 19px; }
+.report-card-doc__head p { margin: 2px 0 10px; font-size: 12px; color: #555; }
+.report-card-doc__head h2 { margin: 0; font-size: 15px; letter-spacing: 2px; }
+.report-card-doc__table { width: 100%; border-collapse: collapse; }
+.report-card-doc__table td {
+  padding: 8px 0;
+  font-size: 13px;
+  vertical-align: top;
+  border-bottom: 1px dotted #ccc;
+}
+.report-card-doc__table .rk { color: #555; width: 40%; }
+.report-card-doc__table .rv { text-align: right; font-weight: 700; }
+.report-card-doc__note {
+  margin: 18px 0 0;
+  padding: 11px 13px;
+  border-radius: 8px;
+  background: #f1f5ff;
+  font-size: 11.5px;
+  color: #555;
+  line-height: 1.5;
+}
+.report-card-doc__sign {
+  margin-top: 44px;
+  text-align: right;
+  font-size: 12px;
+  color: #555;
+}
+.report-card-doc__sign span {
+  display: inline-block;
+  padding-top: 6px;
+  border-top: 1px solid #16244f;
+  min-width: 200px;
+  text-align: center;
+  color: #16244f;
+  font-weight: 700;
+}

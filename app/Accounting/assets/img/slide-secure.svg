@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 440" role="img" aria-label="Secure PayMongo checkout protecting card details">
+  <defs>
+    <linearGradient id="cBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0f766e"/>
+      <stop offset="45%" stop-color="#16244f"/>
+      <stop offset="100%" stop-color="#0b1533"/>
+    </linearGradient>
+    <linearGradient id="cShield" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#34d073"/>
+      <stop offset="100%" stop-color="#16a34a"/>
+    </linearGradient>
+    <linearGradient id="cCard" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2f5fd0"/>
+      <stop offset="100%" stop-color="#1b2a5e"/>
+    </linearGradient>
+    <filter id="cShadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="16" stdDeviation="22" flood-color="#050b20" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="440" fill="url(#cBg)"/>
+  <circle cx="1040" cy="400" r="200" fill="#34d073" opacity="0.12"/>
+  <circle cx="1120" cy="40" r="150" fill="#37cdff" opacity="0.10"/>
+
+  <!-- shield -->
+  <g filter="url(#cShadow)" transform="translate(660 62)">
+    <path d="M116 0 L226 40 C226 154 188 240 116 284 C44 240 6 154 6 40 Z" fill="url(#cShield)"/>
+    <path d="M116 20 L206 52 C206 148 174 220 116 258 C58 220 26 148 26 52 Z" fill="#ffffff" opacity="0.14"/>
+    <rect x="84" y="124" width="64" height="52" rx="9" fill="#ffffff"/>
+    <path d="M96 124v-16a20 20 0 0 1 40 0v16" fill="none" stroke="#ffffff" stroke-width="10" stroke-linecap="round"/>
+    <circle cx="116" cy="146" r="7" fill="#16a34a"/>
+    <rect x="112.5" y="150" width="7" height="14" rx="3.5" fill="#16a34a"/>
+  </g>
+
+  <!-- card -->
+  <g filter="url(#cShadow)" transform="translate(920 158) rotate(-8)">
+    <rect x="0" y="0" width="240" height="150" rx="18" fill="url(#cCard)"/>
+    <rect x="0" y="30" width="240" height="27" fill="#0b1533" opacity="0.55"/>
+    <rect x="20" y="78" width="38" height="27" rx="5" fill="#f4b301" opacity="0.9"/>
+    <g fill="#ffffff" opacity="0.65">
+      <rect x="20" y="118" width="38" height="8" rx="4"/>
+      <rect x="66" y="118" width="38" height="8" rx="4"/>
+      <rect x="112" y="118" width="38" height="8" rx="4"/>
+      <rect x="158" y="118" width="38" height="8" rx="4"/>
+    </g>
+    <circle cx="190" cy="90" r="18" fill="#ffffff" opacity="0.3"/>
+    <circle cx="212" cy="90" r="18" fill="#ffffff" opacity="0.45"/>
+  </g>
+
+  <!-- e-receipt -->
+  <g filter="url(#cShadow)" transform="translate(596 268)">
+    <rect x="0" y="0" width="176" height="106" rx="16" fill="#ffffff"/>
+    <circle cx="30" cy="30" r="13" fill="#16a34a"/>
+    <path d="M24 30l4 4 7-7" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="52" y="24" width="86" height="11" rx="5.5" fill="#16244f" opacity="0.75"/>
+    <g fill="#16244f" opacity="0.16">
+      <rect x="22" y="58" width="132" height="8" rx="4"/>
+      <rect x="22" y="76" width="92" height="8" rx="4"/>
+    </g>
+  </g>
+
+  <g fill="#34d073" opacity="0.55">
+    <circle cx="628" cy="120" r="6"/>
+    <circle cx="900" cy="392" r="6"/>
+    <circle cx="1148" cy="176" r="6"/>
+  </g>
+</svg>
