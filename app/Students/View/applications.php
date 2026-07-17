@@ -70,6 +70,7 @@
           <button class="tab" data-status="Approved">Approved <span class="tab__count" id="approvedCount">0</span></button>
           <button class="tab" data-status="Rejected">Rejected <span class="tab__count" id="rejectedCount">0</span></button>
           <button class="tab" data-status="Enrolled">Enrolled <span class="tab__count" id="enrolledCount">0</span></button>
+          <a class="tab" href="student.php">Students</a>
         </div>
         <div class="search-box">
           <svg class="search-box__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>

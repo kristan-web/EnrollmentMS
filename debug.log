@@ -343,3 +343,260 @@ POST: Array
 RESOLVED ACTION: list
 === END REQUEST ===
 
+=== NEW REQUEST ===
+REQUEST_METHOD: GET
+QUERY_STRING: action=list
+REQUEST_URI: /EnrollmentMS/app/Students/Controller/applicants_controllers.php?action=list
+GET: Array
+(
+    [action] => list
+)
+
+POST: Array
+(
+)
+
+RESOLVED ACTION: list
+=== END REQUEST ===
+
+=== NEW REQUEST ===
+REQUEST_METHOD: GET
+QUERY_STRING: action=list
+REQUEST_URI: /EnrollmentMS/app/Students/Controller/applicants_controllers.php?action=list
+GET: Array
+(
+    [action] => list
+)
+
+POST: Array
+(
+)
+
+RESOLVED ACTION: list
+=== END REQUEST ===
+
+=== NEW REQUEST ===
+REQUEST_METHOD: GET
+QUERY_STRING: action=list
+REQUEST_URI: /EnrollmentMS/app/Students/Controller/applicants_controllers.php?action=list
+GET: Array
+(
+    [action] => list
+)
+
+POST: Array
+(
+)
+
+RESOLVED ACTION: list
+=== END REQUEST ===
+
+=== NEW REQUEST ===
+REQUEST_METHOD: GET
+QUERY_STRING: action=list
+REQUEST_URI: /EnrollmentMS/app/Students/Controller/applicants_controllers.php?action=list
+GET: Array
+(
+    [action] => list
+)
+
+POST: Array
+(
+)
+
+RESOLVED ACTION: list
+=== END REQUEST ===
+
+=== NEW REQUEST ===
+REQUEST_METHOD: GET
+QUERY_STRING: action=list
+REQUEST_URI: /EnrollmentMS/app/Students/Controller/applicants_controllers.php?action=list
+GET: Array
+(
+    [action] => list
+)
+
+POST: Array
+(
+)
+
+RESOLVED ACTION: list
+=== END REQUEST ===
+
+=== NEW REQUEST ===
+REQUEST_METHOD: GET
+QUERY_STRING: action=list
+REQUEST_URI: /EnrollmentMS/app/Students/Controller/applicants_controllers.php?action=list
+GET: Array
+(
+    [action] => list
+)
+
+POST: Array
+(
+)
+
+RESOLVED ACTION: list
+=== END REQUEST ===
+
+=== NEW REQUEST ===
+REQUEST_METHOD: GET
+QUERY_STRING: action=list
+REQUEST_URI: /EnrollmentMS/app/Students/Controller/applicants_controllers.php?action=list
+GET: Array
+(
+    [action] => list
+)
+
+POST: Array
+(
+)
+
+RESOLVED ACTION: list
+=== END REQUEST ===
+
+=== NEW REQUEST ===
+REQUEST_METHOD: GET
+QUERY_STRING: action=list
+REQUEST_URI: /EnrollmentMS/app/Students/Controller/applicants_controllers.php?action=list
+GET: Array
+(
+    [action] => list
+)
+
+POST: Array
+(
+)
+
+RESOLVED ACTION: list
+=== END REQUEST ===
+
+=== NEW REQUEST ===
+REQUEST_METHOD: GET
+QUERY_STRING: action=list
+REQUEST_URI: /EnrollmentMS/app/Students/Controller/applicants_controllers.php?action=list
+GET: Array
+(
+    [action] => list
+)
+
+POST: Array
+(
+)
+
+RESOLVED ACTION: list
+=== END REQUEST ===
+
+=== NEW REQUEST ===
+REQUEST_METHOD: GET
+QUERY_STRING: action=get&id=2
+REQUEST_URI: /EnrollmentMS/app/Students/Controller/applicants_controllers.php?action=get&id=2
+GET: Array
+(
+    [action] => get
+    [id] => 2
+)
+
+POST: Array
+(
+)
+
+RESOLVED ACTION: get
+=== END REQUEST ===
+
+=== NEW REQUEST ===
+REQUEST_METHOD: GET
+QUERY_STRING: action=list
+REQUEST_URI: /EnrollmentMS/app/Students/Controller/applicants_controllers.php?action=list
+GET: Array
+(
+    [action] => list
+)
+
+POST: Array
+(
+)
+
+RESOLVED ACTION: list
+=== END REQUEST ===
+
+=== NEW REQUEST ===
+REQUEST_METHOD: GET
+QUERY_STRING: action=list
+REQUEST_URI: /EnrollmentMS/app/Students/Controller/applicants_controllers.php?action=list
+GET: Array
+(
+    [action] => list
+)
+
+POST: Array
+(
+)
+
+RESOLVED ACTION: list
+=== END REQUEST ===
+
+=== NEW REQUEST ===
+REQUEST_METHOD: GET
+QUERY_STRING: action=list
+REQUEST_URI: /EnrollmentMS/app/Students/Controller/applicants_controllers.php?action=list
+GET: Array
+(
+    [action] => list
+)
+
+POST: Array
+(
+)
+
+RESOLVED ACTION: list
+=== END REQUEST ===
+
+=== NEW REQUEST ===
+REQUEST_METHOD: GET
+QUERY_STRING: action=list
+REQUEST_URI: /EnrollmentMS/app/Students/Controller/applicants_controllers.php?action=list
+GET: Array
+(
+    [action] => list
+)
+
+POST: Array
+(
+)
+
+RESOLVED ACTION: list
+=== END REQUEST ===
+
+=== NEW REQUEST ===
+REQUEST_METHOD: GET
+QUERY_STRING: action=list
+REQUEST_URI: /EnrollmentMS/app/Students/Controller/applicants_controllers.php?action=list
+GET: Array
+(
+    [action] => list
+)
+
+POST: Array
+(
+)
+
+RESOLVED ACTION: list
+=== END REQUEST ===
+
+=== NEW REQUEST ===
+REQUEST_METHOD: GET
+QUERY_STRING: action=list
+REQUEST_URI: /EnrollmentMS/app/Students/Controller/applicants_controllers.php?action=list
+GET: Array
+(
+    [action] => list
+)
+
+POST: Array
+(
+)
+
+RESOLVED ACTION: list
+=== END REQUEST ===
+

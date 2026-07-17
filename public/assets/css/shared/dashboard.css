@@ -1796,6 +1796,53 @@ body.nav-collapsed .hamburger__bar:nth-child(3) { top: 8.5px; transform: rotate(
     font-size: 11.5px;
   }
   .badge { padding: 2px 8px; font-size: 10.5px; }
+  
+  /* Print styles for schedule */
+  .schedule-actions .btn {
+    display: none !important;
+  }
+  .modal-overlay {
+    position: static !important;
+    background: none !important;
+    display: block !important;
+  }
+  .modal {
+    position: static !important;
+    transform: none !important;
+    box-shadow: none !important;
+    border: none !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .modal__head, .modal__body {
+    padding: 10px !important;
+  }
+  .modal__close, .form-actions, .schedule-actions .btn {
+    display: none !important;
+  }
+  .data-table {
+    font-size: 12px !important;
+  }
+  .data-table th, .data-table td {
+    padding: 6px 8px !important;
+  }
+  .main__footer, .sidebar, .hamburger, .toolbar {
+    display: none !important;
+  }
+  .main {
+    margin-left: 0 !important;
+    padding: 20px !important;
+  }
+  body {
+    background: white !important;
+  }
+  #scheduleModal {
+    position: static !important;
+    display: block !important;
+    background: white !important;
+    z-index: auto !important;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1803,8 +1850,6 @@ body.nav-collapsed .hamburger__bar:nth-child(3) { top: 8.5px; transform: rotate(
   .sidebar__logo:hover, .sidebar__logout:hover .nav__icon, .nav__submenu a:hover { transform: none; }
   .modal, .page-head, .settings-card, .form-msg.is-error, .form-msg.is-success, .active-sy, .active-sy__dot { animation: none; }
 }
-
-/* dashboard.css - Add these styles for toast notifications and field errors */
 
 /* Toast Notification */
 .toast-notification {
@@ -1979,51 +2024,7 @@ body.nav-collapsed .hamburger__bar:nth-child(3) { top: 8.5px; transform: rotate(
     display: none;
 }
 
-.modal-overlay {
-        position: static !important;
-        background: none !important;
-        display: block !important;
-    }
-    .modal {
-        position: static !important;
-        transform: none !important;
-        box-shadow: none !important;
-        border: none !important;
-        max-width: 100% !important;
-    }
-    .modal__head, .modal__body {
-        padding: 10px !important;
-    }
-    .modal__close, .form-actions, .schedule-actions .btn {
-        display: none !important;
-    }
-    .schedule-actions {
-        display: none !important;
-    }
-    .data-table {
-        font-size: 12px !important;
-    }
-    .data-table th, .data-table td {
-        padding: 6px 8px !important;
-    }
-    .main__footer, .sidebar, .hamburger, .toolbar {
-        display: none !important;
-    }
-    .main {
-        margin-left: 0 !important;
-        padding: 20px !important;
-    }
-    body {
-        background: white !important;
-    }
-    #scheduleModal {
-        position: static !important;
-        display: block !important;
-        background: white !important;
-    }
-
-
-    /* Schedule Modal Styles */
+/* Schedule Modal Styles */
 .schedule-student-info {
     background: #f8f9fa;
     padding: 15px 20px;
@@ -2102,53 +2103,4 @@ body.nav-collapsed .hamburger__bar:nth-child(3) { top: 8.5px; transform: rotate(
 
 .text-center {
     text-align: center;
-}
-
-/* Print styles for schedule */
-@media print {
-    .schedule-actions .btn {
-        display: none !important;
-    }
-    .modal-overlay {
-        position: static !important;
-        background: none !important;
-        display: block !important;
-    }
-    .modal {
-        position: static !important;
-        transform: none !important;
-        box-shadow: none !important;
-        border: none !important;
-        max-width: 100% !important;
-        margin: 0 !important;
-        padding: 0 !important;
-    }
-    .modal__head, .modal__body {
-        padding: 10px !important;
-    }
-    .modal__close, .form-actions, .schedule-actions .btn {
-        display: none !important;
-    }
-    .data-table {
-        font-size: 12px !important;
-    }
-    .data-table th, .data-table td {
-        padding: 6px 8px !important;
-    }
-    .main__footer, .sidebar, .hamburger, .toolbar {
-        display: none !important;
-    }
-    .main {
-        margin-left: 0 !important;
-        padding: 20px !important;
-    }
-    body {
-        background: white !important;
-    }
-    #scheduleModal {
-        position: static !important;
-        display: block !important;
-        background: white !important;
-        z-index: auto !important;
-    }
 }

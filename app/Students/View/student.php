@@ -87,6 +87,7 @@
               <tr>
                 <th>LRN</th>
                 <th>Name</th>
+                <th>Student #</th>
                 <th>Grade Level</th>
                 <th>Gender</th>
                 <th>Contact</th>
@@ -122,10 +123,7 @@
               <span>LRN <span style="color:red;">*</span></span>
               <input type="text" name="lrn" required placeholder="12-digit LRN" maxlength="12" pattern="[0-9]{12}" />
             </label>
-            <label class="field">
-              <span>Student Number <span style="color:red;">*</span></span>
-              <input type="text" name="student_number" required placeholder="School-issued ID" />
-            </label>
+            <!-- Student Number field removed - will be auto-generated -->
             <label class="field">
               <span>First Name <span style="color:red;">*</span></span>
               <input type="text" name="first_name" required />
@@ -275,7 +273,7 @@
   <script>
     const sessionRole = <?php echo json_encode($_SESSION['role']); ?>
   </script>
-  <script src="/EnrollmentMS/public/assets/js/shared/sidebar.js"></script>
+  <script src="../../../public/assets/js/shared/sidebar.js"></script>
   <script src="../../../public/assets/js/shared/dashboard.js"></script>
   <script src="../../../public/assets/js/Students/student.js"></script>
 </body>
