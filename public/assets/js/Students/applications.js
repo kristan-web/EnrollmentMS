@@ -17,21 +17,19 @@ const closeReviewModal = document.getElementById("closeReviewModal");
 const cancelReviewBtn = document.getElementById("cancelReviewBtn");
 const decisionForm = document.getElementById("decisionForm");
 const statusSelect = document.getElementById("statusSelect");
-const rejectionReasonField = document.getElementById("rejectionReasonField");
-const rejectionReasonInput = document.getElementById("rejectionReasonInput");
+const refusalReasonField = document.getElementById("refusalReasonField");
+const refusalReasonInput = document.getElementById("refusalReasonInput");
 const reviewError = document.getElementById("reviewError");
 const saveReviewBtn = document.getElementById("saveReviewBtn");
 
 const STATUS_BADGE = {
   "Pending": "badge--pending",
-  "Under Review": "badge--review",
   "Approved": "badge--approved",
-  "Rejected": "badge--rejected",
-  "Enrolled": "badge--enrolled"
+  "Refused": "badge--rejected"
 };
 
 let allApplications = [];
-let activeStatus = "";
+let activeStatus = "Pending";
 let activeApplicantId = null;
 
 function esc(value) {
@@ -61,6 +59,41 @@ function formatDateTime(value) {
 function strandLabel(app) {
   if (!app.strand_name) return "—";
   return app.strand_code ? `${app.strand_name} (${app.strand_code})` : app.strand_name;
+}
+
+// ---------- Toast notification ----------
+function showToast(message, type = "info") {
+  const toast = document.createElement("div");
+  toast.style.cssText = `
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 12px 24px;
+    border-radius: 8px;
+    color: #fff;
+    font-weight: 500;
+    z-index: 9999;
+    max-width: 400px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    animation: slideIn 0.3s ease;
+  `;
+  
+  const colors = {
+    success: "#28a745",
+    error: "#dc3545",
+    info: "#17a2b8",
+    warning: "#ffc107"
+  };
+  
+  toast.style.background = colors[type] || colors.info;
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  
+  setTimeout(() => {
+    toast.style.opacity = "0";
+    toast.style.transition = "opacity 0.3s";
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
 }
 
 // ---------- Load & render list ----------
@@ -117,24 +150,23 @@ async function loadApplications() {
 }
 
 function updateCounts() {
-  const counts = { "": allApplications.length, "Pending": 0, "Under Review": 0, "Approved": 0, "Rejected": 0, "Enrolled": 0 };
+  const counts = { "Pending": 0, "Approved": 0, "Refused": 0 };
   allApplications.forEach((a) => {
     if (counts[a.status] !== undefined) counts[a.status]++;
   });
-  document.getElementById("allCount").textContent = counts[""];
-  document.getElementById("pendingCount").textContent = counts["Pending"];
-  document.getElementById("reviewCount").textContent = counts["Under Review"];
-  document.getElementById("approvedCount").textContent = counts["Approved"];
-  document.getElementById("rejectedCount").textContent = counts["Rejected"];
-  document.getElementById("enrolledCount").textContent = counts["Enrolled"];
+  document.getElementById("pendingCount").textContent = counts["Pending"] || 0;
+  document.getElementById("approvedCount").textContent = counts["Approved"] || 0;
+  document.getElementById("refusedCount").textContent = counts["Refused"] || 0;
 }
 
 function getFilteredApplications() {
   const keyword = searchInput.value.trim().toLowerCase();
 
   return allApplications.filter((a) => {
+    // Filter by status (only show applications that match the selected tab)
     if (activeStatus && a.status !== activeStatus) return false;
 
+    // Search filter
     if (keyword) {
       const haystack = [
         a.reference_number, a.first_name, a.last_name, a.middle_name, a.email, a.lrn
@@ -152,6 +184,8 @@ function renderRows() {
   if (!rows.length) {
     tableBody.innerHTML = "";
     emptyState.hidden = false;
+    const statusText = activeStatus || "Pending";
+    emptyState.textContent = `No ${statusText.toLowerCase()} applications found.`;
     return;
   }
   emptyState.hidden = true;
@@ -159,9 +193,21 @@ function renderRows() {
   tableBody.innerHTML = rows.map((a) => {
     const fullName = [a.first_name, a.middle_name, a.last_name].filter(Boolean).join(" ");
     const badgeClass = STATUS_BADGE[a.status] || "badge--pending";
+    
+    let actions = '';
+    if (a.status === "Pending") {
+      actions = `
+        <button type="button" class="btn btn--primary btn--sm review-btn" data-id="${esc(a.applicant_id)}">Review</button>
+      `;
+    } else {
+      actions = `
+        <button type="button" class="btn btn--ghost btn--sm review-btn" data-id="${esc(a.applicant_id)}">View</button>
+      `;
+    }
+    
     return `
       <tr>
-        <td data-no-translate>${esc(a.reference_number)}</td>
+        <td data-no-translate><strong>${esc(a.reference_number)}</strong></td>
         <td>
           <div>${esc(fullName)}</div>
           <div class="row-sub">${esc(a.email)}</div>
@@ -171,9 +217,7 @@ function renderRows() {
         <td>${esc(a.school_year)}</td>
         <td>${formatDate(a.submitted_at)}</td>
         <td><span class="badge ${badgeClass}">${esc(a.status)}</span></td>
-        <td>
-          <button type="button" class="btn btn--ghost btn--sm review-btn" data-id="${esc(a.applicant_id)}">Review</button>
-        </td>
+        <td><div class="row-actions">${actions}</div></td>
       </tr>`;
   }).join("");
 
@@ -188,7 +232,7 @@ tabs.forEach((tab) => {
   tab.addEventListener("click", () => {
     tabs.forEach((t) => t.classList.remove("is-active"));
     tab.classList.add("is-active");
-    activeStatus = tab.dataset.status || "";
+    activeStatus = tab.dataset.status || "Pending";
     renderRows();
   });
 });
@@ -216,35 +260,49 @@ function detailItem(label, value) {
 }
 
 function documentItem(doc) {
-  const statusBadge = {
-    "Pending": "badge--pending",
-    "Verified": "badge--approved",
-    "Rejected": "badge--rejected"
-  };
-  const badgeClass = statusBadge[doc.status] || "badge--pending";
-  
   const fileSize = doc.file_size ? (doc.file_size / 1024).toFixed(1) + ' KB' : '—';
   
   return `<div class="document-item">
     <div class="document-item__header">
       <span class="document-item__name">${esc(doc.document_type_name || 'Document')}</span>
-      <span class="badge ${badgeClass}">${esc(doc.status)}</span>
+      <span class="file-type-badge file-type-badge--${getFileType(doc.file_name)}">${getFileExtension(doc.file_name)}</span>
     </div>
     <div class="document-item__details">
-      <span class="document-item__filename">${esc(doc.original_filename)}</span>
+      <span class="document-item__filename">${esc(doc.original_filename || doc.file_name)}</span>
       <span class="document-item__size">${esc(fileSize)}</span>
     </div>
-    ${doc.remarks ? `<div class="document-item__remarks">${esc(doc.remarks)}</div>` : ''}
     <div class="document-item__actions">
-      <button type="button" class="btn btn--ghost btn--sm view-doc-btn" data-path="${esc(doc.file_path)}">👁 View</button>
+      <button type="button" class="btn btn--ghost btn--sm view-doc-btn" data-path="${esc(doc.file_path)}" data-name="${esc(doc.original_filename || doc.file_name)}">👁 Preview</button>
     </div>
   </div>`;
+}
+
+function getFileType(filename) {
+  if (!filename) return 'other';
+  const ext = filename.split('.').pop().toLowerCase();
+  if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(ext)) return 'image';
+  if (['pdf'].includes(ext)) return 'pdf';
+  return 'other';
+}
+
+function getFileExtension(filename) {
+  if (!filename) return 'FILE';
+  return filename.split('.').pop().toUpperCase() || 'FILE';
 }
 
 async function openReviewModal(applicantId) {
   reviewError.style.display = "none";
   reviewError.textContent = "";
   activeApplicantId = applicantId;
+
+  // Show loading state
+  document.getElementById("reviewName").textContent = "Loading...";
+  document.getElementById("reviewRef").textContent = "";
+  document.getElementById("reviewLearnerInfo").innerHTML = "";
+  document.getElementById("reviewFamilyInfo").innerHTML = "";
+  document.getElementById("reviewEmergencyInfo").innerHTML = "";
+  document.getElementById("reviewDocuments").innerHTML = "";
+  document.getElementById("noDocuments").style.display = "none";
 
   try {
     const url = `${CONTROLLER_URL}?action=get&id=${encodeURIComponent(applicantId)}`;
@@ -256,12 +314,12 @@ async function openReviewModal(applicantId) {
     const data = await res.json();
     console.log("=== Applicant details response ===", data);
 
-    if (!data || data.error || !data.applicant) {
+    if (!data || data.error) {
       alert((data && data.error) || "Could not load that application.");
       return;
     }
 
-    populateReviewModal(data.applicant);
+    populateReviewModal(data);
     reviewModal.hidden = false;
   } catch (err) {
     console.error("Error loading applicant details:", err);
@@ -326,27 +384,33 @@ function populateReviewModal(a) {
     if (noDocuments) noDocuments.style.display = "none";
   } else {
     console.log("=== No documents to display");
+    documentsContainer.innerHTML = "";
     documentsContainer.style.display = "none";
     if (noDocuments) noDocuments.style.display = "block";
   }
 
-  statusSelect.value = a.status;
-  rejectionReasonInput.value = a.rejection_reason || "";
-  toggleRejectionReason();
+  // Set status select - only Approved or Refused
+  statusSelect.value = a.status === "Approved" ? "Approved" : "Refused";
+  refusalReasonInput.value = a.status === "Refused" ? (a.rejection_reason || "") : "";
+  toggleRefusalReason();
 }
 
-function toggleRejectionReason() {
-  const isRejected = statusSelect.value === "Rejected";
-  rejectionReasonField.hidden = !isRejected;
-  rejectionReasonInput.required = isRejected;
+function toggleRefusalReason() {
+  const isRefused = statusSelect.value === "Refused";
+  refusalReasonField.hidden = !isRefused;
+  refusalReasonInput.required = isRefused;
+  if (isRefused) {
+    refusalReasonInput.focus();
+  }
 }
 
-statusSelect.addEventListener("change", toggleRejectionReason);
+statusSelect.addEventListener("change", toggleRefusalReason);
 
 function closeModal() {
   reviewModal.hidden = true;
   activeApplicantId = null;
   decisionForm.reset();
+  reviewError.style.display = "none";
 }
 
 closeReviewModal.addEventListener("click", closeModal);
@@ -363,11 +427,17 @@ decisionForm.addEventListener("submit", async (e) => {
   reviewError.textContent = "";
 
   const status = statusSelect.value;
-  const rejectionReason = rejectionReasonInput.value.trim();
+  const refusalReason = refusalReasonInput.value.trim();
 
-  if (status === "Rejected" && !rejectionReason) {
-    reviewError.textContent = "Please provide a rejection reason.";
+  if (status === "Refused" && !refusalReason) {
+    reviewError.textContent = "Please provide a reason for refusing this application.";
     reviewError.style.display = "block";
+    return;
+  }
+
+  // Confirmation
+  const actionText = status === "Approved" ? "approve" : "refuse";
+  if (!confirm(`Are you sure you want to ${actionText} this application?`)) {
     return;
   }
 
@@ -376,10 +446,10 @@ decisionForm.addEventListener("submit", async (e) => {
 
   try {
     const body = new URLSearchParams({
-      action: "update-status",
+      action: "update_status",
       applicant_id: activeApplicantId,
       status: status,
-      rejection_reason: rejectionReason
+      refusal_reason: refusalReason
     });
 
     const res = await fetch(CONTROLLER_URL, {
@@ -391,6 +461,7 @@ decisionForm.addEventListener("submit", async (e) => {
 
     if (data && data.success) {
       closeModal();
+      showToast(data.message || `Application ${status} successfully!`, "success");
       await loadApplications();
     } else {
       reviewError.textContent = (data && data.message) || "Failed to update status.";
@@ -399,9 +470,10 @@ decisionForm.addEventListener("submit", async (e) => {
   } catch (err) {
     reviewError.textContent = "Could not reach the server. Please try again.";
     reviewError.style.display = "block";
+    console.error("Error updating status:", err);
   } finally {
     saveReviewBtn.disabled = false;
-    saveReviewBtn.textContent = "Save Status";
+    saveReviewBtn.textContent = "Submit Decision";
   }
 });
 
@@ -441,6 +513,9 @@ async function loadDocument(filePath, fileName) {
         const imageTypes = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'];
         const pdfTypes = ['pdf'];
         
+        // Get the document from the server
+        const docUrl = `${CONTROLLER_URL}?action=serve-document&path=${encodeURIComponent(filePath)}`;
+        
         docPreviewInfo.innerHTML = `
             <span class="doc-preview-info__name">${esc(fileName)}</span>
             <span class="doc-preview-info__meta">
@@ -450,7 +525,7 @@ async function loadDocument(filePath, fileName) {
         
         if (imageTypes.includes(ext)) {
             const img = document.createElement('img');
-            img.src = `${CONTROLLER_URL}?action=serve-document&path=${encodeURIComponent(filePath)}`;
+            img.src = docUrl;
             img.alt = fileName;
             img.onload = function() {
                 docLoading.style.display = "none";
@@ -465,8 +540,11 @@ async function loadDocument(filePath, fileName) {
             
         } else if (pdfTypes.includes(ext)) {
             const iframe = document.createElement('iframe');
-            iframe.src = `${CONTROLLER_URL}?action=serve-document&path=${encodeURIComponent(filePath)}`;
+            iframe.src = docUrl;
             iframe.title = fileName;
+            iframe.style.width = '100%';
+            iframe.style.height = '70vh';
+            iframe.style.border = 'none';
             iframe.onload = function() {
                 docLoading.style.display = "none";
                 docViewer.style.display = "block";
@@ -486,7 +564,7 @@ async function loadDocument(filePath, fileName) {
         } else {
             docPreviewFrame.innerHTML = `
                 <div class="doc-placeholder">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:64px;height:64px;margin-bottom:1rem;opacity:0.5;">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                         <polyline points="14 2 14 8 20 8"/>
                         <line x1="12" y1="18" x2="12" y2="12"/>
@@ -523,7 +601,7 @@ function showDocError(message) {
     docViewer.style.display = "block";
     docPreviewFrame.innerHTML = `
         <div class="doc-placeholder" style="color:#c00;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="stroke:#c00;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:64px;height:64px;margin-bottom:1rem;stroke:#c00;">
                 <circle cx="12" cy="12" r="10"/>
                 <line x1="12" y1="8" x2="12" y2="12"/>
                 <line x1="12" y1="16" x2="12.01" y2="16"/>
@@ -536,12 +614,7 @@ function showDocError(message) {
 function downloadCurrentDoc() {
     if (currentDocPath) {
         const downloadUrl = `${CONTROLLER_URL}?action=serve-document&path=${encodeURIComponent(currentDocPath)}&download=1`;
-        const link = document.createElement('a');
-        link.href = downloadUrl;
-        link.download = currentDocName || 'document';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        window.open(downloadUrl, '_blank');
     }
 }
 
@@ -572,11 +645,10 @@ downloadDocBtn.addEventListener("click", downloadCurrentDoc);
 
 // ---------- Event listener for document view buttons ----------
 document.addEventListener('click', function(e) {
-  if (e.target.classList.contains('view-doc-btn')) {
-    const filePath = e.target.dataset.path;
-    const fileName = e.target.closest('.document-item') 
-      ? e.target.closest('.document-item').querySelector('.document-item__filename')?.textContent 
-      : filePath.split('/').pop();
+  if (e.target.classList.contains('view-doc-btn') || e.target.closest('.view-doc-btn')) {
+    const btn = e.target.closest('.view-doc-btn');
+    const filePath = btn.dataset.path;
+    const fileName = btn.dataset.name || filePath.split('/').pop();
     
     openDocPreview(filePath, fileName);
   }

@@ -31,6 +31,18 @@ class ApplicantDAO {
         $stmt->execute();
         return (bool) $stmt->fetchColumn();
     }
+    public function getDocumentById($documentId) {
+        $query = "
+        SELECT d.*, dt.name as document_type_name
+        FROM applicant_documents d
+        LEFT JOIN document_types dt ON dt.document_type_id = d.document_type_id
+        WHERE d.document_id = :id
+        ";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindValue(":id", $documentId);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
 
     // INSERT APPLICANT
     public function insert(Applicant $a) {
