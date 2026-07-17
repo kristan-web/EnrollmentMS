@@ -64,12 +64,9 @@
     <section class="content">
       <div class="toolbar">
         <div class="tabs">
-          <button class="tab is-active" data-status="">All <span class="tab__count" id="allCount">0</span></button>
-          <button class="tab" data-status="Pending">Pending <span class="tab__count" id="pendingCount">0</span></button>
-          <button class="tab" data-status="Under Review">Under Review <span class="tab__count" id="reviewCount">0</span></button>
+          <button class="tab is-active" data-status="Pending">Pending <span class="tab__count" id="pendingCount">0</span></button>
           <button class="tab" data-status="Approved">Approved <span class="tab__count" id="approvedCount">0</span></button>
-          <button class="tab" data-status="Rejected">Rejected <span class="tab__count" id="rejectedCount">0</span></button>
-          <button class="tab" data-status="Enrolled">Enrolled <span class="tab__count" id="enrolledCount">0</span></button>
+          <button class="tab" data-status="Refused">Refused <span class="tab__count" id="refusedCount">0</span></button>
           <a class="tab" href="student.php">Students</a>
         </div>
         <div class="search-box">
@@ -147,22 +144,19 @@
             <label class="field">
               <span>Status <span style="color:red;">*</span></span>
               <select name="status" id="statusSelect" required>
-                <option value="Pending">Pending</option>
-                <option value="Under Review">Under Review</option>
-                <option value="Approved">Approved</option>
-                <option value="Rejected">Rejected</option>
-                <option value="Enrolled">Enrolled</option>
+                <option value="Approved">Approve</option>
+                <option value="Refused">Refuse</option>
               </select>
             </label>
-            <label class="field field--wide" id="rejectionReasonField" hidden>
-              <span>Rejection Reason <span style="color:red;">*</span></span>
-              <textarea name="rejection_reason" id="rejectionReasonInput" rows="2" placeholder="Explain why this application is being rejected"></textarea>
+            <label class="field field--wide" id="refusalReasonField" hidden>
+              <span>Refusal Reason <span style="color:red;">*</span></span>
+              <textarea name="refusal_reason" id="refusalReasonInput" rows="3" placeholder="Explain why this application is being refused."></textarea>
             </label>
           </div>
 
           <div class="form-actions">
             <button type="button" class="btn btn--ghost" id="cancelReviewBtn">Cancel</button>
-            <button type="submit" class="btn btn--primary" id="saveReviewBtn">Save Status</button>
+            <button type="submit" class="btn btn--primary" id="saveReviewBtn">Submit Decision</button>
           </div>
         </form>
       </div>
