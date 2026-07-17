@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../../../public/assets/css/shared/dashboard.css" />
+  <link rel="stylesheet" href="/EnrollmentMS/public/assets/css/shared/dashboard.css" />
 </head>
 <body>
   <aside class="sidebar" id="sidebar">
@@ -121,7 +121,7 @@
     const sessionRole = <?php echo json_encode($_SESSION['role']); ?>
   </script>
   <script src="/EnrollmentMS/public/assets/js/shared/sidebar.js"></script>
-  <script src="../../../public/assets/js/shared/script.js"></script>
-  <script src="../../../public/assets/js/Enrollment/enrollment-history.js"></script>
+  <script src="/EnrollmentMS/public/assets/js/shared/script.js"></script>
+  <script src="/EnrollmentMS/public/assets/js/Enrollment/enrollment-history.js"></script>
 </body>
 </html>

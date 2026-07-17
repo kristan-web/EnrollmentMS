@@ -11,8 +11,29 @@ class StudentDAO {
         $this->conn = $database->connect();
     }
 
+    /**
+     * Generate a unique student number
+     * Format: YYYY-XXXX (e.g., 2026-0123)
+     */
+    public function generateUniqueStudentNumber() {
+        do {
+            $candidate = date("Y") . "-" . str_pad((string) random_int(0, 9999), 4, "0", STR_PAD_LEFT);
+            $stmt = $this->conn->prepare("SELECT 1 FROM students WHERE student_number = :num LIMIT 1");
+            $stmt->bindValue(":num", $candidate);
+            $stmt->execute();
+            $exists = (bool) $stmt->fetchColumn();
+        } while ($exists);
+
+        return $candidate;
+    }
+
     // INSERT STUDENT
     public function insert(Student $student) {
+        // Auto-generate student number if not set
+        if (empty($student->getStudentNumber())) {
+            $student->setStudentNumber($this->generateUniqueStudentNumber());
+        }
+
         $query = "
         INSERT INTO students
         (
