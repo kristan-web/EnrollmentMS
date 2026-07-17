@@ -6,6 +6,12 @@ const enrollBtn = document.getElementById("enrollBtn");
 const masterRows = document.getElementById("masterRows");
 const emptyState = document.getElementById("emptyState");
 
+// Filter elements
+const statusFilter = document.getElementById("statusFilter");
+const schoolYearFilter = document.getElementById("schoolYearFilter");
+const semesterFilter = document.getElementById("semesterFilter");
+const strandFilter = document.getElementById("strandFilter");
+
 const enrollModal = document.getElementById("enrollModal");
 const closeEnrollModal = document.getElementById("closeEnrollModal");
 const cancelEnrollBtn = document.getElementById("cancelEnrollBtn");
@@ -49,13 +55,11 @@ let pendingAction = null;
 let schoolYears = [];
 let currentFilters = {
     keyword: '',
-    status: 'Enrolled',
+    status: 'all',
     school_year_id: '',
     semester: '',
-    strand: '',
-    show_enrolled: 'false'
+    strand: ''
 };
-let unenrolledList = [];
 
 // ============ API Helpers ============
 
@@ -107,119 +111,249 @@ function setMsg(text, type) {
     if (type) enrollMsg.classList.add(type);
 }
 
-// ============ Initialize Filters ============
-
-function initFilters() {
-    const toolbar = document.querySelector('.toolbar');
-    if (!toolbar) return;
-
-    // Create filter container
-    const filterContainer = document.createElement('div');
-    filterContainer.className = 'filter-container';
-    filterContainer.style.cssText = 'display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-left: auto;';
-
-    // Status filter
-    const statusFilter = document.createElement('select');
-    statusFilter.className = 'filter-select';
-    statusFilter.style.cssText = 'padding: 6px 12px; border-radius: 6px; border: 1px solid #d1d5db; font-size: 13px; background: white; min-width: 120px;';
-    statusFilter.innerHTML = `
-        <option value="Enrolled">Enrolled</option>
-        <option value="Dropped">Dropped</option>
-        <option value="Pending">Pending</option>
-        <option value="all">All Status</option>
+function showToast(message, type = "info") {
+    const toast = document.createElement("div");
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        padding: 12px 24px;
+        border-radius: 8px;
+        color: #fff;
+        font-weight: 500;
+        z-index: 9999;
+        max-width: 400px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        animation: slideIn 0.3s ease;
     `;
-    statusFilter.id = 'statusFilter';
-
-    // School Year filter
-    const schoolYearFilter = document.createElement('select');
-    schoolYearFilter.className = 'filter-select';
-    schoolYearFilter.style.cssText = 'padding: 6px 12px; border-radius: 6px; border: 1px solid #d1d5db; font-size: 13px; background: white; min-width: 150px;';
-    schoolYearFilter.id = 'schoolYearFilter';
-
-    // Semester filter
-    const semesterFilter = document.createElement('select');
-    semesterFilter.className = 'filter-select';
-    semesterFilter.style.cssText = 'padding: 6px 12px; border-radius: 6px; border: 1px solid #d1d5db; font-size: 13px; background: white; min-width: 130px;';
-    semesterFilter.id = 'semesterFilter';
-    semesterFilter.innerHTML = `
-        <option value="">All Semesters</option>
-        <option value="1st Semester">1st Semester</option>
-        <option value="2nd Semester">2nd Semester</option>
-    `;
-
-    // Strand filter
-    const strandFilter = document.createElement('select');
-    strandFilter.className = 'filter-select';
-    strandFilter.style.cssText = 'padding: 6px 12px; border-radius: 6px; border: 1px solid #d1d5db; font-size: 13px; background: white; min-width: 150px;';
-    strandFilter.id = 'strandFilter';
-
-    // Show enrolled checkbox
-    const checkboxContainer = document.createElement('label');
-    checkboxContainer.style.cssText = 'display: flex; align-items: center; gap: 4px; font-size: 13px; cursor: pointer;';
-    const showEnrolledCheckbox = document.createElement('input');
-    showEnrolledCheckbox.type = 'checkbox';
-    showEnrolledCheckbox.id = 'showEnrolledFilter';
-    checkboxContainer.appendChild(showEnrolledCheckbox);
-    checkboxContainer.appendChild(document.createTextNode('Show Enrolled'));
-
-    // Append all filters
-    filterContainer.appendChild(statusFilter);
-    filterContainer.appendChild(schoolYearFilter);
-    filterContainer.appendChild(semesterFilter);
-    filterContainer.appendChild(strandFilter);
-    filterContainer.appendChild(checkboxContainer);
-
-    // Insert filters before the search box
-    const searchBox = toolbar.querySelector('.search-box');
-    if (searchBox) {
-        toolbar.insertBefore(filterContainer, searchBox);
-    } else {
-        toolbar.appendChild(filterContainer);
-    }
-
-    // Load filter options
-    loadSchoolYearFilter(schoolYearFilter);
-    loadStrandFilter(strandFilter);
-
-    // Set up event listeners
-    statusFilter.addEventListener('change', function() {
-        currentFilters.status = this.value;
-        loadUnenrolled();
-    });
-
-    schoolYearFilter.addEventListener('change', function() {
-        currentFilters.school_year_id = this.value;
-        loadUnenrolled();
-    });
-
-    semesterFilter.addEventListener('change', function() {
-        currentFilters.semester = this.value;
-        loadUnenrolled();
-    });
-
-    strandFilter.addEventListener('change', function() {
-        currentFilters.strand = this.value;
-        loadUnenrolled();
-    });
-
-    showEnrolledCheckbox.addEventListener('change', function() {
-        currentFilters.show_enrolled = this.checked ? 'true' : 'false';
-        loadUnenrolled();
-    });
-
-    return { statusFilter, schoolYearFilter, semesterFilter, strandFilter, showEnrolledCheckbox };
+    
+    const colors = {
+        success: "#28a745",
+        error: "#dc3545",
+        info: "#17a2b8",
+        warning: "#ffc107"
+    };
+    
+    toast.style.background = colors[type] || colors.info;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.opacity = "0";
+        toast.style.transition = "opacity 0.3s";
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
 }
 
-// Add this function to view the schedule
+// ============ Load Filter Options ============
+
+function loadFilterSchoolYears() {
+    fetch(`${ENROLLMENT_URL}?action=school_years`)
+        .then(response => response.json())
+        .then(data => {
+            schoolYearFilter.innerHTML = '<option value="">All School Years</option>';
+            data.forEach(sy => {
+                const option = document.createElement('option');
+                option.value = sy.school_year_id;
+                option.textContent = sy.year;
+                if (sy.status === 'active') {
+                    option.textContent += ' (Active)';
+                }
+                schoolYearFilter.appendChild(option);
+            });
+            loadSchoolYears();
+            loadEnrollments();
+        })
+        .catch(error => console.error('Error loading school years:', error));
+}
+
+function loadFilterStrands() {
+    fetch(`${ENROLLMENT_URL}?action=strands`)
+        .then(response => response.json())
+        .then(data => {
+            strandFilter.innerHTML = '<option value="">All Strands</option>';
+            data.forEach(strand => {
+                const option = document.createElement('option');
+                option.value = strand.strand_code;
+                option.textContent = `${strand.strand_code} - ${strand.strand_name}`;
+                strandFilter.appendChild(option);
+            });
+        })
+        .catch(error => console.error('Error loading strands:', error));
+}
+
+// ============ Load Enrollments with Filters ============
+
+async function loadEnrollments() {
+    const params = new URLSearchParams();
+    params.append('action', 'list');
+    
+    const status = statusFilter.value;
+    const schoolYearId = schoolYearFilter.value;
+    const semester = semesterFilter.value;
+    const strand = strandFilter.value;
+    const keyword = searchInput.value.trim();
+
+    if (keyword) params.append('keyword', keyword);
+    if (status && status !== 'all') params.append('status', status);
+    if (schoolYearId) params.append('school_year_id', schoolYearId);
+    if (semester) params.append('semester', semester);
+    if (strand) params.append('strand', strand);
+
+    console.log('Loading enrollments with params:', params.toString());
+
+    try {
+        const response = await fetch(`${ENROLLMENT_URL}?${params.toString()}`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (Array.isArray(data)) {
+            renderEnrollments(data);
+        } else {
+            console.error('Response is not an array:', data);
+            if (data && data.error) {
+                console.error('Error from server:', data.error);
+            }
+            renderEnrollments([]);
+        }
+    } catch (error) {
+        console.error('Error loading enrollments:', error);
+        renderEnrollments([]);
+    }
+}
+
+function renderEnrollments(enrollments) {
+    masterRows.innerHTML = '';
+    
+    if (!enrollments || enrollments.length === 0) {
+        emptyState.hidden = false;
+        emptyState.textContent = 'No enrollments found matching your filters.';
+        return;
+    }
+    emptyState.hidden = true;
+
+    enrollments.forEach(row => {
+        const tr = document.createElement('tr');
+        
+        let statusClass = 'badge--active';
+        let statusText = row.status || 'Enrolled';
+        
+        if (statusText === 'Dropped') {
+            statusClass = 'badge--archived';
+        } else if (statusText === 'Pending') {
+            statusClass = 'badge--pending';
+        }
+
+        const name = fullName(row);
+        const dateEnrolled = row.date_enrolled ? new Date(row.date_enrolled).toLocaleDateString() : '-';
+
+        let actionButtons = '';
+        if (statusText === 'Enrolled') {
+            actionButtons = `
+                <button class="btn btn--warning btn--sm" data-action="drop" data-id="${row.enrollment_id}" data-name="${esc(name)}">Drop</button>
+                <button class="btn btn--danger btn--sm" data-action="delete" data-id="${row.enrollment_id}" data-name="${esc(name)}">Delete</button>
+                <button class="btn btn--info btn--sm" data-action="schedule" data-student-id="${row.student_id}" data-name="${esc(name)}">Schedule</button>
+            `;
+        } else if (statusText === 'Dropped') {
+            actionButtons = `
+                <button class="btn btn--primary btn--sm" data-action="reactivate" data-id="${row.enrollment_id}" data-name="${esc(name)}">Reactivate</button>
+                <button class="btn btn--danger btn--sm" data-action="delete" data-id="${row.enrollment_id}" data-name="${esc(name)}">Delete</button>
+                <button class="btn btn--info btn--sm" data-action="schedule" data-student-id="${row.student_id}" data-name="${esc(name)}">Schedule</button>
+            `;
+        } else {
+            actionButtons = `
+                <button class="btn btn--danger btn--sm" data-action="delete" data-id="${row.enrollment_id}" data-name="${esc(name)}">Delete</button>
+                <button class="btn btn--info btn--sm" data-action="schedule" data-student-id="${row.student_id}" data-name="${esc(name)}">Schedule</button>
+            `;
+        }
+
+        tr.innerHTML = `
+            <td><span class="student-no">${esc(row.student_number || 'N/A')}</span></td>
+            <td><span class="cell-name">${esc(name)}</span></td>
+            <td>${esc(row.school_year || row.school_year_display || '-')}</td>
+            <td>${esc(row.semester || '-')}</td>
+            <td>${esc(row.strand_code || '-')}</td>
+            <td>${row.grade_level ? 'Grade ' + esc(row.grade_level) : '-'}</td>
+            <td>${esc(row.section_name || '-')}</td>
+            <td>${dateEnrolled}</td>
+            <td><span class="badge ${statusClass}">${statusText}</span></td>
+            <td class="no-print"><div class="row-actions">${actionButtons}</div></td>
+        `;
+
+        masterRows.appendChild(tr);
+    });
+
+    attachActionListeners();
+}
+
+function attachActionListeners() {
+    document.querySelectorAll('[data-action="drop"]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.dataset.id;
+            const name = this.dataset.name;
+            openConfirm(
+                'Drop Enrollment',
+                name,
+                'This student will be marked as Dropped. The slot in their section will be freed.',
+                'Drop',
+                'drop',
+                id
+            );
+        });
+    });
+
+    document.querySelectorAll('[data-action="reactivate"]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.dataset.id;
+            const name = this.dataset.name;
+            openConfirm(
+                'Reactivate Enrollment',
+                name,
+                'This student will be marked as Enrolled again.',
+                'Reactivate',
+                'reactivate',
+                id
+            );
+        });
+    });
+
+    document.querySelectorAll('[data-action="delete"]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.dataset.id;
+            const name = this.dataset.name;
+            openConfirm(
+                'Delete Enrollment',
+                name,
+                'This will permanently delete the enrollment record. This action cannot be undone.',
+                'Delete',
+                'delete',
+                id
+            );
+        });
+    });
+
+    document.querySelectorAll('[data-action="schedule"]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const studentId = this.dataset.studentId;
+            const studentName = this.dataset.name;
+            viewSchedule(studentId, studentName);
+        });
+    });
+}
+
+// ============ View Schedule ============
+
 async function viewSchedule(studentId, studentName) {
-    // Show loading state
     scheduleRows.innerHTML = `<tr><td colspan="6" class="text-center">Loading schedule...</td></tr>`;
     scheduleStudentInfo.innerHTML = `<h3>${esc(studentName)}</h3><p>Loading student information...</p>`;
     scheduleSummary.innerHTML = '';
     scheduleModal.hidden = false;
 
     try {
-        // Get student info
         const studentResponse = await fetch(`${ENROLLMENT_URL}?action=student&id=${studentId}`);
         const student = await studentResponse.json();
         
@@ -228,7 +362,6 @@ async function viewSchedule(studentId, studentName) {
             return;
         }
 
-        // Get student enrollments
         const enrollmentsResponse = await fetch(`${ENROLLMENT_URL}?action=student_enrollments&id=${studentId}`);
         const enrollments = await enrollmentsResponse.json();
         
@@ -236,14 +369,16 @@ async function viewSchedule(studentId, studentName) {
             scheduleRows.innerHTML = `<tr><td colspan="6" class="text-center">No enrollment records found for this student.</td></tr>`;
             scheduleStudentInfo.innerHTML = `
                 <h3>${esc(studentName)}</h3>
-                <p><strong>Student No:</strong> ${esc(student.student_number || 'N/A')}</p>
-                <p><strong>Status:</strong> ${esc(student.status || 'N/A')}</p>
+                <div class="schedule-info-grid">
+                    <p><strong>Student No:</strong> ${esc(student.student_number || 'N/A')}</p>
+                    <p><strong>Gender:</strong> ${esc(student.gender || 'N/A')}</p>
+                    <p><strong>Status:</strong> ${esc(student.status || 'N/A')}</p>
+                </div>
                 <p style="color: #e74c3c;">No enrollments found.</p>
             `;
             return;
         }
 
-        // Display student info
         scheduleStudentInfo.innerHTML = `
             <h3>${esc(studentName)}</h3>
             <div class="schedule-info-grid">
@@ -253,26 +388,22 @@ async function viewSchedule(studentId, studentName) {
             </div>
         `;
 
-        // Display enrollment summary
         let summaryHtml = '<div class="schedule-summary-grid">';
-        let totalSubjects = 0;
-        enrollments.forEach((enrollment, index) => {
+        enrollments.forEach((enrollment) => {
+            let statusClass = enrollment.status === 'Enrolled' ? 'badge--active' : 'badge--archived';
             summaryHtml += `
                 <div class="enrollment-summary-item">
                     <strong>${enrollment.school_year}</strong> - ${enrollment.semester}
                     <br>
-                    <span class="badge badge--${enrollment.status === 'Enrolled' ? 'active' : 'archived'}">${enrollment.status}</span>
+                    <span class="badge ${statusClass}">${enrollment.status}</span>
                     <br>
                     <small>Section: ${enrollment.section_name || 'N/A'} | Grade: ${enrollment.grade_level || 'N/A'} | Strand: ${enrollment.strand_code || 'N/A'}</small>
                 </div>
             `;
-            totalSubjects++;
         });
         summaryHtml += '</div>';
         scheduleSummary.innerHTML = summaryHtml;
 
-        // Load schedule for the first enrollment (or all combined)
-        // For now, we'll show the schedule for the first active enrollment
         const activeEnrollment = enrollments.find(e => e.status === 'Enrolled');
         if (activeEnrollment) {
             await loadSchedule(studentId, activeEnrollment.section_id);
@@ -288,16 +419,12 @@ async function viewSchedule(studentId, studentName) {
     }
 }
 
-// Load the schedule for a student
 async function loadSchedule(studentId, sectionId) {
     try {
-        // Fetch section schedule - you'll need to implement this endpoint
-        // For now, we'll use a mock/placeholder
         const response = await fetch(`${ENROLLMENT_URL}?action=section_schedule&section_id=${sectionId}`);
         const data = await response.json();
         
         if (data && data.error) {
-            // If the endpoint doesn't exist yet, show a message
             scheduleRows.innerHTML = `
                 <tr>
                     <td colspan="6" class="text-center" style="color: #f39c12;">
@@ -314,7 +441,6 @@ async function loadSchedule(studentId, sectionId) {
             return;
         }
 
-        // Render schedule rows
         scheduleRows.innerHTML = data.map(item => `
             <tr>
                 <td>${esc(item.subject_code || '-')}</td>
@@ -339,19 +465,11 @@ async function loadSchedule(studentId, sectionId) {
     }
 }
 
-// Print schedule
 function printSchedule() {
-    // Store the current modal state
     const modal = document.getElementById('scheduleModal');
     const wasHidden = modal.hidden;
-    
-    // Show the modal for printing
     modal.hidden = false;
-    
-    // Trigger print
     window.print();
-    
-    // Restore modal state after print
     setTimeout(() => {
         if (wasHidden) {
             modal.hidden = true;
@@ -359,11 +477,36 @@ function printSchedule() {
     }, 1000);
 }
 
-function loadSchoolYearFilter(filterElement) {
+// ============ Student Selection Functions ============
+
+function resetSelectedStudent() {
+    selectedStudent = null;
+    selectedStudentChip.hidden = true;
+    selectedStudentChip.style.display = 'none';
+    updateEnrollButton();
+}
+
+function selectStudent(student) {
+    selectedStudent = student;
+    studentSearch.value = "";
+    studentResults.hidden = true;
+    studentResults.innerHTML = "";
+    chipInitials.textContent = `${(student.first_name || "?")[0]}${(student.last_name || "?")[0]}`.toUpperCase();
+    chipName.textContent = fullName(student);
+    chipMeta.textContent = `${student.gender || "—"}${student.student_number ? " · " + student.student_number : ""}`;
+    selectedStudentChip.hidden = false;
+    selectedStudentChip.style.display = 'flex';
+    updateEnrollButton();
+}
+
+// ============ Modal Functions ============
+
+function loadSchoolYears() {
     fetch(`${ENROLLMENT_URL}?action=school_years`)
         .then(response => response.json())
         .then(data => {
-            filterElement.innerHTML = '<option value="">All School Years</option>';
+            schoolYears = data;
+            schoolYearSel.innerHTML = '<option value="" disabled selected>Select school year</option>';
             data.forEach(sy => {
                 const option = document.createElement('option');
                 option.value = sy.school_year_id;
@@ -371,400 +514,27 @@ function loadSchoolYearFilter(filterElement) {
                 if (sy.status === 'active') {
                     option.textContent += ' (Active)';
                     option.selected = true;
-                    currentFilters.school_year_id = sy.school_year_id;
                 }
-                filterElement.appendChild(option);
+                schoolYearSel.appendChild(option);
             });
-            loadUnenrolled();
         })
         .catch(error => console.error('Error loading school years:', error));
 }
 
-function loadStrandFilter(filterElement) {
+function loadStrands() {
     fetch(`${ENROLLMENT_URL}?action=strands`)
         .then(response => response.json())
         .then(data => {
-            filterElement.innerHTML = '<option value="">All Strands</option>';
+            strandSel.innerHTML = '<option value="" disabled selected>Select strand</option>';
             data.forEach(strand => {
                 const option = document.createElement('option');
                 option.value = strand.strand_code;
-                option.textContent = `${strand.strand_code} - ${strand.strand_name}`;
-                filterElement.appendChild(option);
+                option.textContent = `${strand.strand_name} (${strand.strand_code})`;
+                strandSel.appendChild(option);
             });
         })
         .catch(error => console.error('Error loading strands:', error));
 }
-
-// ============ Load Unenrolled Students ============
-
-async function loadUnenrolled() {
-    const params = new URLSearchParams();
-    params.append('action', 'unenrolled');
-    
-    if (currentFilters.keyword) params.append('keyword', currentFilters.keyword);
-    if (currentFilters.school_year_id) params.append('school_year_id', currentFilters.school_year_id);
-    if (currentFilters.semester) params.append('semester', currentFilters.semester);
-    if (currentFilters.strand) params.append('strand', currentFilters.strand);
-    params.append('show_enrolled', currentFilters.show_enrolled);
-
-    console.log('Loading unenrolled with params:', params.toString());
-
-    try {
-        const response = await fetch(`${ENROLLMENT_URL}?${params.toString()}`);
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const text = await response.text();
-        console.log('Response length:', text.length);
-        
-        if (text.length === 0) {
-            console.warn('Empty response received');
-            unenrolledList = [];
-            renderUnenrolledTable();
-            return;
-        }
-        
-        try {
-            const data = JSON.parse(text);
-            if (Array.isArray(data)) {
-                unenrolledList = data;
-                console.log('Loaded', data.length, 'records');
-                renderUnenrolledTable();
-            } else {
-                console.error('Response is not an array:', data);
-                if (data && data.error) {
-                    console.error('Error from server:', data.error);
-                }
-                unenrolledList = [];
-                renderUnenrolledTable();
-            }
-        } catch (e) {
-            console.error('Failed to parse JSON:', e.message);
-            console.error('Response preview:', text.substring(0, 500));
-            unenrolledList = [];
-            renderUnenrolledTable();
-        }
-    } catch (error) {
-        console.error('Error loading unenrolled students:', error);
-        unenrolledList = [];
-        renderUnenrolledTable();
-    }
-}
-
-function renderUnenrolledTable() {
-    console.log('Rendering table with', unenrolledList.length, 'records');
-    
-    masterRows.innerHTML = '';
-    
-    if (!unenrolledList || unenrolledList.length === 0) {
-        emptyState.hidden = false;
-        emptyState.textContent = currentFilters.keyword 
-            ? 'No students match your search criteria.' 
-            : currentFilters.show_enrolled === 'true' 
-                ? 'No enrolled students found.' 
-                : 'No students found. All students may already be enrolled.';
-        return;
-    }
-    emptyState.hidden = true;
-
-    unenrolledList.forEach(row => {
-        const tr = document.createElement('tr');
-        
-        // Determine status badge
-        let statusClass = 'badge--pending';
-        let statusText = 'Not Enrolled';
-        
-        if (row.enrollment_status === 'Enrolled') {
-            statusClass = 'badge--active';
-            statusText = 'Enrolled';
-        } else if (row.enrollment_status === 'Dropped') {
-            statusClass = 'badge--archived';
-            statusText = 'Dropped';
-        }
-
-        const name = fullName(row);
-        const dateEnrolled = row.date_enrolled ? new Date(row.date_enrolled).toLocaleDateString() : '-';
-
-        // Build action buttons based on enrollment status
-        let actionButtons = '';
-        if (row.enrollment_id) {
-            // Student is enrolled - show Drop, Delete, and View Schedule
-            actionButtons = `
-                <button class="btn btn--warning btn--sm" data-action="drop" data-id="${row.enrollment_id}" data-name="${esc(name)}">Drop</button>
-                <button class="btn btn--danger btn--sm" data-action="delete" data-id="${row.enrollment_id}" data-name="${esc(name)}">Delete</button>
-                <button class="btn btn--info btn--sm" data-action="schedule" data-id="${row.student_id}" data-name="${esc(name)}">Schedule</button>
-            `;
-        } else {
-            // Student is not enrolled - show Enroll and View History
-            actionButtons = `
-                <button class="btn btn--primary btn--sm" data-action="enroll" data-id="${row.student_id}" data-name="${esc(name)}">Enroll</button>
-                <button class="btn btn--ghost btn--sm" data-action="view" data-id="${row.student_id}" data-name="${esc(name)}">History</button>
-                <button class="btn btn--info btn--sm" data-action="schedule" data-id="${row.student_id}" data-name="${esc(name)}">Schedule</button>
-            `;
-        }
-
-        tr.innerHTML = `
-            <td><span class="student-no">${esc(row.student_number || 'N/A')}</span></td>
-            <td><span class="cell-name">${esc(name)}</span></td>
-            <td>${esc(row.school_year || '-')}</td>
-            <td>${esc(row.semester || '-')}</td>
-            <td>${esc(row.strand_code || '-')}</td>
-            <td>${row.grade_level ? 'Grade ' + esc(row.grade_level) : '-'}</td>
-            <td>${esc(row.section_name || '-')}</td>
-            <td>${dateEnrolled}</td>
-            <td><span class="badge ${statusClass}">${statusText}</span></td>
-            <td class="no-print"><div class="row-actions">${actionButtons}</div></td>
-        `;
-
-        masterRows.appendChild(tr);
-    });
-
-    // Attach event listeners to action buttons
-    attachActionListeners();
-}
-
-function attachActionListeners() {
-    // Drop buttons
-    document.querySelectorAll('[data-action="drop"]').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const id = this.dataset.id;
-            const name = this.dataset.name;
-            openConfirm(
-                'Drop Enrollment',
-                name,
-                'This student will be marked as Dropped. The slot in their section will be freed.',
-                'Drop',
-                'drop',
-                id
-            );
-        });
-    });
-
-    // Delete buttons
-    document.querySelectorAll('[data-action="delete"]').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const id = this.dataset.id;
-            const name = this.dataset.name;
-            openConfirm(
-                'Delete Enrollment',
-                name,
-                'This will permanently delete the enrollment record. This action cannot be undone.',
-                'Delete',
-                'delete',
-                id
-            );
-        });
-    });
-
-    // Enroll buttons
-    document.querySelectorAll('[data-action="enroll"]').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const studentId = this.dataset.id;
-            const studentName = this.dataset.name;
-            // Find the student data
-            const student = unenrolledList.find(s => String(s.student_id) === studentId);
-            if (student) {
-                openEnrollModal(student);
-            }
-        });
-    });
-
-    // View History buttons
-    document.querySelectorAll('[data-action="view"]').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const studentId = this.dataset.id;
-            viewStudentHistory(studentId);
-        });
-    });
-
-    // Schedule buttons - NEW
-    document.querySelectorAll('[data-action="schedule"]').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const studentId = this.dataset.id;
-            const studentName = this.dataset.name;
-            viewSchedule(studentId, studentName);
-        });
-    });
-}
-
-// ============ View Student History ============
-
-async function viewStudentHistory(studentId) {
-    try {
-        const data = await apiGet({ action: 'student_enrollments', id: studentId });
-        if (!data || data.length === 0) {
-            alert('This student has no enrollment history.');
-            return;
-        }
-
-        let message = '=== Enrollment History ===\n\n';
-        data.forEach((enrollment, index) => {
-            message += `${index + 1}. ${enrollment.school_year} - ${enrollment.semester}\n`;
-            message += `   Section: ${enrollment.section_name}\n`;
-            message += `   Grade: ${enrollment.grade_level}\n`;
-            message += `   Strand: ${enrollment.strand_code}\n`;
-            message += `   Status: ${enrollment.status}\n`;
-            message += `   Date: ${new Date(enrollment.date_enrolled).toLocaleDateString()}\n\n`;
-        });
-
-        alert(message);
-    } catch (error) {
-        console.error('Error loading student history:', error);
-        alert('Failed to load student history.');
-    }
-}
-
-// ============ Masterlist (Original - kept for backward compatibility) ============
-
-async function loadMasterlist() {
-    // Use the new unenrolled method instead
-    loadUnenrolled();
-}
-
-// ============ Step 1: Find Student ============
-
-let lastStudentMatches = [];
-
-async function renderStudentResults() {
-    const q = studentSearch.value.trim();
-    if (!q) {
-        studentResults.hidden = true;
-        studentResults.innerHTML = "";
-        return;
-    }
-
-    let matches = [];
-    try {
-        matches = await apiGet({ action: "search_students", keyword: q });
-    } catch {
-        matches = [];
-    }
-    lastStudentMatches = matches;
-
-    studentResults.innerHTML = matches.length
-        ? matches.map((s) => `
-            <button type="button" class="result-item" data-id="${s.student_id}">
-                <strong>${esc(fullName(s))}</strong>
-                <em>${esc(s.gender || "—")}${s.student_number ? " &middot; " + esc(s.student_number) : ""}</em>
-            </button>`).join("")
-        : '<p class="result-empty">No matching student. Add them in Data Entry &rsaquo; Student first.</p>';
-    studentResults.hidden = false;
-}
-
-const onStudentSearchInput = debounce(renderStudentResults, 250);
-
-function selectStudent(s) {
-    selectedStudent = s;
-    studentSearch.value = "";
-    studentResults.hidden = true;
-    studentResults.innerHTML = "";
-    chipInitials.textContent = `${(s.first_name || "?")[0]}${(s.last_name || "?")[0]}`.toUpperCase();
-    chipName.textContent = fullName(s);
-    chipMeta.textContent = `${s.gender || "—"}${s.student_number ? " · " + s.student_number : ""}`;
-    selectedStudentChip.hidden = false;
-    updateEnrollButton();
-}
-
-function clearStudent() {
-    selectedStudent = null;
-    selectedStudentChip.hidden = true;
-    updateEnrollButton();
-}
-
-// ============ Step 2: Load School Years ============
-
-async function loadSchoolYears() {
-    try {
-        schoolYears = await apiGet({ action: "school_years" });
-    } catch {
-        schoolYears = [];
-    }
-    
-    schoolYearSel.innerHTML = '<option value="" disabled selected>Select school year</option>';
-    schoolYears.forEach(sy => {
-        const option = document.createElement('option');
-        option.value = sy.school_year_id;
-        option.textContent = sy.year;
-        if (sy.status === 'active') {
-            option.textContent += ' (Active)';
-            option.selected = true;
-        }
-        schoolYearSel.appendChild(option);
-    });
-}
-
-// Schedule Modal Event Listeners
-closeScheduleModal.addEventListener("click", () => {
-    scheduleModal.hidden = true;
-});
-
-closeScheduleModalBtn.addEventListener("click", () => {
-    scheduleModal.hidden = true;
-});
-
-printScheduleBtn.addEventListener("click", printSchedule);
-
-// Close schedule modal on overlay click
-scheduleModal.addEventListener("click", (e) => {
-    if (e.target === scheduleModal) {
-        scheduleModal.hidden = true;
-    }
-});
-
-// Close schedule modal with Escape key
-document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && !scheduleModal.hidden) {
-        scheduleModal.hidden = true;
-    }
-});
-
-
-// ============ Open Enroll Modal with Student ============
-
-function openEnrollModal(student) {
-    // Load student data if only ID was passed
-    if (typeof student === 'string' || typeof student === 'number') {
-        fetch(`${ENROLLMENT_URL}?action=student&id=${student}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data) {
-                    openEnrollModalWithStudent(data);
-                }
-            })
-            .catch(error => console.error('Error loading student:', error));
-        return;
-    }
-    openEnrollModalWithStudent(student);
-}
-
-function openEnrollModalWithStudent(student) {
-    selectedStudent = student;
-    chipInitials.textContent = `${(student.first_name || "?")[0]}${(student.last_name || "?")[0]}`.toUpperCase();
-    chipName.textContent = fullName(student);
-    chipMeta.textContent = `${student.gender || "—"}${student.student_number ? " · " + student.student_number : ""}`;
-    selectedStudentChip.hidden = false;
-    studentResults.hidden = true;
-    studentSearch.value = '';
-    
-    // Reset form
-    sectionRows.innerHTML = '';
-    sectionsTable.hidden = true;
-    sectionHint.hidden = false;
-    sectionHint.textContent = "Select a school year, strand, and grade level to view available sections.";
-    setMsg('');
-    selectedSectionId = null;
-    updateEnrollButton();
-    
-    enrollModal.hidden = false;
-    
-    // Load school years and strands
-    loadSchoolYears();
-    loadStrands();
-}
-
-// ============ Step 3: Sections ============
 
 async function renderSections() {
     const strand = strandSel.value;
@@ -815,31 +585,18 @@ async function renderSections() {
     sectionHint.hidden = true;
 }
 
-// ============ Load Strands ============
-
-let strandsList = [];
-
-async function loadStrands() {
-    try {
-        strandsList = await apiGet({ action: "strands" });
-    } catch {
-        strandsList = [];
-    }
-    strandSel.innerHTML =
-        '<option value="" disabled selected>Select strand</option>' +
-        strandsList.map((s) => `<option value="${esc(s.strand_code)}">${esc(s.strand_name)} (${esc(s.strand_code)})</option>`).join("");
-}
-
-// ============ Modal Functions ============
-
 function updateEnrollButton() {
     confirmEnrollBtn.disabled = !(selectedStudent && selectedSectionId);
 }
 
 function resetEnrollModal() {
-    clearStudent();
+    selectedStudent = null;
+    selectedSectionId = null;
+    selectedStudentChip.hidden = true;
+    selectedStudentChip.style.display = 'none';
     studentSearch.value = "";
     studentResults.hidden = true;
+    studentResults.innerHTML = "";
     strandSel.selectedIndex = 0;
     gradeSel.selectedIndex = 0;
     termSel.selectedIndex = 0;
@@ -848,6 +605,7 @@ function resetEnrollModal() {
     sectionsTable.hidden = true;
     sectionHint.hidden = false;
     sectionHint.textContent = "Select a school year, strand, and grade level to view available sections.";
+    updateEnrollButton();
 }
 
 function openConfirm(title, name, note, actionLabel, action, id) {
@@ -855,7 +613,7 @@ function openConfirm(title, name, note, actionLabel, action, id) {
     confirmName.textContent = name;
     confirmNote.textContent = note;
     confirmActionBtn.textContent = actionLabel;
-    confirmActionBtn.className = `btn btn--${action === 'drop' ? 'warning' : 'danger'}`;
+    confirmActionBtn.className = `btn btn--${action === 'drop' ? 'warning' : action === 'reactivate' ? 'primary' : 'danger'}`;
     pendingAction = { action, id };
     confirmModal.hidden = false;
 }
@@ -866,58 +624,132 @@ function hideModals() {
     pendingAction = null;
 }
 
-// ============ Event Wiring ============
+// ============ Event Listeners ============
 
-// Initialize filters on page load
-let filterElements = null;
-document.addEventListener('DOMContentLoaded', function() {
-    filterElements = initFilters();
-    // Set up search input listener
-    searchInput.addEventListener("input", debounce(function() {
-        currentFilters.keyword = this.value.trim();
-        loadUnenrolled();
-    }, 250));
+// Filter event listeners
+statusFilter.addEventListener('change', loadEnrollments);
+schoolYearFilter.addEventListener('change', loadEnrollments);
+semesterFilter.addEventListener('change', loadEnrollments);
+strandFilter.addEventListener('change', loadEnrollments);
+
+// Search
+searchInput.addEventListener("input", debounce(function() {
+    loadEnrollments();
+}, 250));
+
+// Search clear button
+document.querySelector('.search-clear')?.addEventListener('click', function() {
+    searchInput.value = '';
+    this.hidden = true;
+    loadEnrollments();
 });
 
+// Print
 printBtn.addEventListener("click", () => window.print());
 
+// Enroll button
 enrollBtn.addEventListener("click", async () => {
-    await Promise.all([loadSchoolYears(), loadStrands()]);
     resetEnrollModal();
+    await loadSchoolYears();
+    await loadStrands();
     enrollModal.hidden = false;
     studentSearch.focus();
 });
 
+// Modal close buttons
 closeEnrollModal.addEventListener("click", hideModals);
 cancelEnrollBtn.addEventListener("click", hideModals);
 closeConfirmModal.addEventListener("click", hideModals);
 cancelConfirmBtn.addEventListener("click", hideModals);
 
-[enrollModal, confirmModal].forEach((overlay) => {
+// Schedule modal close buttons
+closeScheduleModal.addEventListener("click", () => {
+    scheduleModal.hidden = true;
+});
+closeScheduleModalBtn.addEventListener("click", () => {
+    scheduleModal.hidden = true;
+});
+printScheduleBtn.addEventListener("click", printSchedule);
+
+// Close modals on overlay click
+[enrollModal, confirmModal, scheduleModal].forEach((overlay) => {
     overlay.addEventListener("click", (e) => {
-        if (e.target === overlay) hideModals();
+        if (e.target === overlay) {
+            if (overlay === scheduleModal) {
+                scheduleModal.hidden = true;
+            } else {
+                hideModals();
+            }
+        }
     });
 });
 
+// Escape key
 document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") hideModals();
+    if (e.key === "Escape") {
+        if (!scheduleModal.hidden) {
+            scheduleModal.hidden = true;
+        } else {
+            hideModals();
+        }
+    }
 });
 
-studentSearch.addEventListener("input", onStudentSearchInput);
+// ============ Student Selection Event Listeners ============
 
+// Clear student button - FIXED
+clearStudentBtn.addEventListener("click", function(e) {
+    e.stopPropagation();
+    resetSelectedStudent();
+});
+
+// Student search results click
 studentResults.addEventListener("click", (e) => {
     const item = e.target.closest(".result-item");
     if (!item) return;
-    const s = lastStudentMatches.find((x) => String(x.student_id) === item.dataset.id);
-    if (s) selectStudent(s);
+    const studentId = item.dataset.id;
+    fetch(`${ENROLLMENT_URL}?action=student&id=${studentId}`)
+        .then(response => response.json())
+        .then(student => {
+            if (student && student.student_id) {
+                selectStudent(student);
+            }
+        })
+        .catch(error => console.error('Error selecting student:', error));
 });
 
-clearStudentBtn.addEventListener("click", clearStudent);
+// Student search input
+studentSearch.addEventListener("input", debounce(async function() {
+    const q = this.value.trim();
+    if (!q) {
+        studentResults.hidden = true;
+        studentResults.innerHTML = "";
+        return;
+    }
+
+    try {
+        const matches = await apiGet({ action: "search_students", keyword: q });
+        studentResults.innerHTML = matches.length
+            ? matches.map((s) => `
+                <button type="button" class="result-item" data-id="${s.student_id}">
+                    <strong>${esc(fullName(s))}</strong>
+                    <em>${esc(s.gender || "—")}${s.student_number ? " &middot; " + esc(s.student_number) : ""}</em>
+                </button>`).join("")
+            : '<p class="result-empty">No matching student found.</p>';
+        studentResults.hidden = false;
+    } catch {
+        studentResults.innerHTML = '<p class="result-empty">Error searching students.</p>';
+        studentResults.hidden = false;
+    }
+}, 250));
+
+// ============ Enrollment Details Event Listeners ============
 
 schoolYearSel.addEventListener("change", renderSections);
 strandSel.addEventListener("change", renderSections);
 gradeSel.addEventListener("change", renderSections);
 
+// Section selection
 sectionRows.addEventListener("click", (e) => {
     const row = e.target.closest(".sec-row");
     if (!row || row.classList.contains("is-full")) return;
@@ -927,12 +759,12 @@ sectionRows.addEventListener("click", (e) => {
     updateEnrollButton();
 });
 
-// ============ Confirm Enrollment ============
-
+// Confirm enrollment
 confirmEnrollBtn.addEventListener("click", async () => {
     if (!selectedStudent || !selectedSectionId) return;
 
     confirmEnrollBtn.disabled = true;
+    confirmEnrollBtn.textContent = "Enrolling...";
 
     const response = await apiPost({
         action: "create",
@@ -942,17 +774,19 @@ confirmEnrollBtn.addEventListener("click", async () => {
         semester: termSel.value
     });
 
-    if (response.indexOf("SUCCESS") !== -1) {
+    confirmEnrollBtn.disabled = false;
+    confirmEnrollBtn.textContent = "Enroll Student";
+
+    if (response.includes("SUCCESS")) {
         hideModals();
-        loadUnenrolled();
+        loadEnrollments();
+        showToast("Student enrolled successfully!", "success");
     } else {
-        confirmEnrollBtn.disabled = false;
         setMsg(response.replace(/^INSERT FAILED:\s*/, ""), "is-error");
     }
 });
 
-// ============ Confirm Action (Drop/Delete) ============
-
+// Confirm action (drop/delete/reactivate)
 confirmActionBtn.addEventListener("click", async () => {
     if (!pendingAction) return;
     
@@ -961,18 +795,30 @@ confirmActionBtn.addEventListener("click", async () => {
     
     if (action === 'drop') {
         response = await apiPost({ action: "drop", enrollment_id: id });
-        if (response.indexOf("SUCCESS") !== -1) {
+        if (response.includes("SUCCESS")) {
             hideModals();
-            loadUnenrolled();
+            loadEnrollments();
+            showToast("Student dropped successfully!", "info");
         } else {
             alert('Failed to drop enrollment: ' + response);
             hideModals();
         }
+    } else if (action === 'reactivate') {
+        response = await apiPost({ action: "reactivate", enrollment_id: id });
+        if (response.includes("SUCCESS")) {
+            hideModals();
+            loadEnrollments();
+            showToast("Student reactivated successfully!", "success");
+        } else {
+            alert('Failed to reactivate enrollment: ' + response);
+            hideModals();
+        }
     } else if (action === 'delete') {
         response = await apiPost({ action: "delete", enrollment_id: id });
-        if (response.indexOf("SUCCESS") !== -1) {
+        if (response.includes("SUCCESS")) {
             hideModals();
-            loadUnenrolled();
+            loadEnrollments();
+            showToast("Enrollment deleted successfully!", "warning");
         } else {
             alert('Failed to delete enrollment: ' + response);
             hideModals();
@@ -981,4 +827,7 @@ confirmActionBtn.addEventListener("click", async () => {
 });
 
 // ============ Init ============
-// Initial load will be triggered by the filter initialization
+document.addEventListener('DOMContentLoaded', function() {
+    loadFilterSchoolYears();
+    loadFilterStrands();
+});

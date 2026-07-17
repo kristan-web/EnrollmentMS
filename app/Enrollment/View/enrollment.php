@@ -15,6 +15,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../../../public/assets/css/shared/dashboard.css" />
+  <link rel="stylesheet" href="../../../public/assets/css/shared/enrollment.css" />
 </head>
 <body>
   <aside class="sidebar" id="sidebar">
@@ -62,6 +63,32 @@
 
     <section class="content">
       <div class="toolbar">
+        <!-- Status Filter Dropdown -->
+        <select id="statusFilter" class="filter-select" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #d1d5db; font-size: 13px; background: white; min-width: 150px;">
+          <option value="all">All Status</option>
+          <option value="Enrolled">Enrolled</option>
+          <option value="Dropped">Dropped</option>
+          <option value="Pending">Pending</option>
+          <option value="Not Enrolled">Not Enrolled</option>
+        </select>
+
+        <!-- School Year Filter -->
+        <select id="schoolYearFilter" class="filter-select" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #d1d5db; font-size: 13px; background: white; min-width: 150px;">
+          <option value="">All School Years</option>
+        </select>
+
+        <!-- Semester Filter -->
+        <select id="semesterFilter" class="filter-select" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #d1d5db; font-size: 13px; background: white; min-width: 130px;">
+          <option value="">All Semesters</option>
+          <option value="1st Semester">1st Semester</option>
+          <option value="2nd Semester">2nd Semester</option>
+        </select>
+
+        <!-- Strand Filter -->
+        <select id="strandFilter" class="filter-select" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #d1d5db; font-size: 13px; background: white; min-width: 150px;">
+          <option value="">All Strands</option>
+        </select>
+
         <div class="search-box">
           <svg class="search-box__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
           <input type="search" id="searchInput" class="search" placeholder="Search by name or student no..." />
@@ -99,13 +126,14 @@
             <tbody id="masterRows"></tbody>
           </table>
         </div>
-        <p class="empty" id="emptyState" hidden>No enrollments yet. Click "Enroll Student" to begin.</p>
+        <p class="empty" id="emptyState" hidden>No enrollments found. Click "Enroll Student" to begin.</p>
       </div>
     </section>
 
     <footer class="main__footer">&copy; 2026 Enrollment Management System</footer>
   </div>
 
+  <!-- Enroll Modal -->
   <div class="modal-overlay" id="enrollModal" hidden>
     <div class="modal modal--wide" role="dialog" aria-modal="true" aria-labelledby="enrollTitle">
       <div class="modal__head">
@@ -185,6 +213,7 @@
     </div>
   </div>
 
+  <!-- Confirm Modal -->
   <div class="modal-overlay" id="confirmModal" hidden>
     <div class="modal modal--small" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
       <div class="modal__head">
@@ -201,50 +230,50 @@
       </div>
     </div>
   </div>
+
   <!-- Schedule Modal -->
-<div class="modal-overlay" id="scheduleModal" hidden>
+  <div class="modal-overlay" id="scheduleModal" hidden>
     <div class="modal modal--wide" role="dialog" aria-modal="true" aria-labelledby="scheduleTitle">
-        <div class="modal__head">
-            <h2 id="scheduleTitle">Student Schedule</h2>
-            <button class="modal__close" id="closeScheduleModal" aria-label="Close">&times;</button>
+      <div class="modal__head">
+        <h2 id="scheduleTitle">Student Schedule</h2>
+        <button class="modal__close" id="closeScheduleModal" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal__body">
+        <div id="scheduleStudentInfo" class="schedule-student-info"></div>
+        <div class="schedule-actions">
+          <button class="btn btn--primary" id="printScheduleBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg>
+            Print Schedule
+          </button>
         </div>
-        <div class="modal__body">
-            <div id="scheduleStudentInfo" class="schedule-student-info"></div>
-            <div class="schedule-actions">
-                <button class="btn btn--primary" id="printScheduleBtn">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg>
-                    Print Schedule
-                </button>
-            </div>
-            <div class="table-wrap" id="scheduleTableWrap">
-                <table class="data-table" id="scheduleTable">
-                    <thead>
-                        <tr>
-                            <th>Subject Code</th>
-                            <th>Subject Name</th>
-                            <th>Day</th>
-                            <th>Time</th>
-                            <th>Room</th>
-                            <th>Teacher</th>
-                        </tr>
-                    </thead>
-                    <tbody id="scheduleRows">
-                        <tr>
-                            <td colspan="6" class="text-center">Loading schedule...</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="schedule-summary" id="scheduleSummary"></div>
-            <div class="form-actions">
-                <button type="button" class="btn btn--ghost" id="closeScheduleModalBtn">Close</button>
-            </div>
+        <div class="table-wrap" id="scheduleTableWrap">
+          <table class="data-table" id="scheduleTable">
+            <thead>
+              <tr>
+                <th>Subject Code</th>
+                <th>Subject Name</th>
+                <th>Day</th>
+                <th>Time</th>
+                <th>Room</th>
+                <th>Teacher</th>
+              </tr>
+            </thead>
+            <tbody id="scheduleRows">
+              <tr>
+                <td colspan="6" class="text-center">Loading schedule...</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
+        <div class="schedule-summary" id="scheduleSummary"></div>
+        <div class="form-actions">
+          <button type="button" class="btn btn--ghost" id="closeScheduleModalBtn">Close</button>
+        </div>
+      </div>
     </div>
-</div>
+  </div>
 
   <script>
-    // Check if session role exists, provide fallback
     const sessionRole = <?php echo isset($_SESSION['role']) ? json_encode($_SESSION['role']) : json_encode('guest'); ?>;
   </script>
   <script src="/EnrollmentMS/public/assets/js/shared/sidebar.js"></script>
