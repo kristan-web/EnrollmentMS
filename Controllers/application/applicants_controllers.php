@@ -2,7 +2,7 @@
 
 require_once "../../Dao/application/ApplicantDAO.php";
 require_once "../../Dao/strand/StrandDAO.php";
-require_once "../../Dao/SchoolYearDAO.php";
+require_once "../../Dao/school_year/SchoolYearDAO.php";
 require_once "../../Models/application/applicant_model.php";
 
 

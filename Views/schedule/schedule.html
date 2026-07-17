@@ -66,7 +66,7 @@
       </ul>
     </nav>
 
-    <a class="sidebar__logout" href="../index.html">
+    <a class="sidebar__logout" href="../../index.html">
       <span class="nav__icon" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
       </span>
@@ -86,7 +86,7 @@
     <section class="content content--settings">
       <header class="page-head">
         <nav class="page-head__crumbs" aria-label="Breadcrumb">
-          <a href="transaction.html">Transaction</a>
+          <a href="../navigation/transaction.html">Transaction</a>
           <span aria-hidden="true">/</span>
           <span aria-current="page">Schedule</span>
         </nav>
@@ -172,12 +172,20 @@
               </select>
             </label>
           </div>
-          <label class="field">
-            <span>Class Subject <span class="required">*</span></span>
-            <select name="classSubjectId" id="classSubjectSelect" required>
-              <option value="" disabled selected>Select section first</option>
-            </select>
-          </label>
+          <div class="form-row">
+            <label class="field">
+              <span>Subject <span class="required">*</span></span>
+              <select name="subjectId" id="subjectSelect" required>
+                <option value="" disabled selected>Select section first</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Teacher</span>
+              <select name="teacherId" id="teacherSelect">
+                <option value="">No teacher assigned</option>
+              </select>
+            </label>
+          </div>
           <div class="form-row">
             <label class="field">
               <span>Day <span class="required">*</span></span>

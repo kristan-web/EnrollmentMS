@@ -1,3 +1,5 @@
+// home.js — Landing page. Pulls the active school year, the requirements
+// checklist, and the strand list from the PHP backend (via PortalAPI).
 const syChip = document.getElementById("syChip");
 const reqList = document.getElementById("reqList");
 
@@ -23,16 +25,7 @@ function docIcon(name) {
   return ICON_FILE;
 }
 
-syChip.textContent = `Admissions open · S.Y. ${ApplicantModel.activeSchoolYear()}`;
-
-reqList.innerHTML = ApplicantModel.requirementsFor("Transferee").map((t) => `
-  <li class="need-item">
-    <span class="need-item__icon" aria-hidden="true">${docIcon(t.name)}</span>
-    <span class="need-item__name">${esc(t.name)}</span>
-    ${t.applicantType === "Transferee" ? '<span class="tag tag--transferee">Transferees only</span>' : ""}
-  </li>`).join("");
-
-/* ---- Hero strand carousel ---- */
+/* ---- Hero strand carousel meta ---- */
 const ICON_STEM = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><path d="M20.2 20.2c2-2 .1-7.3-4.5-11.9C11.1 3.7 5.8 1.8 3.8 3.8s-.1 7.3 4.5 11.9c4.6 4.6 9.9 6.5 11.9 4.5Z"/><path d="M15.7 15.7c4.6-4.6 6.5-9.9 4.5-11.9s-7.3-.1-11.9 4.5c-4.6 4.6-6.5 9.9-4.5 11.9s7.3.1 11.9-4.5Z"/></svg>';
 const ICON_ABM = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><rect x="7" y="12" width="3" height="5" rx="0.5"/><rect x="12" y="8" width="3" height="9" rx="0.5"/><rect x="17" y="4" width="3" height="13" rx="0.5"/></svg>';
 const ICON_HUMSS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>';
@@ -44,28 +37,36 @@ const STRAND_META = {
   ABM:   { accent: "abm",   tag: "Academic track",  icon: ICON_ABM,   blurb: "Accounting, finance, marketing, and entrepreneurship." },
   HUMSS: { accent: "humss", tag: "Academic track",  icon: ICON_HUMSS, blurb: "Law, journalism, education, and the social sciences." },
   GAS:   { accent: "gas",   tag: "Academic track",  icon: ICON_GAS,   blurb: "A flexible path that keeps your college options open." },
+  ICT:   { accent: "tvl",   tag: "Tech-Voc track",  icon: ICON_TVL,   blurb: "Computer systems servicing, programming, and animation." },
+  HE:    { accent: "tvl",   tag: "Tech-Voc track",  icon: ICON_TVL,   blurb: "Cookery, food & beverage services, and tourism skills." },
   TVL:   { accent: "tvl",   tag: "Tech-Voc track",  icon: ICON_TVL,   blurb: "Hands-on, job-ready technical and livelihood skills." }
 };
 
-(function initStrandCarousel() {
+function renderRequirements(types) {
+  reqList.innerHTML = types.map((t) => `
+    <li class="need-item">
+      <span class="need-item__icon" aria-hidden="true">${docIcon(t.name)}</span>
+      <span class="need-item__name">${esc(t.name)}</span>
+      ${t.applicant_type === "Transferee" ? '<span class="tag tag--transferee">Transferees only</span>' : ""}
+    </li>`).join("");
+}
+
+function initStrandCarousel(strands) {
   const track = document.getElementById("strandTrack");
   const dotsWrap = document.getElementById("strandDots");
   const carousel = document.getElementById("strandCarousel");
-  if (!track || !dotsWrap || !carousel) return;
-
-  const strands = ApplicantModel.strandOptions();
-  if (!strands.length) return;
+  if (!track || !dotsWrap || !carousel || !strands.length) return;
 
   track.innerHTML = strands.map((s, i) => {
-    const meta = STRAND_META[s.code] || { accent: "stem", tag: "Senior High", icon: ICON_FILE, blurb: "Available for Grade 11 & 12 enrollment." };
+    const meta = STRAND_META[s.strand_code] || { accent: "stem", tag: "Senior High", icon: ICON_FILE, blurb: "Available for Grade 11 & 12 enrollment." };
     return `
       <li class="carousel__slide" role="group" aria-roledescription="slide" aria-label="${i + 1} of ${strands.length}">
         <article class="strand-card strand-card--${meta.accent}">
           <div class="strand-card__top">
             <span class="strand-card__icon" aria-hidden="true">${meta.icon}</span>
-            <span class="strand-card__code">${esc(s.code)}</span>
+            <span class="strand-card__code">${esc(s.strand_code)}</span>
           </div>
-          <h3 class="strand-card__name">${esc(s.name)}</h3>
+          <h3 class="strand-card__name">${esc(s.strand_name)}</h3>
           <p class="strand-card__desc">${esc(meta.blurb)}</p>
           <span class="strand-card__tag">${esc(meta.tag)}</span>
         </article>
@@ -73,7 +74,7 @@ const STRAND_META = {
   }).join("");
 
   dotsWrap.innerHTML = strands.map((s, i) =>
-    `<button type="button" class="carousel__dot${i === 0 ? " is-active" : ""}" role="tab" aria-label="Show ${esc(s.code)}" data-i="${i}"></button>`
+    `<button type="button" class="carousel__dot${i === 0 ? " is-active" : ""}" role="tab" aria-label="Show ${esc(s.strand_code)}" data-i="${i}"></button>`
   ).join("");
 
   const count = strands.length;
@@ -102,4 +103,20 @@ const STRAND_META = {
   carousel.addEventListener("focusout", play);
 
   play();
+}
+
+(async function init() {
+  try {
+    const [sy, requirements, strands] = await Promise.all([
+      PortalAPI.activeSchoolYear(),
+      PortalAPI.checklist("Transferee"),
+      PortalAPI.strands()
+    ]);
+    syChip.textContent = sy ? `Admissions open · S.Y. ${sy}` : "Admissions open";
+    renderRequirements(requirements);
+    initStrandCarousel(strands);
+  } catch (err) {
+    console.error("Failed to load landing page data:", err);
+    syChip.textContent = "Admissions open";
+  }
 })();

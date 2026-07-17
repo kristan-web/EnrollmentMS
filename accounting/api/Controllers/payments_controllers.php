@@ -7,21 +7,31 @@
 require_once __DIR__ . "/../config/paymongo.php";
 require_once __DIR__ . "/../Models/payment_model.php";
 require_once __DIR__ . "/../Dao/PayMongoDAO.php";
+require_once __DIR__ . "/../Dao/AcctPaymentDAO.php";
 
 header("Content-Type: application/json");
 
 $method = $_SERVER["REQUEST_METHOD"];
 $dao = new PayMongoDAO();
+$paymentDao = new AcctPaymentDAO();
 
 if ($method === "GET") {
 
     $action = isset($_GET["action"]) ? $_GET["action"] : "fees";
 
     if ($action === "fees") {
+        // The amounts come from `acct_fees`. A term can be named; otherwise the
+        // active school year is priced.
+        $schoolYear = isset($_GET["school_year"]) ? trim($_GET["school_year"]) : null;
+        $semester   = isset($_GET["semester"]) ? trim($_GET["semester"]) : null;
+        $term = FeeSchedule::defaultTerm();
+
         echo json_encode(array(
-            "fees"     => FeeSchedule::items(),
-            "total"    => FeeSchedule::total(),
-            "currency" => PAYMONGO_CURRENCY
+            "fees"        => FeeSchedule::items($schoolYear, $semester),
+            "total"       => FeeSchedule::total($schoolYear, $semester),
+            "school_year" => $schoolYear ? $schoolYear : $term["school_year"],
+            "semester"    => $semester ? $semester : $term["semester"],
+            "currency"    => PAYMONGO_CURRENCY
         ));
         exit;
     }
@@ -38,7 +48,19 @@ if ($method === "GET") {
             exit;
         }
 
-        echo json_encode($dao->retrieveCheckoutSession($session));
+        $result = $dao->retrieveCheckoutSession($session);
+
+        // PayMongo is the authority on whether the money arrived; mirror its
+        // answer onto our own record. This is what settles the 'pending' row
+        // written at checkout. markStatus() ignores rows already marked paid.
+        if (!empty($result["success"]) && isset($result["status"])) {
+            $mirrored = array("paid" => "paid", "failed" => "failed", "expired" => "expired", "cancelled" => "cancelled");
+            if (isset($mirrored[$result["status"]])) {
+                $paymentDao->markStatus($session, $mirrored[$result["status"]]);
+            }
+        }
+
+        echo json_encode($result);
         exit;
     }
 
@@ -70,6 +92,13 @@ if ($method === "POST") {
         $payment->setReference(Payment::makeReference());
 
         $result = $dao->createCheckoutSession($payment);
+
+        // Log the attempt once PayMongo hands back a session, so an unfinished
+        // payment is still visible as 'pending' rather than vanishing. Only the
+        // ?action=status check can settle it afterwards.
+        if (!empty($result["success"]) && !empty($result["session_id"])) {
+            $paymentDao->insertPending($payment, $result["session_id"]);
+        }
 
         echo json_encode($result);
         exit;

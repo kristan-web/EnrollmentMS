@@ -2,11 +2,36 @@
 /* Models for accounting: the fee schedule and a single payment.
    Amounts are in pesos; toCentavos() converts for PayMongo. */
 
+require_once __DIR__ . "/../Dao/AcctFeeDAO.php";
+
+/* The assessment for one term. The amounts live in the `acct_fees` table, so
+   editing a row there changes every screen that prices an enrollment: the
+   student's statement of account, the cashier's assessment and balance, and
+   the registrar's payment gate.
+
+   FALLBACK_ITEMS is what ships in the code. It's used only when the table has
+   no active rows for the term — a database that never imported
+   accounting/sql/schema/01_accounting_tables.sql, or a term nobody has priced
+   yet. Falling back beats returning nothing: a zero assessment would read as
+   "fully paid" to the cashier and would let the registrar finalize for free. */
 class FeeSchedule {
 
-    /* The assessment for the semester, and the source of truth for the amounts.
-       The copy in accounting/models/accounting-model.js must match. */
-    public static function items() {
+    /* Used when a caller prices something without naming a term and no school
+       year is marked active. */
+    const DEFAULT_SCHOOL_YEAR = "2026-2027";
+    const DEFAULT_SEMESTER    = "1st Semester";
+
+    private static $cache = array();
+    private static $dao = null;
+
+    private static function dao() {
+        if (self::$dao === null) {
+            self::$dao = new AcctFeeDAO();
+        }
+        return self::$dao;
+    }
+
+    private static function fallbackItems() {
         return array(
             array("code" => "TUITION", "name" => "Tuition Fee",           "note" => "Per semester",                 "amount" => 12000, "required" => true),
             array("code" => "MISC",    "name" => "Miscellaneous Fee",     "note" => "Guidance, athletics, etc.",    "amount" => 3500,  "required" => true),
@@ -18,10 +43,46 @@ class FeeSchedule {
         );
     }
 
-    /* Total assessment in pesos. */
-    public static function total() {
+    /* The term to price when the caller doesn't name one: whichever school year
+       is active, on the default semester. */
+    public static function defaultTerm() {
+        $year = self::dao()->getActiveSchoolYear();
+        return array(
+            "school_year" => $year ? $year : self::DEFAULT_SCHOOL_YEAR,
+            "semester"    => self::DEFAULT_SEMESTER,
+        );
+    }
+
+    /* The fee lines for a term. Pass the enrollment's own school year and
+       semester where they're known, so a student is always priced against the
+       term they're actually enrolled in. */
+    public static function items($schoolYear = null, $semester = null) {
+        if ($schoolYear === null || $semester === null) {
+            $term = self::defaultTerm();
+            $schoolYear = $schoolYear !== null ? $schoolYear : $term["school_year"];
+            $semester   = $semester !== null ? $semester : $term["semester"];
+        }
+
+        // Priced once per term per request — the cashier's list re-reads this
+        // for every student it shows.
+        $key = $schoolYear . "|" . $semester;
+        if (isset(self::$cache[$key])) {
+            return self::$cache[$key];
+        }
+
+        $fees = self::dao()->getFees($schoolYear, $semester);
+        if (empty($fees)) {
+            $fees = self::fallbackItems();
+        }
+
+        self::$cache[$key] = $fees;
+        return $fees;
+    }
+
+    /* Total assessment in pesos for a term. */
+    public static function total($schoolYear = null, $semester = null) {
         $sum = 0;
-        foreach (self::items() as $fee) {
+        foreach (self::items($schoolYear, $semester) as $fee) {
             $sum += $fee["amount"];
         }
         return $sum;
@@ -123,7 +184,10 @@ class Payment {
         if ($amount < self::MIN_PAYMENT) {
             $errors[] = "Minimum online payment is PHP " . number_format(self::MIN_PAYMENT, 2) . ".";
         }
-        if ($amount > FeeSchedule::total()) {
+        // Price against the term being paid for, not a global figure.
+        $schoolYear = isset($data["school_year"]) && trim($data["school_year"]) !== "" ? trim($data["school_year"]) : null;
+        $semester   = isset($data["semester"]) && trim($data["semester"]) !== "" ? trim($data["semester"]) : null;
+        if ($amount > FeeSchedule::total($schoolYear, $semester)) {
             $errors[] = "Amount is more than your total assessment.";
         }
 
@@ -136,7 +200,7 @@ class Payment {
         $items = array();
 
         if ($this->plan === "full") {
-            foreach (FeeSchedule::items() as $fee) {
+            foreach (FeeSchedule::items($this->school_year, $this->semester) as $fee) {
                 $items[] = array(
                     "currency" => PAYMONGO_CURRENCY,
                     "amount"   => self::toCentavos($fee["amount"]),

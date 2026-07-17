@@ -1,4 +1,4 @@
-const SCHEDULE_URL = "../Controllers/schedule_controllers.php";
+const SCHEDULE_URL = "../../Controllers/schedule_controllers.php";
 const PAGE_SIZE = 10;
 
 const DAYS = {
@@ -46,7 +46,7 @@ const printSheet = document.getElementById("printSheet");
 
 // State
 let schedules = [];
-let classSubjects = [];
+let subjects = [];
 let sections = [];
 let rooms = [];
 let teachers = [];
@@ -87,12 +87,12 @@ function showLoading(show) {
 }
 
 function getFullName(first, last) {
-    if (!first && !last) return "—";
-    return `${last || ''}${last && first ? ', ' : ''}${first || ''}`.trim() || "—";
+    if (!first && !last) return "\u2014";
+    return `${last || ''}${last && first ? ', ' : ''}${first || ''}`.trim() || "\u2014";
 }
 
 function formatTime(time) {
-    if (!time) return "—";
+    if (!time) return "\u2014";
     const [h, m] = time.split(":").map(Number);
     const suffix = h >= 12 ? "PM" : "AM";
     const hour = h % 12 || 12;
@@ -149,7 +149,7 @@ async function loadLookupData() {
         sections = data.sections || [];
         rooms = data.rooms || [];
         teachers = data.teachers || [];
-        classSubjects = data.class_subjects || [];
+        subjects = data.subjects || [];
         populateDropdowns();
         return data;
     } catch (e) {
@@ -189,38 +189,53 @@ function populateDropdowns() {
         });
         roomSelect.innerHTML = html;
     }
+
+    // Populate teacher dropdown in modal (optional field)
+    const teacherSelect = document.getElementById("teacherSelect");
+    if (teacherSelect) {
+        let html = '<option value="">No teacher assigned</option>';
+        teachers.forEach(t => {
+            html += `<option value="${t.teacher_id}">${esc(getFullName(t.first_name, t.last_name))}</option>`;
+        });
+        teacherSelect.innerHTML = html;
+    }
 }
 
-function populateClassSubjects(selected) {
+// Populate the Subject dropdown from the master subject list, narrowed to the
+// selected section's grade level and (if chosen) the term. Subject and teacher
+// are picked separately \u2014 the schedule row stores both directly.
+function populateSubjects(selected) {
+    const select = document.getElementById("subjectSelect");
+    if (!select) return;
+
     const sectionId = document.getElementById("sectionSelect")?.value;
     const term = document.getElementById("termSelect")?.value;
-    const select = document.getElementById("classSubjectSelect");
-    
+
     if (!sectionId) {
         select.innerHTML = '<option value="" disabled selected>Select section first</option>';
         return;
     }
 
-    const filtered = classSubjects.filter(cs => 
-        cs.section_id == sectionId && 
-        (!term || cs.semester === term)
+    const section = sections.find((x) => String(x.section_id) === String(sectionId));
+    const grade = section ? String(section.grade_level) : null;
+
+    const filtered = subjects.filter((sub) =>
+        (!grade || String(sub.grade_level) === grade) &&
+        (!term || sub.semester === term)
     );
 
     if (!filtered.length) {
-        select.innerHTML = '<option value="" disabled selected>No subjects found for this section</option>';
+        select.innerHTML = '<option value="" disabled selected>No subjects for this grade / term</option>';
         return;
     }
 
     let html = '<option value="" disabled selected>Select subject</option>';
-    filtered.forEach(cs => {
-        const teacherName = cs.teacher_first_name ? getFullName(cs.teacher_first_name, cs.teacher_last_name) : "No teacher assigned";
-        html += `<option value="${cs.class_subject_id}">${esc(cs.subject_code)} - ${esc(cs.subject_name)} (${esc(cs.subject_type)}) [${teacherName}]</option>`;
+    filtered.forEach((sub) => {
+        html += `<option value="${sub.subject_id}">${esc(sub.subject_code)} - ${esc(sub.subject_name)} (${esc(sub.subject_type)})</option>`;
     });
     select.innerHTML = html;
-    
-    if (selected) {
-        select.value = selected;
-    }
+
+    if (selected) select.value = selected;
 }
 
 // ---------- Load Schedules ----------
@@ -265,7 +280,7 @@ function pageList(current, pages) {
     const out = [];
     let prev = 0;
     for (const p of wanted) {
-        if (p - prev > 1) out.push("…");
+        if (p - prev > 1) out.push("\u2026");
         out.push(p);
         prev = p;
     }
@@ -278,13 +293,13 @@ function renderPagination(total, pages, start, shown) {
         return;
     }
     pagination.hidden = false;
-    pageInfo.textContent = `Showing ${start + 1}–${start + shown} of ${total}`;
+    pageInfo.textContent = `Showing ${start + 1}\u2013${start + shown} of ${total}`;
     const parts = [
         `<button class="page-btn" data-page="${currentPage - 1}" ${currentPage === 1 ? "disabled" : ""} aria-label="Previous page">&lsaquo;</button>`
     ];
     for (const p of pageList(currentPage, pages)) {
-        parts.push(p === "…"
-            ? '<span class="page-ellipsis">…</span>'
+        parts.push(p === "\u2026"
+            ? '<span class="page-ellipsis">\u2026</span>'
             : `<button class="page-btn${p === currentPage ? " is-current" : ""}" data-page="${p}">${p}</button>`);
     }
     parts.push(
@@ -316,7 +331,7 @@ function render() {
     emptyState.hidden = true;
 
     schedRows.innerHTML = pageItems.map((s) => {
-        const teacherName = s.teacher_first_name ? getFullName(s.teacher_first_name, s.teacher_last_name) : "—";
+        const teacherName = s.teacher_first_name ? getFullName(s.teacher_first_name, s.teacher_last_name) : "\u2014";
         const dayShort = DAYS[s.day_of_week] || s.day_of_week;
         const startTime = formatTime(s.start_time);
         const endTime = formatTime(s.end_time);
@@ -329,7 +344,7 @@ function render() {
             </td>
             <td>${esc(teacherName)}</td>
             <td><span class="chip">${esc(dayShort)}</span></td>
-            <td>${esc(startTime)} – ${esc(endTime)}</td>
+            <td>${esc(startTime)} \u2013 ${esc(endTime)}</td>
             <td>${esc(s.room_name)}</td>
             <td>
                 <div class="row-actions">
@@ -345,7 +360,8 @@ function render() {
 
 // ---------- Check Conflicts ----------
 async function checkConflicts() {
-    const classSubjectId = document.getElementById("classSubjectSelect")?.value;
+    const sectionId = document.getElementById("sectionSelect")?.value;
+    const teacherId = document.getElementById("teacherSelect")?.value;
     const dayOfWeek = document.getElementById("daySelect")?.value;
     const startTime = document.getElementById("startTime")?.value;
     const endTime = document.getElementById("endTime")?.value;
@@ -354,19 +370,16 @@ async function checkConflicts() {
     const conflictWarning = document.getElementById("conflictWarning");
     const conflictMsg = document.getElementById("conflictMsg");
 
-    if (!classSubjectId || !dayOfWeek || !startTime || !endTime || !roomId) {
+    // Section, room, day, and times are what a conflict is checked against.
+    if (!sectionId || !dayOfWeek || !startTime || !endTime || !roomId) {
         conflictWarning.hidden = true;
         return;
     }
 
-    // Get the class subject details
-    const cs = classSubjects.find(c => c.class_subject_id == classSubjectId);
-    if (!cs) return;
-
     const params = {
         action: "check_conflicts",
-        section_id: cs.section_id,
-        teacher_id: cs.teacher_id || '',
+        section_id: sectionId,
+        teacher_id: teacherId || '',
         room_id: roomId,
         day_of_week: dayOfWeek,
         start_time: startTime,
@@ -430,7 +443,8 @@ async function openSchedModal(s) {
     } else {
         sectionSelect.selectedIndex = 0;
     }
-    populateClassSubjects(s ? s.class_subject_id : null);
+    populateSubjects(s ? s.subject_id : null);
+    document.getElementById("teacherSelect").value = s && s.teacher_id ? s.teacher_id : "";
 
     // Set other fields
     if (s) {
@@ -485,13 +499,13 @@ function buildSheet() {
         if (items.length) {
             items.sort((a, b) => a.start_time.localeCompare(b.start_time));
             items.forEach(s => {
-                const teacherName = s.teacher_first_name ? getFullName(s.teacher_first_name, s.teacher_last_name) : "—";
+                const teacherName = s.teacher_first_name ? getFullName(s.teacher_first_name, s.teacher_last_name) : "\u2014";
                 tableRows += `<tr>
                     <td>${esc(DAYS[day] || day)}</td>
                     <td>${esc(s.subject_code)}</td>
                     <td>${esc(s.subject_name)}</td>
                     <td>${esc(teacherName)}</td>
-                    <td>${esc(formatTime(s.start_time))} – ${esc(formatTime(s.end_time))}</td>
+                    <td>${esc(formatTime(s.start_time))} \u2013 ${esc(formatTime(s.end_time))}</td>
                     <td>${esc(s.room_name)}</td>
                 </tr>`;
             });
@@ -589,7 +603,7 @@ if (closePrintModal) closePrintModal.addEventListener("click", hideModals);
 const sectionSelect = document.getElementById("sectionSelect");
 if (sectionSelect) {
     sectionSelect.addEventListener("change", () => {
-        populateClassSubjects(null);
+        populateSubjects(null);
         document.getElementById("conflictWarning").hidden = true;
     });
 }
@@ -597,13 +611,13 @@ if (sectionSelect) {
 const termSelect = document.getElementById("termSelect");
 if (termSelect) {
     termSelect.addEventListener("change", () => {
-        populateClassSubjects(null);
+        populateSubjects(null);
         document.getElementById("conflictWarning").hidden = true;
     });
 }
 
 // Check conflicts on change
-['daySelect', 'roomSelect', 'startTime', 'endTime', 'classSubjectSelect'].forEach(id => {
+['sectionSelect', 'teacherSelect', 'daySelect', 'roomSelect', 'startTime', 'endTime'].forEach(id => {
     const el = document.getElementById(id);
     if (el) {
         el.addEventListener("change", () => {
@@ -666,18 +680,21 @@ if (schedForm) {
 
         const formData = new FormData(schedForm);
         const data = {
-            class_subject_id: formData.get("classSubjectId"),
+            section_id: formData.get("sectionId"),
+            subject_id: formData.get("subjectId"),
+            teacher_id: formData.get("teacherId") || "",
             room_id: formData.get("roomId"),
             day_of_week: formData.get("dayOfWeek"),
             start_time: formData.get("startTime"),
             end_time: formData.get("endTime"),
         };
 
-        console.log("Submitting data:", data);
-
         // Validate
-        if (!data.class_subject_id) {
-            return setMsg("Please select a class subject.", "is-error");
+        if (!data.section_id) {
+            return setMsg("Please select a section.", "is-error");
+        }
+        if (!data.subject_id) {
+            return setMsg("Please select a subject.", "is-error");
         }
         if (!data.room_id) {
             return setMsg("Please select a room.", "is-error");
@@ -734,7 +751,7 @@ if (schedRows) {
             openSchedModal(s);
         } else if (btn.dataset.action === "delete") {
             deletingId = s.schedule_id;
-            const teacherName = s.teacher_first_name ? getFullName(s.teacher_first_name, s.teacher_last_name) : "—";
+            const teacherName = s.teacher_first_name ? getFullName(s.teacher_first_name, s.teacher_last_name) : "\u2014";
             deleteName.textContent = `${s.subject_code} - ${s.section_name} (${DAYS[s.day_of_week] || s.day_of_week}, ${formatTime(s.start_time)} - ${formatTime(s.end_time)})`;
             deleteModal.hidden = false;
         }

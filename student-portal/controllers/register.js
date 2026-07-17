@@ -1,28 +1,13 @@
-// register.js — Student portal registration (UI only)
-// ---------------------------------------------------------------------------
-// Just like login.js, this keeps NOTHING in the browser — no localStorage, no
-// fake accounts. It only handles the interface (validation, password toggles,
-// messages) and then hands the details to your PHP backend.
-//
-// To connect it, point REGISTER_ENDPOINT at a PHP script. The form is sent as
-// a normal POST so PHP can read it straight from $_POST:
-//
-//   POST  <REGISTER_ENDPOINT>          (application/x-www-form-urlencoded)
-//     fullname = full name             -> $_POST['fullname']
-//     email    = email address         -> $_POST['email']
-//     password = chosen password       -> $_POST['password']
-//     confirm  = repeated password     -> $_POST['confirm']
-//
-//   Your PHP should reply with JSON, e.g.:
-//     echo json_encode(["success" => true,  "redirect" => "login.html"]);
-//     echo json_encode(["success" => false, "message" => "Email already used."]);
-//
-// Until that file exists, submitting just shows a friendly notice.
-const REGISTER_ENDPOINT = "student-register.php";
-
+// register.js — Create a student portal account.
+// Talks to Controllers/student_account/student_account_controllers.php (via
+// PortalAPI). Following the flowchart: the form is validated, the account is
+// written to the database, then the student is redirected to the login page.
 const registerForm = document.getElementById("registerForm");
 const registerMsg = document.getElementById("registerMsg");
 const submitBtn = document.getElementById("registerSubmit");
+
+// If they are already signed in, there's no reason to register again.
+PortalAPI.redirectIfAuthed("dashboard.html");
 
 function setMsg(text, type) {
   registerMsg.textContent = text;
@@ -57,7 +42,7 @@ registerForm.addEventListener("submit", async (e) => {
   const password = registerForm.elements.password.value;
   const confirm = registerForm.elements.confirm.value;
 
-  // Quick checks in the browser (your PHP should validate again — never trust the client).
+  // Quick checks in the browser — the PHP validates again, never trusting the client.
   if (!fullname || !email || !password || !confirm)
     return setMsg("Please fill in all fields.", "is-error");
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
@@ -71,32 +56,16 @@ registerForm.addEventListener("submit", async (e) => {
   setLoading(true);
 
   try {
-    const body = new URLSearchParams();
-    body.set("fullname", fullname);
-    body.set("email", email);
-    body.set("password", password);
-    body.set("confirm", confirm);
+    const data = await PortalAPI.register({ fullname, email, password, confirm });
 
-    const res = await fetch(REGISTER_ENDPOINT, {
-      method: "POST",
-      headers: { "X-Requested-With": "XMLHttpRequest" },
-      body
-    });
-
-    let data = null;
-    try { data = await res.json(); } catch { /* non-JSON reply */ }
-
-    if (res.ok && data && data.success) {
+    if (data && data.success) {
       setMsg(data.message || "Account created! You can now log in.", "is-success");
       registerForm.reset();
-      if (data.redirect) setTimeout(() => (window.location.href = data.redirect), 1200);
+      setTimeout(() => (window.location.href = data.redirect || "login.html"), 1200);
       return;
     }
 
-    setMsg(
-      (data && data.message) || "We couldn't create your account. Please try again.",
-      "is-error"
-    );
+    setMsg((data && data.message) || "We couldn't create your account. Please try again.", "is-error");
   } catch {
     setMsg("We couldn't reach the server. Please check your connection and try again.", "is-error");
   } finally {

@@ -747,3 +747,48 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
+-- --------------------------------------------------------
+-- Student Portal additions
+-- Login accounts for the public student portal (separate from the staff
+-- `users` table) and the proof-of-payment uploads students submit from their
+-- dashboard. Run this block once against an existing database to add them.
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `student_accounts`
+--
+CREATE TABLE IF NOT EXISTS `student_accounts` (
+  `account_id` int(11) NOT NULL AUTO_INCREMENT,
+  `full_name` varchar(100) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `password_hash` varchar(255) NOT NULL,
+  `created_at` datetime DEFAULT current_timestamp(),
+  PRIMARY KEY (`account_id`),
+  UNIQUE KEY `email` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Table structure for table `payment_proofs`
+-- Proof-of-payment files uploaded by a student before/while the registrar
+-- records the official `payments` row. Linked to the portal account and,
+-- when available, the application reference number.
+--
+CREATE TABLE IF NOT EXISTS `payment_proofs` (
+  `proof_id` int(11) NOT NULL AUTO_INCREMENT,
+  `account_id` int(11) NOT NULL,
+  `reference_number` varchar(20) DEFAULT NULL,
+  `amount` decimal(10,2) DEFAULT NULL,
+  `method` varchar(50) DEFAULT NULL,
+  `payment_reference` varchar(100) DEFAULT NULL,
+  `file_path` varchar(255) NOT NULL,
+  `original_filename` varchar(255) NOT NULL,
+  `file_size` int(11) NOT NULL,
+  `mime_type` varchar(100) NOT NULL,
+  `status` enum('Pending','Verified','Rejected') NOT NULL DEFAULT 'Pending',
+  `remarks` varchar(255) DEFAULT NULL,
+  `uploaded_at` datetime DEFAULT current_timestamp(),
+  PRIMARY KEY (`proof_id`),
+  KEY `account_id` (`account_id`),
+  CONSTRAINT `payment_proofs_ibfk_1` FOREIGN KEY (`account_id`) REFERENCES `student_accounts` (`account_id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

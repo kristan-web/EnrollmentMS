@@ -1,0 +1,9 @@
+# Force browsers to revalidate the app's static files before using a cached copy.
+# These files change during development but are served without cache headers, so
+# browsers were holding stale JS/CSS/HTML. "no-cache" keeps the ETag (unchanged
+# files still return a fast 304) but never serves a stale copy without checking.
+<IfModule mod_headers.c>
+  <FilesMatch "\.(html|js|css)$">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
+</IfModule>

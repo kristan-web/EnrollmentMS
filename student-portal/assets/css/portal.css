@@ -2611,3 +2611,190 @@ body::after {
   .btn--submit:hover::before, .portal-card:hover::after { animation: none; }
   .success__icon::after, .tl-item.is-current .tl-dot, .hero__eyebrow i, .lang.is-loading .lang__btn > svg:first-child { animation: none; }
 }
+
+/* =====================================================================
+   Student Dashboard (logged-in hub)
+   ===================================================================== */
+.wrap--dash { max-width: 1080px; }
+
+/* Account chip + logout button in the top bar */
+.account-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 13px 5px 5px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  box-shadow: var(--shadow-sm);
+}
+.account-chip__avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, var(--blue), var(--blue-deep));
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+}
+.account-chip__name {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--navy);
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+button.topbar__login { font: inherit; cursor: pointer; }
+
+/* Hero / greeting */
+.dash-hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin: 8px 0 24px;
+}
+.dash-hero__text { min-width: 260px; }
+.dash-hero__title {
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  font-size: clamp(26px, 4vw, 40px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin: 10px 0 8px;
+}
+.dash-hero__title em { font-style: normal; color: var(--blue-deep); }
+.dash-hero__sub { color: var(--ink-2); max-width: 48ch; margin: 0; }
+.dash-tracker { flex: none; margin: 0; max-width: 520px; }
+
+/* Card grid */
+.dash-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+.dash-card--wide { grid-column: 1 / -1; }
+
+.dash-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: clamp(18px, 2.4vw, 26px);
+  box-shadow: var(--shadow-md);
+}
+.dash-card__head { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.dash-card__icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: rgba(47, 95, 208, 0.1);
+  color: var(--blue-deep);
+  flex: none;
+}
+.dash-card__icon svg { width: 22px; height: 22px; }
+.dash-card__icon--green { background: rgba(34, 197, 94, 0.14); color: #15803d; }
+.dash-card__icon--amber { background: rgba(244, 179, 1, 0.16); color: #a16207; }
+.dash-card__title { font-size: 18px; font-weight: 700; margin: 0; }
+
+/* Status row + info rows */
+.dash-status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(22, 36, 79, 0.03);
+  border-radius: 12px;
+  margin-bottom: 14px;
+}
+.dash-status-row__label { font-weight: 600; color: var(--ink-2); font-size: 14px; }
+
+.info-grid { margin: 0 0 6px; }
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 2px;
+  border-bottom: 1px solid var(--line);
+}
+.info-row:last-child { border-bottom: none; }
+.info-row dt { color: var(--ink-3); font-size: 13.5px; }
+.info-row dd { margin: 0; font-weight: 600; text-align: right; font-size: 14px; }
+.mono { font-family: "Roboto Mono", monospace; letter-spacing: 0.02em; }
+
+.dash-subhead {
+  font-weight: 700;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-3);
+  margin: 16px 0 10px;
+}
+.dash-note { color: var(--ink-2); font-size: 14px; margin: 12px 0; }
+.dash-empty { text-align: center; padding: 10px 0 4px; }
+.dash-empty p { color: var(--ink-2); margin: 0 0 16px; }
+.dash-lock { padding: 8px 0; }
+.dash-lock p {
+  color: var(--ink-2);
+  margin: 0;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Payments */
+.pay-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+.pay-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+}
+.pay-item__main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.pay-item__amount { font-weight: 700; font-size: 15px; }
+.pay-item__meta { font-size: 12.5px; color: var(--ink-3); }
+.pay-item__file {
+  font-size: 12px;
+  color: var(--blue-deep);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+.pay-actions { display: flex; gap: 12px; flex-wrap: wrap; margin: 4px 0 6px; }
+.pay-actions .btn { text-decoration: none; }
+
+.proof-wrap { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 6px; }
+.proof-summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--blue-deep);
+  padding: 10px 0;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.proof-summary::-webkit-details-marker { display: none; }
+.proof-summary::before { content: "+"; font-size: 18px; line-height: 1; width: 14px; text-align: center; }
+details[open] .proof-summary::before { content: "\2013"; }
+.proof-form { margin-top: 8px; }
+.proof-form .btn { margin-top: 6px; }
+
+@media (max-width: 820px) {
+  .dash-grid { grid-template-columns: 1fr; }
+  .dash-hero { align-items: flex-start; }
+  .dash-tracker { max-width: 100%; }
+}

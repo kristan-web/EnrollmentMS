@@ -143,12 +143,9 @@ if(loginForm){
 
                 const status = await response.json();
 
-                // If account is verified
+                // If account is verified — redirect silently, no success alert
                 if(status.success){
-                    showAlert('Login successful! Redirecting...', 'success');
-                    setTimeout(() => {
-                        window.location.href = 'Views/dashboard.html';
-                    }, 1000);
+                    window.location.href = 'Views/dashboard.html';
                     return;
                 }
                 // If account not found

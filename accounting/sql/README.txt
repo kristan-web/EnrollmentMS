@@ -30,17 +30,43 @@ right database either way. The connection settings the rest of the project
 uses are in config/db.php (localhost, root, no password).
 
 
-What this does NOT do yet
--------------------------
-Importing these files does not change what the pages show. The fee amounts are
-still read from the hardcoded FeeSchedule::items() in
-api/Models/payment_model.php -- nothing reads acct_fees yet.
+What this does
+--------------
+The amounts on the pages come from `acct_fees`. Edit a row and every screen
+that prices an enrollment follows on the next load:
 
-To actually make the amounts come from the database, the module still needs:
-  - a DAO in api/Dao/ that SELECTs from acct_fees using config/db.php
-  - FeeSchedule::items() / total() changed to call that DAO
-  - the checkout to INSERT into acct_payments, then UPDATE the row to 'paid'
-    once PayMongo confirms
+  acct_fees  ->  api/Dao/AcctFeeDAO.php  ->  FeeSchedule (api/Models/payment_model.php)
+                                                |
+        +---------------------------------------+----------------------+
+        |                        |                                     |
+  student SOA + checkout   cashier assessment / balance      registrar payment gate
+  (accounting/views/)      (Controllers/cashier/)            (Controllers/registrar/)
+
+Fees are per term. Rows are keyed on (code, school_year, semester), and each
+caller prices against the term it is actually working on -- the cashier uses
+the student's own enrollment term, not a single global figure. A caller that
+names no term gets the school year marked active in `school_years`.
+
+If `acct_fees` has no active rows for a term, FeeSchedule falls back to the
+built-in list in api/Models/payment_model.php. That keeps a database that never
+imported these files working exactly as before, and stops an empty table from
+pricing an enrollment at 0.00 -- which the cashier would read as "fully paid"
+and the registrar would happily finalize for free.
+
+Online payment attempts are written to `acct_payments` by
+api/Dao/AcctPaymentDAO.php: a 'pending' row when the PayMongo checkout link is
+created, settled to 'paid' / 'failed' / 'expired' / 'cancelled' when
+?action=status asks PayMongo how it went. PayMongo is the authority; a row
+already marked 'paid' is never rewritten. Failing to log an attempt never
+blocks a student from paying.
+
+Still hardcoded, on purpose
+---------------------------
+accounting/models/accounting-model.js keeps FALLBACK_FEES. It is only rendered
+when the browser cannot reach the server -- the pages normally fetch the real
+amounts from ?action=fees. If you change the fees in the database, that list
+will read stale in that offline case; it is display-only and no payment is ever
+priced from it.
 
 
 Notes

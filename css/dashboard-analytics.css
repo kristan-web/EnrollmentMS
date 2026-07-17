@@ -1,0 +1,94 @@
+/* dashboard-analytics.css — the admin dashboard's analytics: stat tiles + a few
+   Chart.js cards. Layers on css/dashboard.css (the shell). Chart colours come
+   from the validated data-viz palette; text uses the app's navy ink tokens. */
+
+.dash-analytics {
+  width: 100%;
+  max-width: min(1180px, 100%);
+  margin: clamp(18px, 3vh, 32px) auto 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* ---- Stat tiles (hero numbers) ----------------------------------------- */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+}
+.stat-tile {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 20px;
+  background: #fff;
+  border: 1px solid rgba(22, 36, 79, 0.07);
+  border-radius: 16px;
+  box-shadow: 0 10px 26px rgba(22, 36, 79, 0.08);
+}
+.stat-tile__icon {
+  flex: none;
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  background: rgba(47, 95, 208, 0.1);
+  color: #2a78d6;
+}
+.stat-tile__icon svg { width: 22px; height: 22px; }
+.stat-tile__icon--green { background: rgba(0, 131, 0, 0.1); color: #008300; }
+.stat-tile__icon--amber { background: rgba(237, 161, 0, 0.12); color: #b97e00; }
+.stat-tile__icon--navy  { background: rgba(22, 36, 79, 0.1); color: #16244f; }
+.stat-tile__body { min-width: 0; }
+.stat-tile__value {
+  font-size: clamp(22px, 2.6vw, 30px);
+  font-weight: 800;
+  line-height: 1.1;
+  color: #16244f;
+}
+.stat-tile__label {
+  margin-top: 2px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: rgba(22, 36, 79, 0.55);
+}
+
+/* ---- Chart cards ------------------------------------------------------- */
+.chart-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+}
+.chart-card {
+  background: #fff;
+  border: 1px solid rgba(22, 36, 79, 0.07);
+  border-radius: 18px;
+  box-shadow: 0 12px 30px rgba(22, 36, 79, 0.08);
+  padding: 20px 22px 16px;
+}
+.chart-card--wide { grid-column: 1 / -1; }
+.chart-card__title {
+  margin: 0 0 2px;
+  font-size: 16px;
+  font-weight: 800;
+  color: #16244f;
+}
+.chart-card__sub {
+  margin: 0 0 14px;
+  font-size: 12.5px;
+  color: rgba(22, 36, 79, 0.5);
+}
+.chart-card__canvas {
+  position: relative;
+  height: 260px;
+}
+.chart-card--wide .chart-card__canvas { height: 300px; }
+.chart-empty {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  color: rgba(22, 36, 79, 0.45);
+  font-size: 13.5px;
+}

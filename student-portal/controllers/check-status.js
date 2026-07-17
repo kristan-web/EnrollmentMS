@@ -1,6 +1,9 @@
+// check-status.js — Look up an application by reference number + email.
+// Reads from the PHP backend (applicants + documents controllers) via PortalAPI.
 const statusForm = document.getElementById("statusForm");
 const lookupMsg = document.getElementById("lookupMsg");
 const statusResult = document.getElementById("statusResult");
+const submitBtn = statusForm.querySelector("button[type='submit']");
 
 const STATUS_CLASS = {
   "Pending": "pending",
@@ -13,9 +16,9 @@ const STATUS_CLASS = {
 const STATUS_NOTE = {
   "Pending": "Your application has been received and is waiting for review by the registrar.",
   "Under Review": "The registrar is currently reviewing your application and documents.",
-  "Approved": "Congratulations! Your application has been approved. Please wait for the school's instructions on sectioning and payment, or visit the registrar's office.",
+  "Approved": "Congratulations! Your application has been approved. Log in to your dashboard to proceed to enrollment and view your assigned section.",
   "Rejected": "Unfortunately, your application was not approved. See the reason below. You may submit a new application once the issue is resolved.",
-  "Enrolled": "You are officially enrolled. Welcome! Coordinate with the registrar's office for your class schedule."
+  "Enrolled": "You are officially enrolled. Welcome! Log in to your dashboard to view your section and payment status."
 };
 
 const STATUS_ICON = {
@@ -48,9 +51,18 @@ function setMsg(text, type) {
   if (type) lookupMsg.classList.add(type);
 }
 
+function setLoading(on) {
+  if (submitBtn) {
+    submitBtn.disabled = on;
+    submitBtn.textContent = on ? "Checking…" : "View Status";
+  }
+}
+
 function formatDate(iso) {
   if (!iso) return "—";
-  return new Date(iso).toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" });
+  const d = new Date(iso.replace(" ", "T"));
+  if (isNaN(d)) return iso;
+  return d.toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" });
 }
 
 function timelineFor(status) {
@@ -69,7 +81,7 @@ function timelineFor(status) {
   }));
 }
 
-statusForm.addEventListener("submit", (e) => {
+statusForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   statusResult.hidden = true;
   statusResult.innerHTML = "";
@@ -80,51 +92,66 @@ statusForm.addEventListener("submit", (e) => {
     return setMsg("Both reference number and email address are required.", "is-error");
   }
 
-  const app = ApplicantModel.findByReference(ref, email);
-  if (!app) {
-    return setMsg("No application found for that reference number and email combination. Please double-check both and try again.", "is-error");
-  }
-
   setMsg("");
-  const status = ApplicantModel.effectiveStatus(app);
-  const docs = ApplicantModel.documentsFor(app.id);
+  setLoading(true);
 
-  const timelineHtml = `<ol class="timeline">
-    ${timelineFor(status).map((t) => `
-      <li class="tl-item ${t.state}">
-        <span class="tl-dot"></span>
-        <span class="tl-label">${esc(t.label)}</span>
-      </li>`).join("")}
-  </ol>`;
+  try {
+    const data = await PortalAPI.findStatus(ref, email);
+    if (!data || data.error || !data.applicant) {
+      return setMsg(
+        (data && data.error) ||
+        "No application found for that reference number and email combination. Please double-check both and try again.",
+        "is-error"
+      );
+    }
 
-  const docsHtml = docs.length
-    ? `<p class="status-docs__title">Submitted Documents</p>
-      <div class="status-docs">
-        ${docs.map((d) => `
-          <div class="status-doc">
-            <span class="status-doc__name">${esc(d.documentTypeName)}</span>
-            <span class="badge ${DOC_BADGE[d.status] || "badge--pending"}">${esc(d.status)}</span>
-            ${d.status === "Rejected" && d.remarks ? `<span class="status-doc__remarks">Remarks: ${esc(d.remarks)}</span>` : ""}
-          </div>`).join("")}
-      </div>`
-    : "";
+    const app = data.applicant;
+    const status = app.status || "Pending";
+    const docs = await PortalAPI.documentsFor(app.applicant_id);
 
-  const rejectionHtml = status === "Rejected" && app.rejectionReason
-    ? `<p class="status-note status-note--rejected"><strong>Reason:</strong> ${esc(app.rejectionReason)}</p>`
-    : "";
+    const timelineHtml = `<ol class="timeline">
+      ${timelineFor(status).map((t) => `
+        <li class="tl-item ${t.state}">
+          <span class="tl-dot"></span>
+          <span class="tl-label">${esc(t.label)}</span>
+        </li>`).join("")}
+    </ol>`;
 
-  statusResult.innerHTML = `
-    <div class="status-hero status-hero--${STATUS_CLASS[status] || "pending"}">
-      <span class="status-hero__icon" aria-hidden="true">${STATUS_ICON[status] || ""}</span>
-      <div class="status-hero__text">
-        <h2 data-no-translate>${esc(app.firstName)} ${esc(app.lastName)}</h2>
-        <span class="status-hero__meta" data-no-translate>${esc(app.referenceNumber)} &middot; Grade ${esc(app.desiredGradeLevel)} ${esc(app.desiredStrand)} &middot; S.Y. ${esc(app.schoolYear)} &middot; Submitted ${formatDate(app.submittedAt)}</span>
+    const docsHtml = docs.length
+      ? `<p class="status-docs__title">Submitted Documents</p>
+        <div class="status-docs">
+          ${docs.map((d) => `
+            <div class="status-doc">
+              <span class="status-doc__name">${esc(d.document_type_name)}</span>
+              <span class="badge ${DOC_BADGE[d.status] || "badge--pending"}">${esc(d.status)}</span>
+              ${d.status === "Rejected" && d.remarks ? `<span class="status-doc__remarks">Remarks: ${esc(d.remarks)}</span>` : ""}
+            </div>`).join("")}
+        </div>`
+      : "";
+
+    const rejectionHtml = status === "Rejected" && app.rejection_reason
+      ? `<p class="status-note status-note--rejected"><strong>Reason:</strong> ${esc(app.rejection_reason)}</p>`
+      : "";
+
+    const strandLabel = app.strand_code || app.strand_name || "";
+
+    statusResult.innerHTML = `
+      <div class="status-hero status-hero--${STATUS_CLASS[status] || "pending"}">
+        <span class="status-hero__icon" aria-hidden="true">${STATUS_ICON[status] || ""}</span>
+        <div class="status-hero__text">
+          <h2 data-no-translate>${esc(app.first_name)} ${esc(app.last_name)}</h2>
+          <span class="status-hero__meta" data-no-translate>${esc(app.reference_number)} &middot; Grade ${esc(app.desired_grade_level)} ${esc(strandLabel)} &middot; S.Y. ${esc(app.school_year)} &middot; Submitted ${formatDate(app.submitted_at)}</span>
+        </div>
+        <span class="badge badge--${STATUS_CLASS[status] || "pending"}">${esc(status)}</span>
       </div>
-      <span class="badge badge--${STATUS_CLASS[status] || "pending"}">${esc(status)}</span>
-    </div>
-    ${timelineHtml}
-    <p class="status-note">${STATUS_NOTE[status] || ""}</p>
-    ${rejectionHtml}
-    ${docsHtml}`;
-  statusResult.hidden = false;
+      ${timelineHtml}
+      <p class="status-note">${STATUS_NOTE[status] || ""}</p>
+      ${rejectionHtml}
+      ${docsHtml}`;
+    statusResult.hidden = false;
+  } catch {
+    setMsg("We couldn't reach the server. Please check your connection and try again.", "is-error");
+  } finally {
+    setLoading(false);
+  }
 });

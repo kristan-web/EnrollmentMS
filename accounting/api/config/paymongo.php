@@ -3,8 +3,8 @@
    The secret key must stay server-side and never reach the JavaScript. */
 
 /* Keys from dashboard.paymongo.com -> Developers -> API Keys. */
-define("PAYMONGO_SECRET_KEY", "sk_test_REPLACE_WITH_YOUR_SECRET_KEY");
-define("PAYMONGO_PUBLIC_KEY", "pk_test_REPLACE_WITH_YOUR_PUBLIC_KEY");
+define("PAYMONGO_SECRET_KEY", "sk_test_ZNhKGuM3ecJpUG1d3xHCFuLd");
+define("PAYMONGO_PUBLIC_KEY", "pk_test_TeCnriLpfiPqphN264Cxrfsi");
 
 define("PAYMONGO_BASE_URL", "https://api.paymongo.com/v1");
 define("PAYMONGO_CURRENCY", "PHP");
