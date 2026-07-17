@@ -1,0 +1,62 @@
+Modules:
+
+Accounts
+    - create account (Admin, Registrar, Accounting, Student)
+    - edit account details
+    - forgot password
+    - change password  
+    - remove/disable account
+
+Admission
+    - create admission forms
+    - edit admission details
+    - update admission status
+    - display admission forms
+    - archive admission forms
+
+Enrollment
+    - enroll a student 
+    - change enrollment status
+    - review enrollment 
+    - drop enrollment 
+
+Grades
+    - encode grade
+    - edit grade
+    - view grades 
+    - generate grade report
+
+SchoolYears
+    - add school year 
+    - edit school year 
+    - remove school year 
+
+Sections
+    - add section 
+    - edit section details 
+    - remove section 
+    - assign subjects 
+    - assign teacher/adviser
+    - assign schedule 
+
+Strands
+    - add strand 
+    - edit strand details 
+    - remove strand 
+
+Students
+    - view student profile
+    - edit student information
+    - search students 
+    - archive student
+    - reactivate student 
+
+Subjects
+    - add subject
+    - edit subject detail 
+    - remove subject 
+
+Teachers
+    - add teacher 
+    - edit teacher details 
+    - remove teacher 
