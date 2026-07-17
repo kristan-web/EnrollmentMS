@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="/EnrollmentMS/public/assets/images/logo.png" />
+  <link rel="apple-touch-icon" href="/EnrollmentMS/public/assets/images/logo.png" />
+  <title>Create Account &middot; Student Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/EnrollmentMS/public/assets/css/shared/portal.css" />
+</head>
+<body>
+  <div class="blob blob--1"></div>
+  <div class="blob blob--3"></div>
+  <div class="blob blob--5"></div>
+
+  <div class="wrap wrap--status">
+    <header class="topbar">
+      <a class="topbar__brand" href="../index.html" aria-label="Student Portal home">
+        <img class="topbar__logo" src="/EnrollmentMS/public/assets/images/logo.png" alt="School crest" />
+        <span class="topbar__name">
+          <strong>Enrollment Management System</strong>
+          <span class="topbar__tag">Student Portal</span>
+        </span>
+      </a>
+      <div class="topbar__actions">
+        <div class="lang" data-no-translate>
+          <button type="button" class="lang__btn" id="langBtn" aria-haspopup="listbox" aria-expanded="false" title="Language / Wika">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            <span class="lang__current" id="langCurrent">English</span>
+            <svg class="lang__chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <ul class="lang__menu" id="langMenu" role="listbox" aria-label="Language">
+            <li class="lang__opt" role="option" data-lang="en">English</li>
+            <li class="lang__opt" role="option" data-lang="tl">Tagalog</li>
+            <li class="lang__opt" role="option" data-lang="ceb">Bisaya</li>
+            <li class="lang__opt" role="option" data-lang="tgl">Taglish</li>
+          </ul>
+        </div>
+        <a class="topbar__login" href="../../index.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+          <span>Staff Login</span>
+        </a>
+      </div>
+    </header>
+
+    <main class="login">
+      <div class="brand">
+        <img class="brand__logo" src="/EnrollmentMS/public/assets/images/logo.png" alt="Enrollment Management System crest" />
+      </div>
+
+      <h1 class="login__title">Create Account</h1>
+      <p class="login__subtitle">Register for your student account</p>
+
+      <form class="form" id="registerForm" novalidate>
+        <div class="field">
+          <label class="field__inner">
+            <span class="field__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </span>
+            <span class="field__label">Name:</span>
+            <input type="text" name="fullname" autocomplete="name" required />
+          </label>
+        </div>
+
+        <div class="field">
+          <label class="field__inner">
+            <span class="field__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+            </span>
+            <span class="field__label">Email:</span>
+            <input type="email" name="email" autocomplete="email" required />
+          </label>
+        </div>
+
+        <div class="field">
+          <div class="field__inner" id="pwWrap">
+            <span class="field__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+            </span>
+            <span class="field__label">Password:</span>
+            <input type="password" name="password" autocomplete="new-password" required aria-label="Password" />
+            <button type="button" class="field__toggle" data-target="pwWrap" aria-label="Show password" aria-pressed="false">
+              <svg class="pw__eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg class="pw__eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 10 8 10 8a13.2 13.2 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.5 13.5 0 0 0 2 12s3 7 10 7a9.7 9.7 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="field__inner" id="pwWrap2">
+            <span class="field__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><path d="m9 15 2 2 4-4"/></svg>
+            </span>
+            <span class="field__label">Confirm:</span>
+            <input type="password" name="confirm" autocomplete="new-password" required aria-label="Confirm password" />
+            <button type="button" class="field__toggle" data-target="pwWrap2" aria-label="Show password" aria-pressed="false">
+              <svg class="pw__eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg class="pw__eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 10 8 10 8a13.2 13.2 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.5 13.5 0 0 0 2 12s3 7 10 7a9.7 9.7 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn--submit" id="registerSubmit">Create Account</button>
+        <p class="form-msg" id="registerMsg"></p>
+      </form>
+
+      <div class="auth-divider">Already registered?</div>
+      <p class="auth-alt"><a href="login.html">Log in to your account</a></p>
+    </main>
+  </div>
+
+  <footer class="footer">&copy; 2026 Enrollment Management System</footer>
+
+  <script src="/EnrollmentMS/public/assets/js/Admission/translator.js"></script>
+  <script src="/EnrollmetnMS/public/assets/js/Admission/register.js"></script>
+</body>
+</html>

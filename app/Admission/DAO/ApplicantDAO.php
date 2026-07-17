@@ -1,7 +1,8 @@
 <?php
+$projectFilePath = "C:/xampp/htdocs/EnrollmentMS";
 
-require_once __DIR__."/../../../config/db.php";
-require_once __DIR__."/../Model/applicant_model.php";
+require_once "$projectFilePath/config/db.php";
+require_once "$projectFilePath/app/Admission/Model/applicant_model.php";
 
 class ApplicantDAO {
 
@@ -102,7 +103,13 @@ class ApplicantDAO {
         $stmt->bindValue(":ref", $referenceNumber);
         $stmt->bindValue(":email", $email);
         $stmt->execute();
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        $applicant = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($applicant) {
+            $applicant['documents'] = $this->getDocumentsByApplicantId($applicant['applicant_id']);
+        }
+        
+        return $applicant;
     }
 
     // Deletes the applicant row. Used to roll back a submission if the

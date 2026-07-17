@@ -70,3 +70,4 @@ document.querySelectorAll(".data-table").forEach((table) => {
     new MutationObserver(stamp).observe(body, { childList: true });
   });
 });
+

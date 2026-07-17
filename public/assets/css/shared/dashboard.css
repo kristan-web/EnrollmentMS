@@ -1978,3 +1978,177 @@ body.nav-collapsed .hamburger__bar:nth-child(3) { top: 8.5px; transform: rotate(
 .alert[hidden] {
     display: none;
 }
+
+.modal-overlay {
+        position: static !important;
+        background: none !important;
+        display: block !important;
+    }
+    .modal {
+        position: static !important;
+        transform: none !important;
+        box-shadow: none !important;
+        border: none !important;
+        max-width: 100% !important;
+    }
+    .modal__head, .modal__body {
+        padding: 10px !important;
+    }
+    .modal__close, .form-actions, .schedule-actions .btn {
+        display: none !important;
+    }
+    .schedule-actions {
+        display: none !important;
+    }
+    .data-table {
+        font-size: 12px !important;
+    }
+    .data-table th, .data-table td {
+        padding: 6px 8px !important;
+    }
+    .main__footer, .sidebar, .hamburger, .toolbar {
+        display: none !important;
+    }
+    .main {
+        margin-left: 0 !important;
+        padding: 20px !important;
+    }
+    body {
+        background: white !important;
+    }
+    #scheduleModal {
+        position: static !important;
+        display: block !important;
+        background: white !important;
+    }
+
+
+    /* Schedule Modal Styles */
+.schedule-student-info {
+    background: #f8f9fa;
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.schedule-student-info h3 {
+    margin: 0 0 8px 0;
+    color: #2c3e50;
+}
+
+.schedule-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 8px;
+}
+
+.schedule-info-grid p {
+    margin: 4px 0;
+    font-size: 14px;
+}
+
+.schedule-actions {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.schedule-summary {
+    margin-top: 20px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.schedule-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 10px;
+}
+
+.enrollment-summary-item {
+    padding: 10px;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+}
+
+.enrollment-summary-item strong {
+    color: #2c3e50;
+}
+
+.enrollment-summary-item .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    margin: 4px 0;
+}
+
+.enrollment-summary-item small {
+    color: #6c757d;
+}
+
+/* Button styles */
+.btn--info {
+    background: #17a2b8;
+    color: white;
+}
+
+.btn--info:hover {
+    background: #138496;
+}
+
+.text-center {
+    text-align: center;
+}
+
+/* Print styles for schedule */
+@media print {
+    .schedule-actions .btn {
+        display: none !important;
+    }
+    .modal-overlay {
+        position: static !important;
+        background: none !important;
+        display: block !important;
+    }
+    .modal {
+        position: static !important;
+        transform: none !important;
+        box-shadow: none !important;
+        border: none !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    .modal__head, .modal__body {
+        padding: 10px !important;
+    }
+    .modal__close, .form-actions, .schedule-actions .btn {
+        display: none !important;
+    }
+    .data-table {
+        font-size: 12px !important;
+    }
+    .data-table th, .data-table td {
+        padding: 6px 8px !important;
+    }
+    .main__footer, .sidebar, .hamburger, .toolbar {
+        display: none !important;
+    }
+    .main {
+        margin-left: 0 !important;
+        padding: 20px !important;
+    }
+    body {
+        background: white !important;
+    }
+    #scheduleModal {
+        position: static !important;
+        display: block !important;
+        background: white !important;
+        z-index: auto !important;
+    }
+}

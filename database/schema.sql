@@ -530,7 +530,7 @@ CREATE TABLE `users` (
   `password_hash` varchar(255) NOT NULL,
   `full_name` varchar(100) NOT NULL,
   `email` varchar(100) NOT NULL,
-  `role` enum('Admin','Registrar', 'Accounting') NOT NULL DEFAULT 'Admin',
+  `role` enum('Admin','Registrar', 'Accounting'. 'Student') NOT NULL DEFAULT 'Admin',
   `created_at` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
