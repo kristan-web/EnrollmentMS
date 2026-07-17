@@ -158,8 +158,7 @@ class EnrollmentDAO {
     }
 
     // ============ ENROLLMENT QUERIES ============
-
-    // GET ALL ENROLLMENTS WITH STUDENT INFO
+    // GET ALL ENROLLMENTS WITH STUDENT INFO - Updated with strand filter
     public function getEnrollments($filters = []) {
         $query = "
         SELECT
@@ -200,7 +199,7 @@ class EnrollmentDAO {
             $params[":keyword"] = "%" . $filters["keyword"] . "%";
         }
 
-        if (!empty($filters["status"])) {
+        if (!empty($filters["status"]) && $filters["status"] !== 'all') {
             $query .= " AND e.status = :status ";
             $params[":status"] = $filters["status"];
         }
@@ -215,6 +214,11 @@ class EnrollmentDAO {
             $params[":semester"] = $filters["semester"];
         }
 
+        if (!empty($filters["strand"])) {
+            $query .= " AND st.strand_code = :strand ";
+            $params[":strand"] = $filters["strand"];
+        }
+
         $query .= " ORDER BY e.date_enrolled DESC, s.last_name, s.first_name ";
 
         $stmt = $this->conn->prepare($query);
@@ -223,6 +227,24 @@ class EnrollmentDAO {
         }
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function reactivate($id) {
+        // Check capacity before reactivating
+        $enrollment = $this->getById($id);
+        if (!$enrollment) {
+            return false;
+        }
+        
+        $capacity = $this->getSectionCapacity($enrollment['section_id']);
+        if (!$capacity) {
+            return false;
+        }
+        if ($capacity["enrolled_count"] >= $capacity["max_slots"]) {
+            return false;
+        }
+        
+        return $this->updateStatus($id, 'Enrolled');
     }
 
     // GET ENROLLMENTS BY STUDENT ID

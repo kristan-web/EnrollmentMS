@@ -30,7 +30,19 @@ try {
                 "semester" => isset($_GET["semester"]) ? $_GET["semester"] : null
             ];
             echo json_encode($dao->getEnrollments($filters));
-
+            // Reactivate enrollment
+        } else if ($action == "reactivate") {
+            $id = isset($_POST["enrollment_id"]) ? $_POST["enrollment_id"] : null;
+            if (empty($id)) {
+                echo "REACTIVATE FAILED: missing enrollment_id";
+                exit;
+            }
+            
+            if ($dao->reactivate($id)) {
+                echo "REACTIVATE SUCCESS";
+            } else {
+                echo "REACTIVATE FAILED";
+            }
         // Get section schedule
         } else if ($action == "section_schedule") {
             $sectionId = isset($_GET["section_id"]) ? $_GET["section_id"] : null;

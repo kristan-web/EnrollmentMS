@@ -1,0 +1,68 @@
+/* Enrollment specific styles */
+.selected-student {
+    display: none; /* Hidden by default */
+    align-items: center;
+    gap: 12px;
+    margin-top: 10px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: rgba(55, 205, 255, 0.12);
+    box-shadow: inset 0 0 0 1.5px rgba(55, 205, 255, 0.35);
+}
+
+.selected-student:not([hidden]) {
+    display: flex !important;
+}
+
+.selected-student[hidden] {
+    display: none !important;
+}
+
+.selected-student__avatar {
+    flex: none;
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    color: #fff;
+    font-weight: 800;
+    font-size: 15px;
+    background: linear-gradient(150deg, #2b3d7c, #16244f);
+}
+
+.selected-student__info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+}
+
+.selected-student__info strong {
+    font-size: 15.5px;
+    color: var(--navy);
+}
+
+.selected-student__info em {
+    font-style: normal;
+    font-size: 12.5px;
+    color: rgba(22, 36, 79, 0.6);
+}
+
+.selected-student .modal__close {
+    flex: none;
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 106, 77, 0.1);
+    color: var(--logout);
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.selected-student .modal__close:hover {
+    background: rgba(255, 106, 77, 0.2);
+}

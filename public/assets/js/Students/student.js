@@ -58,17 +58,15 @@ function fetchStudents(searchTerm = "") {
             return response.json();
         })
         .then(data => {
-            // Handle both array response and error response
             if (data.error) {
                 throw new Error(data.error);
             }
-            // If data is not an array, try to extract it
             const students = Array.isArray(data) ? data : [];
             renderStudents(students);
         })
         .catch(error => {
             console.error("Error fetching students:", error);
-            studentRows.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#c00;">Failed to load students: ${error.message}</td></tr>`;
+            studentRows.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#c00;">Failed to load students: ${error.message}</td></tr>`;
             emptyState.hidden = true;
         })
         .finally(() => {
@@ -93,7 +91,7 @@ function fetchArchivedStudents() {
         })
         .catch(error => {
             console.error("Error fetching archived students:", error);
-            studentRows.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#c00;">Failed to load archived students.</td></tr>`;
+            studentRows.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#c00;">Failed to load archived students.</td></tr>`;
             emptyState.hidden = true;
         })
         .finally(() => {
@@ -107,7 +105,6 @@ function fetchArchivedStudents() {
 function saveStudent(studentData, isEdit = false) {
     const formData = new FormData();
     
-    // Add all student data
     Object.keys(studentData).forEach(key => {
         if (studentData[key] !== null && studentData[key] !== undefined) {
             formData.append(key, studentData[key]);
@@ -260,7 +257,6 @@ function showFormError(message) {
 }
 
 function showToast(message, type = "info") {
-    // Simple toast implementation
     const toast = document.createElement("div");
     toast.style.cssText = `
         position: fixed;
@@ -334,10 +330,12 @@ function renderStudents(students) {
             `;
         }
 
+        // FIXED: Added student_number column and fixed column order
         html += `
             <tr>
                 <td><span class="cell-name">${escapeHtml(student.lrn || "—")}</span></td>
                 <td><span class="cell-name">${escapeHtml(getFullName(student))}</span></td>
+                <td><strong>${escapeHtml(student.student_number || "—")}</strong></td>
                 <td>${escapeHtml(student.grade_level || "—")}</td>
                 <td>${escapeHtml(student.gender || "—")}</td>
                 <td>${escapeHtml(student.contact_number || "—")}</td>
@@ -392,9 +390,9 @@ function openStudentModal(student = null) {
     formError.style.display = "none";
 
     if (student) {
-        // Populate form fields
+        // Populate form fields (student_number is not editable, so we skip it)
         const fields = [
-            "lrn", "student_number", "first_name", "middle_name", "last_name",
+            "lrn", "first_name", "middle_name", "last_name",
             "gender", "birthdate", "address", "contact_number", "email",
             "grade_level", "father_name", "father_occupation", "father_contact_number",
             "mother_name", "mother_occupation", "mother_contact_number",
@@ -451,7 +449,6 @@ searchInput.addEventListener("input", () => {
     clearTimeout(searchDebounce);
     searchDebounce = setTimeout(() => {
         if (currentTab === "archived") {
-            // Archived tab doesn't support search in this implementation
             fetchArchivedStudents();
         } else {
             fetchStudents(searchInput.value);
@@ -484,7 +481,6 @@ document.addEventListener("keydown", (e) => {
 studentForm.addEventListener("submit", (e) => {
     e.preventDefault();
     
-    // Basic validation
     const requiredFields = studentForm.querySelectorAll("[required]");
     let isValid = true;
     
@@ -502,17 +498,13 @@ studentForm.addEventListener("submit", (e) => {
         return;
     }
     
-    // Collect form data
     const formData = new FormData(studentForm);
     const studentData = {};
     formData.forEach((value, key) => {
         studentData[key] = value;
     });
 
-    // Add status for edit
     if (editingId) {
-        // For edit, we need to get the current status from the form or keep existing
-        // The status field might not be visible, so we add it
         studentData.status = "Active";
     }
 
@@ -528,7 +520,6 @@ studentRows.addEventListener("click", (e) => {
     const action = btn.dataset.action;
 
     if (action === "edit") {
-        // Fetch student data for editing
         const params = new URLSearchParams({ action: "get", id: id });
         fetch(`${STUDENTS_API_URL}?${params.toString()}`)
             .then(response => response.json())
@@ -544,7 +535,6 @@ studentRows.addEventListener("click", (e) => {
                 alert("Failed to load student data.");
             });
     } else if (action === "archive") {
-        // Fetch student name for archive modal
         const params = new URLSearchParams({ action: "get", id: id });
         fetch(`${STUDENTS_API_URL}?${params.toString()}`)
             .then(response => response.json())
