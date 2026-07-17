@@ -10,6 +10,8 @@ header("Access-Control-Allow-Headers: Content-Type");
 $method = $_SERVER["REQUEST_METHOD"];
 $dao = new StudentDAO();
 
+$studentNumber = $dao->generateUniqueStudentNumber();
+
 if ($method == "GET") {
     $action = isset($_GET["action"]) ? $_GET["action"] : (isset($_GET["id"]) ? "get" : "list");
 
@@ -47,7 +49,7 @@ if ($method == "GET") {
 
     if ($action == "create") {
         // Validate required fields
-        $required = ['lrn', 'student_number', 'first_name', 'last_name', 'gender', 'birthdate', 'email', 'grade_level', 'address', 'emergency_contact_name', 'emergency_contact_relationship', 'emergency_contact_number'];
+        $required = ['lrn', 'first_name', 'last_name', 'gender', 'birthdate', 'email', 'grade_level', 'address', 'emergency_contact_name', 'emergency_contact_relationship', 'emergency_contact_number'];
         foreach ($required as $field) {
             if (empty($_POST[$field])) {
                 echo json_encode(["success" => false, "message" => "Missing required field: $field"]);
@@ -57,7 +59,7 @@ if ($method == "GET") {
 
         $student = new Student();
         $student->setLrn($_POST["lrn"]);
-        $student->setStudentNumber($_POST["student_number"]);
+        $student->setStudentNumber($studentNumber);
         $student->setFirstName($_POST["first_name"]);
         $student->setMiddleName($_POST["middle_name"] ?? null);
         $student->setLastName($_POST["last_name"]);
