@@ -15,6 +15,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/css/shared/styles.css" />
+  <link rel="stylesheet" href="/EnrollmentMS/public/assets/css/shared/portal.css" />
 </head>
 <body>
   <div class="blob blob--1"></div>
@@ -24,12 +25,25 @@
   <div class="blob blob--5"></div>
 
   <main class="login">
+    <header class="topbar">
+      <a class="topbar__brand" href="index.php" aria-label="Student Portal home">
+        <img class="topbar__logo" src="/EnrollmentMS/public/assets/images/logo.png" alt="School crest" />
+        <span class="topbar__name">
+          <strong>Enrollment Management System</strong>
+          <span class="topbar__tag">Admin Portal</span>
+        </span>
+      </a>
+
+      <a class="topbar__cta" href="/EnrollmentMS/app/Admission/View/index.php">
+          <span>Student Admission</span>
+      </a>
+    </header
     <div class="brand">
       <img class="brand__logo" src="assets/images/logo.png" alt="Enrollment Management System crest" />
     </div>
 
     <h1 class="login__title">Welcome Back Admin</h1>
-    <p class="login__subtitle">Enter Your Login Details Below !!</p>
+    <p class="login__subtitle">Enter Your Login Details Below</p>
 
     <form class="form" id="loginForm" novalidate>
       <input type="hidden" name="form_type" value="login">

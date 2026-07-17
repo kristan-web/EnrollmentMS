@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../../../public/assets/css/shared/portal.css" />
+  <link rel="stylesheet" href="/EnrollmentMS/public/assets/css/shared/portal.css" />
 </head>
 <body>
   <div class="blob blob--1"></div>
@@ -19,7 +19,7 @@
   <div class="wrap">
     <header class="topbar">
       <a class="topbar__brand" href="index.php" aria-label="Student Portal home">
-        <img class="topbar__logo" src="../../../public/assets/images/logo.png" alt="School crest" />
+        <img class="topbar__logo" src="/EnrollmentMS/public/assets/images/logo.png" alt="School crest" />
         <span class="topbar__name">
           <strong>Enrollment Management System</strong>
           <span class="topbar__tag">Student Portal</span>
@@ -39,11 +39,11 @@
             <li class="lang__opt" role="option" data-lang="tgl">Taglish</li>
           </ul>
         </div>
-        <a class="topbar__login" href="index.php">
+        <a class="topbar__login" href="/EnrollmentMS/public/index.php">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
           <span>Staff Login</span>
         </a>
-        <a class="topbar__cta" href="get-started.php">
+        <a class="topbar__cta" href="/EnrollmentMS/app/Admission/View/get-started.php">
           <span>Get Started</span>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
         </a>

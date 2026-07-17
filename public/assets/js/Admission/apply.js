@@ -369,7 +369,7 @@ nextBtn.addEventListener("click", () => {
 
 backBtn.addEventListener("click", () => {
   if (current === 1) {
-    window.location.href = "/index.php";
+    window.location.href = "/EnrollmentMS/app/Admission/View/index.php";
   } else {
     goTo(current - 1);
   }
