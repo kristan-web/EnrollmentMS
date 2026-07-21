@@ -143,9 +143,12 @@ if(loginForm){
 
                 const status = await response.json();
 
-                // If account is verified — redirect silently, no success alert
+                // If account is verified — route by role. The server decides the
+                // destination (admin dashboard, registrar, or accounting) and has
+                // already primed that module's session, so there's no second
+                // login. Falls back to the dashboard for older responses.
                 if(status.success){
-                    window.location.href = 'Views/dashboard.html';
+                    window.location.href = status.redirect || 'Views/dashboard.html';
                     return;
                 }
                 // If account not found

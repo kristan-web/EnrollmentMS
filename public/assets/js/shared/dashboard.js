@@ -7,7 +7,7 @@ hamburger.addEventListener("click", () => {
   hamburger.setAttribute("aria-expanded", String(!collapsed));
 });
 
-const onDashboard = /(?:^|\/)dashboard\.html$/.test(window.location.pathname);
+const onDashboard = /(?:^|\/)dashboard\.(?:html|php)$/.test(window.location.pathname);
 
 dashToggle.addEventListener("click", (e) => {
   if (onDashboard || e.target.closest(".nav__chevron")) {
