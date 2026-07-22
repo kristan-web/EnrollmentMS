@@ -365,8 +365,11 @@
   <footer class="footer">&copy; 2026 Enrollment Management System</footer>
 
   <!-- <script src="assets/js/shared/script.js"></script> -->
+  <script>
+    const sessionRole = <?php echo json_encode($_SESSION['role'] ?? null); ?>;
+  </script>
   <script src="assets/js/Accounts/Users.js"></script>
-
+  <script src="/EnrollmentMS/public/assets/js/shared/sidebar.js"></script>
 
   
 </body>

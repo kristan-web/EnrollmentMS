@@ -20,7 +20,7 @@ class CashierDAO {
     // Look up a staff account by email (the cashier logs in with a `users` row).
     public function findUserByEmail($email) {
         $query = "SELECT user_id, full_name, email, password_hash, role
-                  FROM users WHERE email = :email LIMIT 1";
+                  FROM users WHERE email = :email AND role = 'Accounting' LIMIT 1";
         $stmt = $this->conn->prepare($query);
         $stmt->bindValue(":email", $email);
         $stmt->execute();

@@ -3,6 +3,7 @@
   include_once "$projectFilePath/config/session.php";
 
   safeStartSession();
+  echo $_SESSION['role'];
 ?>
 
 <!DOCTYPE html>
