@@ -1,0 +1,389 @@
+/* cashier-console.css — bridges the cashier console onto the admin shell.
+   Loaded by Accounting/View/cashier.php only, after shared/dashboard.css and
+   accounting.css:
+     dashboard.css   the admin ("Admission") shell — navy sidebar, hamburger,
+                     page title, toolbar, panels, buttons, fields, modals
+     accounting.css  the console's own pieces, unchanged — the awaiting list,
+                     statement of account, proof review and printable receipt
+     this file       the glue between them
+   The student-facing pay pages still load portal.css + accounting.css and are
+   untouched by any of this.
+
+   accounting.css was written against portal.css and reads its tokens.
+   shared/dashboard.css only declares --bg/--navy/--accent/--logout, so the rest
+   are re-declared here with the same values portal.css uses. That is what lets
+   accounting.css come along as-is instead of being duplicated. */
+
+:root {
+  --navy-soft: #2a3d73;
+  --blue: #2f5fd0;
+  --blue-deep: #1e46a8;
+  --red: #c22a3a;
+  --green: #16a34a;
+  --amber-2: #c85a08;
+  --ink-2: rgba(22, 36, 79, 0.65);
+  --ink-3: rgba(22, 36, 79, 0.5);
+  --line: rgba(22, 36, 79, 0.1);
+  --ease: cubic-bezier(0.22, 0.8, 0.3, 1);
+  --shadow-sm: 0 1px 2px rgba(24, 47, 110, 0.06), 0 6px 18px rgba(24, 47, 110, 0.07);
+  --shadow-md: 0 1px 2px rgba(24, 47, 110, 0.06), 0 12px 32px rgba(24, 47, 110, 0.1);
+  --shadow-lg: 0 2px 4px rgba(24, 47, 110, 0.06), 0 24px 54px rgba(24, 47, 110, 0.14);
+}
+
+/* ---- Awaiting-payment table -------------------------------------------- */
+/* The queue is a .data-table in a .panel, the same shape as the admin
+   Enrollment page. Clicking a row opens the student in a modal. */
+.cash-count {
+  margin: 0 0 0 auto;
+  padding: 8px 15px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink-2);
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(22, 36, 79, 0.08);
+  box-shadow: var(--shadow-sm);
+}
+
+.panel {
+  border-radius: 20px;
+  box-shadow: 0 18px 44px rgba(22, 36, 79, 0.11);
+}
+
+.data-table th {
+  padding: 16px 18px;
+  font-size: 11px;
+  letter-spacing: 1.1px;
+  color: rgba(22, 36, 79, 0.5);
+  background: linear-gradient(180deg, #f8fbff, #edf2fb);
+  border-bottom: 1px solid rgba(22, 36, 79, 0.09);
+  box-shadow: 0 1px 0 rgba(22, 36, 79, 0.05);
+}
+
+.data-table td {
+  padding: 15px 18px;
+  border-bottom: 1px solid rgba(22, 36, 79, 0.055);
+}
+
+.cash-row {
+  cursor: pointer;
+}
+.cash-row td {
+  position: relative;
+  transition: background 0.18s var(--ease);
+}
+.cash-row:hover td {
+  background: linear-gradient(90deg, rgba(47, 95, 208, 0.075), rgba(55, 205, 255, 0.035));
+}
+.cash-row td:first-child::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 7px;
+  bottom: 7px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: linear-gradient(180deg, #37cdff, #2f5fd0);
+  opacity: 0;
+  transition: opacity 0.18s var(--ease);
+}
+.cash-row:hover td:first-child::before { opacity: 1; }
+.cash-row:hover td:first-child { border-radius: 12px 0 0 12px; }
+.cash-row:hover td:last-child { border-radius: 0 12px 12px 0; }
+
+.cash-row td:first-child {
+  font-family: "Roboto Mono", monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+.cash-row .cell-name { font-size: 14.5px; }
+.cash-row .cell-sub { line-height: 1.45; }
+
+/* Money reads better right-aligned and monospaced when it's a column. */
+.cash-num {
+  text-align: right;
+  font-family: "Roboto Mono", monospace;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--ink-2);
+}
+.cash-num--bal {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--navy);
+}
+.data-table th:nth-child(5),
+.data-table th:nth-child(6),
+.data-table th:nth-child(7) { text-align: right; }
+
+.data-table .status-badge {
+  gap: 7px;
+  padding: 5px 12px;
+}
+.data-table .status-badge::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.row-actions .btn--sm {
+  padding: 8px 17px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  letter-spacing: 0.2px;
+  box-shadow: 0 6px 15px rgba(22, 36, 79, 0.26);
+  transition: transform 0.18s var(--ease), box-shadow 0.18s var(--ease);
+}
+.row-actions .btn--sm:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 11px 22px rgba(22, 36, 79, 0.34), 0 0 0 2px rgba(55, 205, 255, 0.35);
+}
+
+/* On the stacked mobile layout the cells become rows again. */
+@media (max-width: 720px) {
+  .cash-num, .data-table th:nth-child(n) { text-align: left; }
+  .cash-row td:first-child::before { display: none; }
+  .cash-row:hover td:first-child,
+  .cash-row:hover td:last-child { border-radius: 0; }
+}
+
+/* ---- Student modal ----------------------------------------------------- */
+/* The modal is the card, so the sections inside it are plain. */
+#detailPanel .cashier-detail__top { margin-bottom: 14px; }
+#detailPanel .soa { margin-top: 0; }
+#detailPanel .cashier-figures { margin-bottom: 4px; }
+
+/* Signed-in cashier, shown in the sidebar above Log out. */
+.sidebar__who {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: auto 14px 12px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  color: #fff;
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 10px 26px rgba(5, 12, 34, 0.34);
+  transition: transform 0.22s var(--ease), border-color 0.22s var(--ease), box-shadow 0.22s var(--ease);
+}
+.sidebar__who:hover {
+  transform: translateY(-2px);
+  border-color: rgba(55, 205, 255, 0.42);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 15px 32px rgba(5, 12, 34, 0.44);
+}
+.who__avatar {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 13px;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #08203a;
+  background: linear-gradient(150deg, #8ce6ff, #37cdff 46%, #6091ff);
+  box-shadow: 0 7px 16px rgba(55, 205, 255, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+.who__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.who__name {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.who__role {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.9px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.62);
+}
+.who__role::before {
+  content: "";
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.18);
+}
+
+body.nav-collapsed .sidebar__who {
+  justify-content: center;
+  gap: 0;
+  padding: 10px;
+  border-radius: 14px;
+}
+body.nav-collapsed .who__meta { display: none; }
+/* The sidebar's nav buttons sit next to <a> links, so strip the button chrome. */
+.nav__submenu button {
+  width: 100%;
+  border: 0;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+/* ---- Buttons ----------------------------------------------------------- */
+/* accounting.css styles .btn--verify / --reject / --mini on portal's .btn
+   base; dashboard.css's .btn is a different shape, so re-assert the bits that
+   need to survive on top of it. */
+.btn--verify,
+.btn--reject {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* ---- SweetAlert2 dialogs ----------------------------------------------- */
+
+.acct-swal__container.swal2-backdrop-show {
+  background: rgba(11, 20, 48, 0.52);
+  backdrop-filter: blur(4px);
+}
+
+.acct-swal {
+  width: min(92vw, 432px);
+  padding: 34px 32px 28px;
+  border-radius: 22px;
+  border: 1px solid rgba(22, 36, 79, 0.07);
+  background: linear-gradient(180deg, #ffffff, #f7faff);
+  box-shadow: 0 32px 74px rgba(9, 18, 46, 0.34), inset 0 1px 0 #fff;
+  font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+}
+
+.acct-swal__icon {
+  width: 68px;
+  height: 68px;
+  margin: 2px auto 20px;
+  border: 0;
+}
+.acct-swal__icon .swal2-icon-content {
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 1;
+}
+.acct-swal__icon.swal2-question {
+  color: var(--blue);
+  background: linear-gradient(150deg, rgba(47, 95, 208, 0.14), rgba(55, 205, 255, 0.16));
+  box-shadow: inset 0 0 0 1px rgba(47, 95, 208, 0.22), 0 10px 22px rgba(47, 95, 208, 0.16);
+}
+.acct-swal__icon.swal2-warning {
+  color: var(--amber-2);
+  background: linear-gradient(150deg, rgba(200, 90, 8, 0.13), rgba(245, 158, 11, 0.16));
+  box-shadow: inset 0 0 0 1px rgba(200, 90, 8, 0.22), 0 10px 22px rgba(200, 90, 8, 0.14);
+}
+.acct-swal__icon.swal2-error {
+  color: var(--red);
+  background: linear-gradient(150deg, rgba(194, 42, 58, 0.12), rgba(239, 68, 68, 0.15));
+  box-shadow: inset 0 0 0 1px rgba(194, 42, 58, 0.22), 0 10px 22px rgba(194, 42, 58, 0.14);
+}
+.acct-swal__icon.swal2-error .swal2-x-mark-line-left,
+.acct-swal__icon.swal2-error .swal2-x-mark-line-right { background-color: var(--red); }
+
+.acct-swal__title {
+  padding: 0;
+  font-size: 23px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+  line-height: 1.25;
+  color: var(--navy);
+}
+
+.acct-swal__text {
+  margin: 10px 0 0;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--ink-2);
+}
+
+.acct-swal__actions {
+  width: 100%;
+  gap: 10px;
+  margin: 26px 0 0;
+}
+
+.acct-swal__btn {
+  flex: 1 1 0;
+  margin: 0;
+  padding: 12px 20px;
+  border: 0;
+  border-radius: 13px;
+  font-family: inherit;
+  font-size: 14.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.18s var(--ease), box-shadow 0.18s var(--ease), background 0.18s var(--ease);
+}
+.acct-swal__btn:hover { transform: translateY(-1px); }
+.acct-swal__btn:focus-visible {
+  outline: 3px solid rgba(55, 205, 255, 0.55);
+  outline-offset: 2px;
+}
+
+.acct-swal__btn--cancel {
+  color: var(--navy);
+  background: rgba(22, 36, 79, 0.07);
+  box-shadow: inset 0 0 0 1px rgba(22, 36, 79, 0.08);
+}
+.acct-swal__btn--cancel:hover { background: rgba(22, 36, 79, 0.13); }
+
+.acct-swal__btn--confirm {
+  color: #fff;
+  background: linear-gradient(150deg, #3f7bef, #2f5fd0);
+  box-shadow: 0 8px 18px rgba(47, 95, 208, 0.32);
+}
+.acct-swal__btn--confirm:hover { box-shadow: 0 12px 26px rgba(47, 95, 208, 0.44); }
+
+.acct-swal__btn--danger {
+  background: linear-gradient(150deg, #e4566a, #c22a3a);
+  box-shadow: 0 8px 18px rgba(194, 42, 58, 0.32);
+}
+.acct-swal__btn--danger:hover { box-shadow: 0 12px 26px rgba(194, 42, 58, 0.44); }
+
+.acct-swal.swal2-show { animation: acctSwalIn 0.28s var(--ease); }
+@keyframes acctSwalIn {
+  from { opacity: 0; transform: translateY(14px) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .acct-swal.swal2-show { animation: none; }
+  .acct-swal__btn { transition: none; }
+  .acct-swal__btn:hover { transform: none; }
+}
+
+@media (max-width: 480px) {
+  .acct-swal { padding: 28px 22px 22px; }
+  .acct-swal__actions { flex-direction: column-reverse; }
+}
+
+/* ---- Print ------------------------------------------------------------- */
+/* accounting.css already hides every body child except .receipt-print when
+   printing, which covers the sidebar and .main here too. This only silences
+   dashboard.css's own print rules so they can't fight it. */
+@media print {
+  .receipt-print { display: block !important; }
+}

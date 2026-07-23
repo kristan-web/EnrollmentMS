@@ -66,3 +66,15 @@
 .selected-student .modal__close:hover {
     background: rgba(255, 106, 77, 0.2);
 }
+.view-tab {
+    transition: all 0.2s ease;
+}
+
+.view-tab:hover {
+    opacity: 0.85;
+}
+
+.view-tab.active {
+    background: #4f46e5 !important;
+    color: white !important;
+}

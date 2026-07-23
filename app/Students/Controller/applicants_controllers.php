@@ -2,6 +2,10 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
+$projectFilePath = "C:/xampp/htdocs/EnrollmentMS";
+require_once "$projectFilePath/config/session.php";
+safeStartSession();
+
 require_once __DIR__."/../DAO/ApplicantDAO.php";
 require_once __DIR__."/../Model/applicant_model.php";
 require_once __DIR__."/../../../config/mailer/email_functions.php";
@@ -44,7 +48,6 @@ if ($method == "GET") {
             echo json_encode(["error" => "Missing document id"]);
             exit;
         }
-        // Now using the DAO method instead of direct query
         $doc = $dao->getDocumentById($id);
         if ($doc) {
             echo json_encode($doc);
@@ -53,24 +56,28 @@ if ($method == "GET") {
         }
 
     } else if ($action == "serve-document") {
-        $path = isset($_GET["path"]) ? $_GET["path"] : null;
-        if (empty($path)) {
-            echo json_encode(["error" => "Missing document path"]);
+        $id = isset($_GET["id"]) ? $_GET["id"] : null;
+        if (empty($id)) {
+            echo json_encode(["error" => "Missing document id"]);
             exit;
         }
-        // Serve the document
-        $fullPath = "C:/xampp/htdocs/EnrollmentMS/uploads/applications/" . $path;
+        $doc = $dao->getDocumentById($id);
+        if (!$doc) {
+            echo json_encode(["error" => "Document not found"]);
+            exit;
+        }
+        $fullPath = $doc["file_path"];
         if (file_exists($fullPath)) {
             $finfo = finfo_open(FILEINFO_MIME_TYPE);
             $mime = finfo_file($finfo, $fullPath);
             finfo_close($finfo);
             
             header("Content-Type: $mime");
-            header("Content-Disposition: " . (isset($_GET['download']) ? "attachment" : "inline") . "; filename=\"" . basename($path) . "\"");
+            header("Content-Disposition: " . (isset($_GET['download']) ? "attachment" : "inline") . "; filename=\"" . basename($fullPath) . "\"");
             readfile($fullPath);
             exit;
         } else {
-            echo json_encode(["error" => "File not found"]);
+            echo json_encode(["error" => "File not found on disk"]);
         }
 
     } else {
@@ -83,20 +90,21 @@ if ($method == "GET") {
     if ($action == "update_status") {
         $applicantId = isset($_POST["applicant_id"]) ? $_POST["applicant_id"] : null;
         $status = isset($_POST["status"]) ? $_POST["status"] : null;
-        $refusalReason = isset($_POST["refusal_reason"]) ? $_POST["refusal_reason"] : null;
+        $rejectionReason = isset($_POST["rejection_reason"]) ? $_POST["rejection_reason"] : null;  // Changed from refusal_reason
 
         if (empty($applicantId)) {
             echo json_encode(["success" => false, "message" => "Missing applicant_id"]);
             exit;
         }
 
-        if (empty($status) || !in_array($status, ["Approved", "Refused"])) {
-            echo json_encode(["success" => false, "message" => "Invalid status. Must be Approved or Refused"]);
+        // Changed from "Refused" to "Rejected"
+        if (empty($status) || !in_array($status, ["Approved", "Rejected"])) {
+            echo json_encode(["success" => false, "message" => "Invalid status. Must be Approved or Rejected"]);
             exit;
         }
 
-        if ($status === "Refused" && empty($refusalReason)) {
-            echo json_encode(["success" => false, "message" => "Please provide a reason for refusing this application"]);
+        if ($status === "Rejected" && empty($rejectionReason)) {  // Changed from "Refused"
+            echo json_encode(["success" => false, "message" => "Please provide a reason for rejecting this application"]);
             exit;
         }
 
@@ -109,7 +117,7 @@ if ($method == "GET") {
 
         try {
             // Update status
-            $success = $dao->updateStatus($applicantId, $status, $refusalReason, $_SESSION['user_id'] ?? null);
+            $success = $dao->updateStatus($applicantId, $status, $rejectionReason, $_SESSION['user_id'] ?? null);
             
             if ($success) {
                 // Send email notification
@@ -119,8 +127,8 @@ if ($method == "GET") {
 
                 if ($status === "Approved") {
                     sendApprovalEmail($email, $name, $referenceNumber);
-                } else if ($status === "Refused") {
-                    sendRefusalEmail($email, $name, $referenceNumber, $refusalReason);
+                } else if ($status === "Rejected") {  // Changed from "Refused"
+                    sendRefusalEmail($email, $name, $referenceNumber, $rejectionReason);
                 }
 
                 echo json_encode(["success" => true, "message" => "Application $status successfully and email sent!"]);

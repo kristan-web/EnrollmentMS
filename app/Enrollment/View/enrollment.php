@@ -3,6 +3,7 @@
   include_once "$projectFilePath/config/session.php";
 
   safeStartSession();
+  echo $_SESSION['role'];
 ?>
 
 <!DOCTYPE html>
@@ -10,6 +11,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="/EnrollmentMS/public/assets/images/logo.png" />
   <title>Enrollment &middot; Enrollment Management System</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -63,6 +65,13 @@
 
     <section class="content">
       <div class="toolbar">
+        <!-- View Filter Dropdown -->
+        <select id="viewFilter" class="filter-select" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #d1d5db; font-size: 13px; background: white; min-width: 160px; font-weight: 500;">
+          <option value="enrolled">Enrolled Students</option>
+          <option value="unenrolled">Not Enrolled</option>
+          <option value="inactive">Inactive Students</option>
+        </select>
+
         <!-- Status Filter Dropdown -->
         <select id="statusFilter" class="filter-select" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #d1d5db; font-size: 13px; background: white; min-width: 150px;">
           <option value="all">All Status</option>

@@ -17,15 +17,15 @@ const closeReviewModal = document.getElementById("closeReviewModal");
 const cancelReviewBtn = document.getElementById("cancelReviewBtn");
 const decisionForm = document.getElementById("decisionForm");
 const statusSelect = document.getElementById("statusSelect");
-const refusalReasonField = document.getElementById("refusalReasonField");
-const refusalReasonInput = document.getElementById("refusalReasonInput");
+const rejectionReasonField = document.getElementById("rejectionReasonField");  // Changed from refusalReasonField
+const rejectionReasonInput = document.getElementById("rejectionReasonInput");  // Changed from refusalReasonInput
 const reviewError = document.getElementById("reviewError");
 const saveReviewBtn = document.getElementById("saveReviewBtn");
 
 const STATUS_BADGE = {
   "Pending": "badge--pending",
   "Approved": "badge--approved",
-  "Refused": "badge--rejected"
+  "Rejected": "badge--rejected"  // Changed from "Refused"
 };
 
 let allApplications = [];
@@ -150,13 +150,13 @@ async function loadApplications() {
 }
 
 function updateCounts() {
-  const counts = { "Pending": 0, "Approved": 0, "Refused": 0 };
+  const counts = { "Pending": 0, "Approved": 0, "Rejected": 0 };  // Changed from "Refused"
   allApplications.forEach((a) => {
     if (counts[a.status] !== undefined) counts[a.status]++;
   });
   document.getElementById("pendingCount").textContent = counts["Pending"] || 0;
   document.getElementById("approvedCount").textContent = counts["Approved"] || 0;
-  document.getElementById("refusedCount").textContent = counts["Refused"] || 0;
+  document.getElementById("rejectedCount").textContent = counts["Rejected"] || 0;  // Changed from refusedCount
 }
 
 function getFilteredApplications() {
@@ -265,14 +265,14 @@ function documentItem(doc) {
   return `<div class="document-item">
     <div class="document-item__header">
       <span class="document-item__name">${esc(doc.document_type_name || 'Document')}</span>
-      <span class="file-type-badge file-type-badge--${getFileType(doc.file_name)}">${getFileExtension(doc.file_name)}</span>
+      <span class="file-type-badge file-type-badge--${getFileType(doc.original_filename)}">${getFileExtension(doc.original_filename)}</span>
     </div>
     <div class="document-item__details">
       <span class="document-item__filename">${esc(doc.original_filename || doc.file_name)}</span>
       <span class="document-item__size">${esc(fileSize)}</span>
     </div>
     <div class="document-item__actions">
-      <button type="button" class="btn btn--ghost btn--sm view-doc-btn" data-path="${esc(doc.file_path)}" data-name="${esc(doc.original_filename || doc.file_name)}">👁 Preview</button>
+      <button type="button" class="btn btn--ghost btn--sm view-doc-btn" data-id="${esc(doc.document_id)}" data-name="${esc(doc.original_filename || doc.file_name)}">👁 Preview</button>
     </div>
   </div>`;
 }
@@ -389,22 +389,22 @@ function populateReviewModal(a) {
     if (noDocuments) noDocuments.style.display = "block";
   }
 
-  // Set status select - only Approved or Refused
-  statusSelect.value = a.status === "Approved" ? "Approved" : "Refused";
-  refusalReasonInput.value = a.status === "Refused" ? (a.rejection_reason || "") : "";
-  toggleRefusalReason();
+  // Set status select - only Approved or Rejected
+  statusSelect.value = a.status === "Approved" ? "Approved" : "Rejected";  // Changed from "Refused"
+  rejectionReasonInput.value = a.status === "Rejected" ? (a.rejection_reason || "") : "";  // Changed from refusalReasonInput
+  toggleRejectionReason();  // Changed from toggleRefusalReason
 }
 
-function toggleRefusalReason() {
-  const isRefused = statusSelect.value === "Refused";
-  refusalReasonField.hidden = !isRefused;
-  refusalReasonInput.required = isRefused;
-  if (isRefused) {
-    refusalReasonInput.focus();
+function toggleRejectionReason() {  // Changed from toggleRefusalReason
+  const isRejected = statusSelect.value === "Rejected";  // Changed from "Refused"
+  rejectionReasonField.hidden = !isRejected;  // Changed from refusalReasonField
+  rejectionReasonInput.required = isRejected;  // Changed from refusalReasonInput
+  if (isRejected) {
+    rejectionReasonInput.focus();  // Changed from refusalReasonInput
   }
 }
 
-statusSelect.addEventListener("change", toggleRefusalReason);
+statusSelect.addEventListener("change", toggleRejectionReason);  // Changed from toggleRefusalReason
 
 function closeModal() {
   reviewModal.hidden = true;
@@ -427,16 +427,16 @@ decisionForm.addEventListener("submit", async (e) => {
   reviewError.textContent = "";
 
   const status = statusSelect.value;
-  const refusalReason = refusalReasonInput.value.trim();
+  const rejectionReason = rejectionReasonInput.value.trim();  // Changed from refusalReason
 
-  if (status === "Refused" && !refusalReason) {
-    reviewError.textContent = "Please provide a reason for refusing this application.";
+  if (status === "Rejected" && !rejectionReason) {  // Changed from "Refused"
+    reviewError.textContent = "Please provide a reason for rejecting this application.";  // Changed from "refusing"
     reviewError.style.display = "block";
     return;
   }
 
   // Confirmation
-  const actionText = status === "Approved" ? "approve" : "refuse";
+  const actionText = status === "Approved" ? "approve" : "reject";  // Changed from "refuse"
   if (!confirm(`Are you sure you want to ${actionText} this application?`)) {
     return;
   }
@@ -449,7 +449,7 @@ decisionForm.addEventListener("submit", async (e) => {
       action: "update_status",
       applicant_id: activeApplicantId,
       status: status,
-      refusal_reason: refusalReason
+      rejection_reason: rejectionReason  // Changed from refusal_reason
     });
 
     const res = await fetch(CONTROLLER_URL, {
@@ -488,12 +488,12 @@ const docError = document.getElementById("docError");
 const docPreviewInfo = document.getElementById("docPreviewInfo");
 const docPreviewFrame = document.getElementById("docPreviewFrame");
 
-let currentDocPath = null;
+let currentDocId = null;
 let currentDocName = null;
 
-function openDocPreview(filePath, fileName) {
-    currentDocPath = filePath;
-    currentDocName = fileName || filePath.split('/').pop();
+function openDocPreview(docId, fileName) {
+    currentDocId = docId;
+    currentDocName = fileName;
     
     docViewer.style.display = "none";
     docError.style.display = "none";
@@ -504,17 +504,17 @@ function openDocPreview(filePath, fileName) {
     docPreviewModal.hidden = false;
     document.getElementById("docPreviewTitle").textContent = "Document Preview";
     
-    loadDocument(filePath, fileName);
+    loadDocument(docId, fileName);
 }
 
-async function loadDocument(filePath, fileName) {
+async function loadDocument(docId, fileName) {
     try {
         const ext = fileName.split('.').pop().toLowerCase();
         const imageTypes = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'];
         const pdfTypes = ['pdf'];
         
         // Get the document from the server
-        const docUrl = `${CONTROLLER_URL}?action=serve-document&path=${encodeURIComponent(filePath)}`;
+        const docUrl = `${CONTROLLER_URL}?action=serve-document&id=${encodeURIComponent(docId)}`;
         
         docPreviewInfo.innerHTML = `
             <span class="doc-preview-info__name">${esc(fileName)}</span>
@@ -612,8 +612,8 @@ function showDocError(message) {
 }
 
 function downloadCurrentDoc() {
-    if (currentDocPath) {
-        const downloadUrl = `${CONTROLLER_URL}?action=serve-document&path=${encodeURIComponent(currentDocPath)}&download=1`;
+    if (currentDocId) {
+        const downloadUrl = `${CONTROLLER_URL}?action=serve-document&id=${encodeURIComponent(currentDocId)}&download=1`;
         window.open(downloadUrl, '_blank');
     }
 }
@@ -625,7 +625,7 @@ function closeDocPreviewModal() {
         iframe.src = 'about:blank';
     }
     docPreviewFrame.innerHTML = '';
-    currentDocPath = null;
+    currentDocId = null;
     currentDocName = null;
 }
 
@@ -647,10 +647,10 @@ downloadDocBtn.addEventListener("click", downloadCurrentDoc);
 document.addEventListener('click', function(e) {
   if (e.target.classList.contains('view-doc-btn') || e.target.closest('.view-doc-btn')) {
     const btn = e.target.closest('.view-doc-btn');
-    const filePath = btn.dataset.path;
-    const fileName = btn.dataset.name || filePath.split('/').pop();
-    
-    openDocPreview(filePath, fileName);
+    const docId = btn.dataset.id;
+    const fileName = btn.dataset.name || 'document';
+
+    openDocPreview(docId, fileName);
   }
 });
 

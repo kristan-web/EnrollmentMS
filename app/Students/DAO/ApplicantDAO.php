@@ -330,9 +330,27 @@ class ApplicantDAO {
         $stmt->bindValue(":emergency_contact_name", $applicant["emergency_contact_name"]);
         $stmt->bindValue(":emergency_contact_relationship", $applicant["emergency_contact_relationship"]);
         $stmt->bindValue(":emergency_contact_number", $applicant["emergency_contact_number"]);
-        $stmt->execute();
+        $success = $stmt->execute();
+        if (!$success) {
+            // PDO's default error mode is silent - execute() can return
+            // false on a failed insert (e.g. a duplicate email/lrn hitting
+            // the UNIQUE constraints on `students`) without ever throwing.
+            // Surface it instead of silently continuing, which previously
+            // let the caller believe conversion succeeded (and send the
+            // approval email) even though no student row was created.
+            $errorInfo = $stmt->errorInfo();
+            throw new RuntimeException(
+                "Failed to create the student record (possibly a duplicate email or LRN already on file): "
+                . ($errorInfo[2] ?? "unknown database error")
+            );
+        }
 
-        return $this->conn->lastInsertId();
+        $newStudentId = $this->conn->lastInsertId();
+        if (empty($newStudentId)) {
+            throw new RuntimeException("Student record insert did not return a valid id.");
+        }
+
+        return $newStudentId;
     }
 }
 ?>

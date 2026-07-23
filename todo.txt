@@ -1,0 +1,18 @@
+TODO:
+
+- Check the navigation in admin, accounting, registrar login.
+- Apply session to all admin-side webpages. 
+
+
+
+<?php 
+  $projectFilePath = 'C:/xampp/htdocs/EnrollmentMS';
+  include_once "$projectFilePath/config/session.php";
+
+  safeStartSession();
+?>
+
+<script>
+    const sessionRole = <?php echo json_encode($_SESSION['role'] ?? null); ?>;
+</script>
+<script src="/EnrollmentMS/public/assets/js/shared/sidebar.js"></script>

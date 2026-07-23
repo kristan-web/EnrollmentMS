@@ -22,6 +22,68 @@ class EnrollmentDAO {
 
     // ============ STUDENT QUERIES ============
     
+    // GET INACTIVE STUDENTS (for enrollment from the inactive list)
+public function getInactiveStudents($filters = []) {
+    $params = [];
+    
+    $query = "
+    SELECT 
+        s.student_id,
+        s.student_number,
+        s.first_name,
+        s.last_name,
+        s.middle_name,
+        s.gender,
+        s.status AS student_status,
+        'Inactive' AS enrollment_status,
+        NULL AS enrollment_id,
+        NULL AS school_year,
+        NULL AS semester,
+        NULL AS date_enrolled,
+        NULL AS enrollment_status_value,
+        NULL AS section_id,
+        NULL AS section_name,
+        NULL AS grade_level,
+        NULL AS strand_code,
+        NULL AS strand_name
+    FROM students s
+    WHERE s.status = 'Inactive'
+    ";
+
+    // Search filter
+    if (!empty($filters["keyword"])) {
+        $query .= " AND (
+            s.first_name LIKE :kw1
+            OR s.last_name LIKE :kw2
+            OR s.student_number LIKE :kw3
+        ) ";
+        $likeKeyword = "%" . $filters["keyword"] . "%";
+        $params[":kw1"] = $likeKeyword;
+        $params[":kw2"] = $likeKeyword;
+        $params[":kw3"] = $likeKeyword;
+    }
+
+    $query .= " ORDER BY s.last_name, s.first_name ";
+    $query .= " LIMIT 1000 ";
+
+    try {
+        $stmt = $this->conn->prepare($query);
+        foreach ($params as $key => $value) {
+            $stmt->bindValue($key, $value);
+        }
+        $stmt->execute();
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        error_log('getInactiveStudents returned ' . count($result) . ' records');
+        return $result;
+    } catch (PDOException $e) {
+        error_log('SQL Error in getInactiveStudents: ' . $e->getMessage());
+        error_log('Query: ' . $query);
+        error_log('Params: ' . print_r($params, true));
+        return [];
+    }
+}
+
+
     // GET UNENROLLED STUDENTS (students not yet enrolled for a specific school year and semester)
     public function getUnenrolledStudents($filters = []) {
         // If no school_year_id is provided, use the active one
@@ -35,6 +97,17 @@ class EnrollmentDAO {
         // Determine if we're showing enrolled or unenrolled
         $showEnrolled = isset($filters["show_enrolled"]) && $filters["show_enrolled"] === 'true';
         
+        $params = [
+            ":school_year_id" => $filters["school_year_id"] ?? null
+        ];
+
+        // Semester belongs in the JOIN's ON clause, not the WHERE clause.
+        $semesterJoinClause = "";
+        if (!empty($filters["semester"])) {
+            $semesterJoinClause = " AND e.semester = :semester ";
+            $params[":semester"] = $filters["semester"];
+        }
+
         $query = "
         SELECT 
             s.student_id,
@@ -62,38 +135,32 @@ class EnrollmentDAO {
         LEFT JOIN enrollments e ON e.student_id = s.student_id 
             AND e.school_year_id = :school_year_id 
             AND e.status = 'Enrolled'
+            $semesterJoinClause
         LEFT JOIN class_sections cs ON cs.section_id = e.section_id
         LEFT JOIN strands st ON st.strand_id = cs.strand_id
-        WHERE s.status = 'Active'
+        WHERE 1=1
         ";
 
-        $params = [
-            ":school_year_id" => $filters["school_year_id"] ?? null
-        ];
-
-        // Add semester filter if provided
-        if (!empty($filters["semester"])) {
-            $query .= " AND e.semester = :semester ";
-            $params[":semester"] = $filters["semester"];
-        }
-
-        // Show either enrolled or unenrolled based on filter
+        // FIXED: Show either enrolled or unenrolled based on filter
         if ($showEnrolled) {
             // Show only enrolled students
             $query .= " AND e.enrollment_id IS NOT NULL";
         } else {
-            // Show only unenrolled students
+            // Show only unenrolled students (including inactive ones)
             $query .= " AND e.enrollment_id IS NULL";
         }
 
         // Search filter
         if (!empty($filters["keyword"])) {
             $query .= " AND (
-                s.first_name LIKE :keyword
-                OR s.last_name LIKE :keyword
-                OR s.student_number LIKE :keyword
+                s.first_name LIKE :kw1
+                OR s.last_name LIKE :kw2
+                OR s.student_number LIKE :kw3
             ) ";
-            $params[":keyword"] = "%" . $filters["keyword"] . "%";
+            $likeKeyword = "%" . $filters["keyword"] . "%";
+            $params[":kw1"] = $likeKeyword;
+            $params[":kw2"] = $likeKeyword;
+            $params[":kw3"] = $likeKeyword;
         }
 
         // Strand filter
@@ -125,20 +192,23 @@ class EnrollmentDAO {
     // FIND STUDENT
     public function searchStudents($keyword) {
         $query = "
-        SELECT student_id, student_number, first_name, last_name, middle_name, gender
+        SELECT student_id, student_number, first_name, last_name, middle_name, gender, status
         FROM students
-        WHERE status = 'Active'
+        WHERE status IN ('Active', 'Inactive')
         AND (
-            first_name LIKE :keyword
-            OR last_name LIKE :keyword
-            OR CONCAT(first_name, ' ', last_name) LIKE :keyword
+            first_name LIKE :keyword1
+            OR last_name LIKE :keyword2
+            OR CONCAT(first_name, ' ', last_name) LIKE :keyword3
         )
         ORDER BY last_name, first_name
         LIMIT 6
         ";
 
         $stmt = $this->conn->prepare($query);
-        $stmt->bindValue(":keyword", "%" . $keyword . "%");
+        $likeKeyword = "%" . $keyword . "%";
+        $stmt->bindValue(":keyword1", $likeKeyword);
+        $stmt->bindValue(":keyword2", $likeKeyword);
+        $stmt->bindValue(":keyword3", $likeKeyword);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -192,11 +262,14 @@ class EnrollmentDAO {
 
         if (!empty($filters["keyword"])) {
             $query .= " AND (
-                s.first_name LIKE :keyword
-                OR s.last_name LIKE :keyword
-                OR s.student_number LIKE :keyword
+                s.first_name LIKE :kw1
+                OR s.last_name LIKE :kw2
+                OR s.student_number LIKE :kw3
             ) ";
-            $params[":keyword"] = "%" . $filters["keyword"] . "%";
+            $likeKeyword = "%" . $filters["keyword"] . "%";
+            $params[":kw1"] = $likeKeyword;
+            $params[":kw2"] = $likeKeyword;
+            $params[":kw3"] = $likeKeyword;
         }
 
         if (!empty($filters["status"]) && $filters["status"] !== 'all') {

@@ -3,6 +3,7 @@
   include_once "$projectFilePath/config/session.php";
 
   safeStartSession();
+  echo $_SESSION['role'];
 ?>
 
 <!DOCTYPE html>
@@ -10,6 +11,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="/EnrollmentMS/public/assets/images/logo.png" />
   <title>Dashboard &middot; Enrollment Management System</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -65,7 +67,7 @@
   </div>
 
   <script>
-    const sessionRole = <?php echo json_encode($_SESSION['role']); ?>
+    const sessionRole = <?php echo json_encode($_SESSION['role'] ?? null); ?>;
   </script>
   <script src="../../public/assets/js/shared/sidebar.js"></script>
   <script src="../../public/assets/js/shared/dashboard.js"></script>
