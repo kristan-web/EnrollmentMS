@@ -48,7 +48,6 @@ if ($method == "GET") {
             echo json_encode(["error" => "Missing document id"]);
             exit;
         }
-        // Now using the DAO method instead of direct query
         $doc = $dao->getDocumentById($id);
         if ($doc) {
             echo json_encode($doc);
@@ -62,12 +61,6 @@ if ($method == "GET") {
             echo json_encode(["error" => "Missing document id"]);
             exit;
         }
-        // Look up the real stored path from the DB instead of trusting a
-        // client-supplied filesystem path. The old code guessed a hardcoded
-        // base folder that didn't match where files are actually stored
-        // (see applicant_documents.file_path), so file_exists() always
-        // failed and the JSON error body got served in place of the file -
-        // which is what made previews/downloads look "corrupted".
         $doc = $dao->getDocumentById($id);
         if (!$doc) {
             echo json_encode(["error" => "Document not found"]);
@@ -97,20 +90,21 @@ if ($method == "GET") {
     if ($action == "update_status") {
         $applicantId = isset($_POST["applicant_id"]) ? $_POST["applicant_id"] : null;
         $status = isset($_POST["status"]) ? $_POST["status"] : null;
-        $refusalReason = isset($_POST["refusal_reason"]) ? $_POST["refusal_reason"] : null;
+        $rejectionReason = isset($_POST["rejection_reason"]) ? $_POST["rejection_reason"] : null;  // Changed from refusal_reason
 
         if (empty($applicantId)) {
             echo json_encode(["success" => false, "message" => "Missing applicant_id"]);
             exit;
         }
 
-        if (empty($status) || !in_array($status, ["Approved", "Refused"])) {
-            echo json_encode(["success" => false, "message" => "Invalid status. Must be Approved or Refused"]);
+        // Changed from "Refused" to "Rejected"
+        if (empty($status) || !in_array($status, ["Approved", "Rejected"])) {
+            echo json_encode(["success" => false, "message" => "Invalid status. Must be Approved or Rejected"]);
             exit;
         }
 
-        if ($status === "Refused" && empty($refusalReason)) {
-            echo json_encode(["success" => false, "message" => "Please provide a reason for refusing this application"]);
+        if ($status === "Rejected" && empty($rejectionReason)) {  // Changed from "Refused"
+            echo json_encode(["success" => false, "message" => "Please provide a reason for rejecting this application"]);
             exit;
         }
 
@@ -123,7 +117,7 @@ if ($method == "GET") {
 
         try {
             // Update status
-            $success = $dao->updateStatus($applicantId, $status, $refusalReason, $_SESSION['user_id'] ?? null);
+            $success = $dao->updateStatus($applicantId, $status, $rejectionReason, $_SESSION['user_id'] ?? null);
             
             if ($success) {
                 // Send email notification
@@ -133,8 +127,8 @@ if ($method == "GET") {
 
                 if ($status === "Approved") {
                     sendApprovalEmail($email, $name, $referenceNumber);
-                } else if ($status === "Refused") {
-                    sendRefusalEmail($email, $name, $referenceNumber, $refusalReason);
+                } else if ($status === "Rejected") {  // Changed from "Refused"
+                    sendRefusalEmail($email, $name, $referenceNumber, $rejectionReason);
                 }
 
                 echo json_encode(["success" => true, "message" => "Application $status successfully and email sent!"]);

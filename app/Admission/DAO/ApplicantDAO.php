@@ -106,10 +106,62 @@ class ApplicantDAO {
         $applicant = $stmt->fetch(PDO::FETCH_ASSOC);
         
         if ($applicant) {
+            // Get documents with full file information
             $applicant['documents'] = $this->getDocumentsByApplicantId($applicant['applicant_id']);
         }
         
         return $applicant;
+    }
+
+    // Get documents for a specific applicant
+    // Get documents for a specific applicant with file information
+    public function getDocumentsByApplicantId($applicantId) {
+        $query = "
+        SELECT 
+            ad.document_id,
+            ad.status,
+            ad.remarks,
+            ad.uploaded_at,
+            ad.original_filename,
+            ad.file_path,
+            ad.file_size,
+            ad.mime_type,
+            dt.name AS document_type_name,
+            dt.description AS document_type_description
+        FROM applicant_documents ad
+        INNER JOIN document_types dt ON dt.document_type_id = ad.document_type_id
+        WHERE ad.applicant_id = :applicant_id
+        ORDER BY dt.sort_order, ad.uploaded_at
+        ";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindValue(":applicant_id", $applicantId);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // Update applicant status (for admin use)
+    public function updateStatus($applicantId, $status, $rejectionReason = null, $reviewedBy = null) {
+        try {
+            $query = "
+            UPDATE applicants 
+            SET status = :status,
+                rejection_reason = :rejection_reason,
+                reviewed_by = :reviewed_by,
+                reviewed_at = NOW()
+            WHERE applicant_id = :applicant_id
+            ";
+
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindValue(":status", $status);
+            $stmt->bindValue(":rejection_reason", $rejectionReason);
+            $stmt->bindValue(":reviewed_by", $reviewedBy);
+            $stmt->bindValue(":applicant_id", $applicantId);
+            return $stmt->execute();
+        } catch (PDOException $e) {
+            error_log('SQL Error in updateStatus: ' . $e->getMessage());
+            return false;
+        }
     }
 
     // Deletes the applicant row. Used to roll back a submission if the
