@@ -35,6 +35,24 @@ class EnrollmentDAO {
         // Determine if we're showing enrolled or unenrolled
         $showEnrolled = isset($filters["show_enrolled"]) && $filters["show_enrolled"] === 'true';
         
+        $params = [
+            ":school_year_id" => $filters["school_year_id"] ?? null
+        ];
+
+        // Semester belongs in the JOIN's ON clause, not the WHERE clause.
+        // If it were a WHERE condition, it would evaluate against e.semester,
+        // which is NULL for a LEFT JOIN non-match (i.e. every genuinely
+        // unenrolled student) - "NULL = :semester" is never true in SQL, so
+        // any semester filter would silently wipe out the entire unenrolled
+        // list. Putting it in the ON clause instead scopes what counts as
+        // "already enrolled" to that specific school year + semester, and
+        // leaves unmatched (unenrolled) rows alone.
+        $semesterJoinClause = "";
+        if (!empty($filters["semester"])) {
+            $semesterJoinClause = " AND e.semester = :semester ";
+            $params[":semester"] = $filters["semester"];
+        }
+
         $query = "
         SELECT 
             s.student_id,
@@ -62,20 +80,11 @@ class EnrollmentDAO {
         LEFT JOIN enrollments e ON e.student_id = s.student_id 
             AND e.school_year_id = :school_year_id 
             AND e.status = 'Enrolled'
+            $semesterJoinClause
         LEFT JOIN class_sections cs ON cs.section_id = e.section_id
         LEFT JOIN strands st ON st.strand_id = cs.strand_id
-        WHERE s.status = 'Active'
+        WHERE s.status IN ('Active', 'Inactive')
         ";
-
-        $params = [
-            ":school_year_id" => $filters["school_year_id"] ?? null
-        ];
-
-        // Add semester filter if provided
-        if (!empty($filters["semester"])) {
-            $query .= " AND e.semester = :semester ";
-            $params[":semester"] = $filters["semester"];
-        }
 
         // Show either enrolled or unenrolled based on filter
         if ($showEnrolled) {
@@ -89,11 +98,14 @@ class EnrollmentDAO {
         // Search filter
         if (!empty($filters["keyword"])) {
             $query .= " AND (
-                s.first_name LIKE :keyword
-                OR s.last_name LIKE :keyword
-                OR s.student_number LIKE :keyword
+                s.first_name LIKE :kw1
+                OR s.last_name LIKE :kw2
+                OR s.student_number LIKE :kw3
             ) ";
-            $params[":keyword"] = "%" . $filters["keyword"] . "%";
+            $likeKeyword = "%" . $filters["keyword"] . "%";
+            $params[":kw1"] = $likeKeyword;
+            $params[":kw2"] = $likeKeyword;
+            $params[":kw3"] = $likeKeyword;
         }
 
         // Strand filter
@@ -125,20 +137,23 @@ class EnrollmentDAO {
     // FIND STUDENT
     public function searchStudents($keyword) {
         $query = "
-        SELECT student_id, student_number, first_name, last_name, middle_name, gender
+        SELECT student_id, student_number, first_name, last_name, middle_name, gender, status
         FROM students
-        WHERE status = 'Active'
+        WHERE status IN ('Active', 'Inactive')
         AND (
-            first_name LIKE :keyword
-            OR last_name LIKE :keyword
-            OR CONCAT(first_name, ' ', last_name) LIKE :keyword
+            first_name LIKE :keyword1
+            OR last_name LIKE :keyword2
+            OR CONCAT(first_name, ' ', last_name) LIKE :keyword3
         )
         ORDER BY last_name, first_name
         LIMIT 6
         ";
 
         $stmt = $this->conn->prepare($query);
-        $stmt->bindValue(":keyword", "%" . $keyword . "%");
+        $likeKeyword = "%" . $keyword . "%";
+        $stmt->bindValue(":keyword1", $likeKeyword);
+        $stmt->bindValue(":keyword2", $likeKeyword);
+        $stmt->bindValue(":keyword3", $likeKeyword);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -192,11 +207,14 @@ class EnrollmentDAO {
 
         if (!empty($filters["keyword"])) {
             $query .= " AND (
-                s.first_name LIKE :keyword
-                OR s.last_name LIKE :keyword
-                OR s.student_number LIKE :keyword
+                s.first_name LIKE :kw1
+                OR s.last_name LIKE :kw2
+                OR s.student_number LIKE :kw3
             ) ";
-            $params[":keyword"] = "%" . $filters["keyword"] . "%";
+            $likeKeyword = "%" . $filters["keyword"] . "%";
+            $params[":kw1"] = $likeKeyword;
+            $params[":kw2"] = $likeKeyword;
+            $params[":kw3"] = $likeKeyword;
         }
 
         if (!empty($filters["status"]) && $filters["status"] !== 'all') {

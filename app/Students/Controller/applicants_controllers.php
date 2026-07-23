@@ -2,6 +2,10 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
+$projectFilePath = "C:/xampp/htdocs/EnrollmentMS";
+require_once "$projectFilePath/config/session.php";
+safeStartSession();
+
 require_once __DIR__."/../DAO/ApplicantDAO.php";
 require_once __DIR__."/../Model/applicant_model.php";
 require_once __DIR__."/../../../config/mailer/email_functions.php";
@@ -53,24 +57,34 @@ if ($method == "GET") {
         }
 
     } else if ($action == "serve-document") {
-        $path = isset($_GET["path"]) ? $_GET["path"] : null;
-        if (empty($path)) {
-            echo json_encode(["error" => "Missing document path"]);
+        $id = isset($_GET["id"]) ? $_GET["id"] : null;
+        if (empty($id)) {
+            echo json_encode(["error" => "Missing document id"]);
             exit;
         }
-        // Serve the document
-        $fullPath = "C:/xampp/htdocs/EnrollmentMS/uploads/applications/" . $path;
+        // Look up the real stored path from the DB instead of trusting a
+        // client-supplied filesystem path. The old code guessed a hardcoded
+        // base folder that didn't match where files are actually stored
+        // (see applicant_documents.file_path), so file_exists() always
+        // failed and the JSON error body got served in place of the file -
+        // which is what made previews/downloads look "corrupted".
+        $doc = $dao->getDocumentById($id);
+        if (!$doc) {
+            echo json_encode(["error" => "Document not found"]);
+            exit;
+        }
+        $fullPath = $doc["file_path"];
         if (file_exists($fullPath)) {
             $finfo = finfo_open(FILEINFO_MIME_TYPE);
             $mime = finfo_file($finfo, $fullPath);
             finfo_close($finfo);
             
             header("Content-Type: $mime");
-            header("Content-Disposition: " . (isset($_GET['download']) ? "attachment" : "inline") . "; filename=\"" . basename($path) . "\"");
+            header("Content-Disposition: " . (isset($_GET['download']) ? "attachment" : "inline") . "; filename=\"" . basename($fullPath) . "\"");
             readfile($fullPath);
             exit;
         } else {
-            echo json_encode(["error" => "File not found"]);
+            echo json_encode(["error" => "File not found on disk"]);
         }
 
     } else {
