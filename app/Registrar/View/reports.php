@@ -1,3 +1,10 @@
+<?php 
+  $projectFilePath = 'C:/xampp/htdocs/EnrollmentMS';
+  include_once "$projectFilePath/config/session.php";
+  safeStartSession();
+  echo $_SESSION['role'];
+?>
+
 <!DOCTYPE html>
 <!-- Registrar-side enrollment reports. Its own page (not a modal) so it has a
      real URL the sidebar redirects to. Same admin shell as admission.php:
@@ -138,9 +145,12 @@
     <footer class="main__footer">&copy; 2026 Enrollment Management System &middot; Admission &amp; Registrar</footer>
   </div>
 
+  <script>
+    const sessionRole = <?php echo json_encode($_SESSION['role'] ?? null); ?>;
+  </script>
+  <script src="/EnrollmentMS/public/assets/js/shared/sidebar.js"></script>
   <script src="/EnrollmentMS/public/assets/js/sweetalert2/sweetalert2.min.js"></script>
   <script src="/EnrollmentMS/public/assets/js/Registrar/alerts.js"></script>
-  <script src="/EnrollmentMS/public/assets/js/Registrar/sidebar.js"></script>
   <script src="/EnrollmentMS/public/assets/js/Registrar/registrar-model.js"></script>
   <script src="/EnrollmentMS/public/assets/js/Registrar/reports.js"></script>
 </body>

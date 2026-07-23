@@ -886,10 +886,10 @@
   document.getElementById("walkinBtn").addEventListener("click", openWalkin);
   // The sidebar item is an <a href="#walkin"> so it matches the other links;
   // open the modal in place instead of letting it jump to the hash.
-  document.getElementById("walkinNavBtn").addEventListener("click", function (e) {
-    e.preventDefault();
-    openWalkin();
-  });
+  // document.getElementById("walkinNavBtn").addEventListener("click", function (e) {
+  //   e.preventDefault();
+  //   openWalkin();
+  // });
   document.getElementById("closeWalkinModal").addEventListener("click", closeWalkin);
   document.getElementById("cancelWalkinBtn").addEventListener("click", closeWalkin);
   walkinModal.addEventListener("click", function (e) { if (e.target === walkinModal) closeWalkin(); });
@@ -1099,9 +1099,9 @@
 
   // ---- Boot -------------------------------------------------------------
 
-  M.requireAuth("/EnrollmentMS/app/Registrar/View/index.php").then(function (user) {
-    if (!user) return;
-    registrarWho.innerHTML = whoHtml(user.full_name, user.role);
-    loadQueue();
-  });
+  // M.requireAuth("/EnrollmentMS/app/Registrar/View/index.php").then(function (user) {
+  //   if (!user) return;
+  //   registrarWho.innerHTML = whoHtml(user.full_name, user.role);
+  //   loadQueue();
+  // });
 })();

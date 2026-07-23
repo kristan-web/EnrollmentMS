@@ -1,3 +1,10 @@
+<?php 
+  $projectFilePath = 'C:/xampp/htdocs/EnrollmentMS';
+  include_once "$projectFilePath/config/session.php";
+  safeStartSession();
+  echo $_SESSION['role'];
+?>
+
 <!DOCTYPE html>
 <!-- Step 3 of 3: pick a method, review, then hand off to PayMongo. -->
 <html lang="en">

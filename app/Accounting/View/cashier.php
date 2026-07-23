@@ -1,3 +1,10 @@
+<?php 
+  $projectFilePath = 'C:/xampp/htdocs/EnrollmentMS';
+  include_once "$projectFilePath/config/session.php";
+  safeStartSession();
+  echo $_SESSION['role'];
+?>
+
 <!DOCTYPE html>
 <!-- Accounting-side (cashier) console. Guarded by cashier.js: no session -> login.
      Shares the admin ("Admission") shell: shared/dashboard.css supplies the navy
@@ -49,7 +56,8 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/><path d="M6 15h4"/></svg>
           </span>
           <span>Payment console</span>
-        </a></li>
+        </a>
+        </li>
       </ul>
     </nav>
 
@@ -126,6 +134,11 @@
 
   <!-- Print-only official receipt, filled in by cashier.js after a payment. -->
   <div class="receipt-print" id="receiptPrint" aria-hidden="true"></div>
+
+  <script>
+    const sessionRole = <?php echo json_encode($_SESSION['role'] ?? null); ?>;
+  </script>
+  <script src="/EnrollmentMS/public/assets/js/shared/sidebar.js"></script>
 
   <script src="/EnrollmentMS/public/assets/js/sweetalert2/sweetalert2.min.js"></script>
   <script src="/EnrollmentMS/public/assets/js/Accounting/alerts.js"></script>

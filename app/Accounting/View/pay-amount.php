@@ -1,3 +1,10 @@
+<?php 
+  $projectFilePath = 'C:/xampp/htdocs/EnrollmentMS';
+  include_once "$projectFilePath/config/session.php";
+  safeStartSession();
+  echo $_SESSION['role'];
+?>
+
 <!DOCTYPE html>
 <!-- Step 2 of 3: how much to pay. Continues to pay-method.php. -->
 <html lang="en">

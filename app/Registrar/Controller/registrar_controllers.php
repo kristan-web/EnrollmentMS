@@ -124,8 +124,8 @@ if ($method === "GET") {
                 "authenticated" => true,
                 "user" => [
                     "user_id"   => $_SESSION["registrar_user_id"],
-                    "full_name" => $_SESSION["registrar_name"] ?? "",
-                    "role"      => $_SESSION["registrar_role"] ?? ""
+                    "full_name" => $_SESSION["name"] ?? "",
+                    "role"      => $_SESSION["role"] ?? ""
                 ]
             ]);
         } else {
@@ -275,8 +275,8 @@ if ($method === "POST") {
 
         session_regenerate_id(true);
         $_SESSION["registrar_user_id"] = $user["user_id"];
-        $_SESSION["registrar_name"]    = $user["full_name"];
-        $_SESSION["registrar_role"]    = $user["role"];
+        $_SESSION["name"]    = $user["full_name"];
+        $_SESSION["role"]    = $user["role"];
 
         // Additive: record the staff sign-in in the admin audit log.
         require_once "$projectFilePath/app/Accounts/DAO/AuditDAO.php";
