@@ -3,7 +3,7 @@
   include_once "$projectFilePath/config/session.php";
 
   safeStartSession();
-  echo htmlspecialchars($_SESSION['role'] ?? '');
+  // echo htmlspecialchars($_SESSION['role'] ?? '');
 ?>
 
 <!DOCTYPE html>

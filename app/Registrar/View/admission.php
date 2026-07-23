@@ -4,7 +4,7 @@
 
   safeStartSession();
 
-  echo $_SESSION['role'];
+  // echo $_SESSION['role'];
 ?>
 
 <!DOCTYPE html>
