@@ -16,3 +16,12 @@ TODO:
     const sessionRole = <?php echo json_encode($_SESSION['role'] ?? null); ?>;
 </script>
 <script src="/EnrollmentMS/public/assets/js/shared/sidebar.js"></script>
+
+All admin-side webpages:
+
+app\Dashboards\dashboard.php
+app\Dashboards\Views\AdminSide\maintenance.php
+app\Dashboards\Views\AdminSide\settings.php
+app\Dashboards\Views\RegistrarSide\data-entry.php
+app\Dashboards\Views\RegistrarSide\records.php
+app\Dashboards\Views\RegistrarSide\transaction.php

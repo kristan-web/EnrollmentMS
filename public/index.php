@@ -274,9 +274,17 @@
         </span>
       </a>
 
-      <a class="topbar__cta" href="/EnrollmentMS/app/Admission/View/index.php">
+      <div class="topbar__actions">
+        <a class="topbar__cta" href="/EnrollmentMS/app/Admission/View/index.php">
           <span>Student Admission</span>
-      </a>
+        </a>
+
+        <!-- Students don't log in here — this keeps the online pay flow reachable. -->
+        <a class="topbar__cta" href="/EnrollmentMS/app/Accounting/View/pay.php">
+          <span>Pay Now</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </a>
+      </div>
     </header>
 
     <div class="brand">

@@ -17,6 +17,165 @@
        public/assets/css/Registrar/registrar.css is for the console only — it
        builds on shared/dashboard.css, which would fight portal.css here. -->
   <link rel="stylesheet" href="/EnrollmentMS/public/assets/css/shared/portal.css" />
+
+  <style>
+    .portal-nav {
+      margin-top: clamp(22px, 3.4vh, 32px);
+      animation: rise 0.5s cubic-bezier(0.22, 0.8, 0.3, 1) 0.3s both;
+    }
+    .portal-nav__label {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1.1px;
+      text-transform: uppercase;
+      color: rgba(22, 36, 79, 0.42);
+    }
+    .portal-nav__label::before,
+    .portal-nav__label::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(22, 36, 79, 0.16), transparent);
+    }
+    .portal-nav__grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .portal-link {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      padding: 14px 15px;
+      border: 1px solid rgba(22, 36, 79, 0.09);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.82);
+      backdrop-filter: blur(6px);
+      box-shadow: 0 8px 22px rgba(22, 36, 79, 0.08);
+      text-align: left;
+      text-decoration: none;
+      transition: transform 0.2s cubic-bezier(0.22, 0.8, 0.3, 1),
+                  box-shadow 0.2s cubic-bezier(0.22, 0.8, 0.3, 1),
+                  border-color 0.2s cubic-bezier(0.22, 0.8, 0.3, 1);
+    }
+    .portal-link:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 16px 34px rgba(22, 36, 79, 0.15);
+    }
+    .portal-link:focus-visible {
+      outline: 3px solid rgba(55, 205, 255, 0.55);
+      outline-offset: 3px;
+    }
+    .portal-link__icon {
+      display: grid;
+      place-items: center;
+      flex: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 13px;
+      color: #fff;
+    }
+    .portal-link__icon svg { width: 20px; height: 20px; }
+    .portal-link__text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .portal-link__text strong {
+      font-size: 14.5px;
+      font-weight: 800;
+      line-height: 1.2;
+      color: #16244f;
+    }
+    .portal-link__text span {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: rgba(22, 36, 79, 0.55);
+    }
+    .portal-link__arrow {
+      flex: none;
+      margin-left: auto;
+      width: 18px;
+      height: 18px;
+      color: rgba(22, 36, 79, 0.28);
+      transition: transform 0.2s cubic-bezier(0.22, 0.8, 0.3, 1), color 0.2s;
+    }
+    .portal-link:hover .portal-link__arrow { transform: translateX(3px); color: #2f5fd0; }
+
+    .portal-link--registrar:hover { border-color: rgba(47, 95, 208, 0.4); }
+    .portal-link--registrar .portal-link__icon {
+      background: linear-gradient(150deg, #4f8bf5, #2f5fd0);
+      box-shadow: 0 7px 16px rgba(47, 95, 208, 0.34);
+    }
+    .portal-link--accounting:hover { border-color: rgba(13, 148, 136, 0.45); }
+    .portal-link--accounting .portal-link__icon {
+      background: linear-gradient(150deg, #2dd4bf, #0f766e);
+      box-shadow: 0 7px 16px rgba(13, 148, 136, 0.34);
+    }
+    .portal-link--accounting:hover .portal-link__arrow { color: #0f766e; }
+
+    body > footer.footer {
+      position: static;
+      margin-top: auto;
+      padding-top: 12px;
+      font-size: 13px;
+      letter-spacing: 0.2px;
+      color: rgba(22, 36, 79, 0.5);
+    }
+
+    @media (min-width: 560px) {
+      main.login .portal-nav { max-width: 520px; }
+      .portal-nav__grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (min-width: 1024px) {
+      body { padding-top: clamp(24px, 5vh, 56px); }
+      main.login .brand,
+      main.login .login__title,
+      main.login .login__subtitle,
+      main.login .form { max-width: 460px; }
+      main.login .portal-nav { max-width: 560px; }
+      .portal-link { padding: 15px 17px; }
+      .portal-link__text strong { font-size: 15px; }
+    }
+
+    @media (min-width: 1440px) {
+      main.login .topbar { max-width: 1180px; }
+      main.login { max-width: min(100%, 1180px); }
+    }
+
+    @media (max-height: 900px) {
+      main.login .topbar { margin-bottom: 22px; }
+      main.login .brand__logo { width: clamp(62px, 6.5vw, 82px); }
+      main.login .login__subtitle { margin-bottom: 14px; }
+      .portal-nav { margin-top: 18px; }
+    }
+
+    @media (max-height: 780px) {
+      body { gap: 14px; padding-top: 18px; padding-bottom: 14px; }
+      main.login .topbar { margin-bottom: 16px; }
+      main.login .brand__logo { width: clamp(54px, 5.5vw, 70px); }
+      main.login .login__subtitle { margin-bottom: 12px; }
+      .portal-nav { margin-top: 16px; }
+      .portal-nav__label { margin-bottom: 10px; }
+      .portal-link { padding: 11px 14px; }
+      body > footer.footer { padding-top: 8px; font-size: 12px; }
+    }
+
+    @media (max-height: 700px) {
+      main.login .brand { display: none; }
+      main.login .topbar { margin-bottom: 12px; }
+      .portal-link__text span { display: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      main.login .alert, .portal-nav { animation: none; }
+      .portal-link, .portal-link__arrow { transition: none; }
+      .portal-link:hover { transform: none; }
+      .portal-link:hover .portal-link__arrow { transform: none; }
+    }
+  </style>
 </head>
 <body>
   <div class="blob blob--1"></div>
@@ -32,6 +191,18 @@
           <span class="topbar__tag">Admission &amp; Registrar</span>
         </span>
       </a>
+
+      <div class="topbar__actions">
+        <a class="topbar__cta" href="/EnrollmentMS/app/Admission/View/index.php">
+          <span>Student Admission</span>
+        </a>
+
+        <!-- Students don't log in here — this keeps the online pay flow reachable. -->
+        <a class="topbar__cta" href="/EnrollmentMS/app/Accounting/View/pay.php">
+          <span>Pay Now</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </a>
+      </div>
     </header>
 
     <main class="login">
@@ -71,8 +242,33 @@
         <p class="form-msg" id="loginMsg"></p>
       </form>
 
-      <p class="auth-alt">Don't have a staff account? <a href="/EnrollmentMS/public/index.php">Ask an administrator</a></p>
-    </main>
+      <nav class="portal-nav" aria-label="Other staff portals">
+      <span class="portal-nav__label">Other staff portals</span>
+      <div class="portal-nav__grid">
+        <a class="portal-link portal-link--registrar" href="/EnrollmentMS/public/index.php">
+          <span class="portal-link__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="m9 15 2 2 4-4"/></svg>
+          </span>
+          <span class="portal-link__text">
+            <strong>Admin</strong>
+            <span>Admissions &amp; enrollment</span>
+          </span>
+          <svg class="portal-link__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </a>
+
+        <a class="portal-link portal-link--accounting" href="/EnrollmentMS/app/Accounting/View/index.php">
+          <span class="portal-link__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/><path d="M6 15h4"/></svg>
+          </span>
+          <span class="portal-link__text">
+            <strong>Cashier</strong>
+            <span>Payments &amp; receipts</span>
+          </span>
+          <svg class="portal-link__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </a>
+      </div>
+    </nav>
+  </main>
   </div>
 
   <footer class="footer">&copy; 2026 Enrollment Management System &middot; Admission &amp; Registrar</footer>
