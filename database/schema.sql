@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 13, 2026 at 09:48 PM
+-- Generation Time: Jul 23, 2026 at 07:10 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -24,11 +24,66 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Table structure for table `applicants`
+-- Table structure for table `acct_fees`
 --
 
-CREATE DATABASE `enrollment_management_system`;
-USE `enrollment_management_system`; 
+CREATE TABLE `acct_fees` (
+  `fee_id` int(11) NOT NULL,
+  `code` varchar(20) NOT NULL COMMENT 'TUITION, MISC, LAB ...',
+  `name` varchar(100) NOT NULL,
+  `note` varchar(255) DEFAULT NULL COMMENT 'small grey line under the name',
+  `amount` decimal(10,2) NOT NULL,
+  `is_required` tinyint(1) NOT NULL DEFAULT 1,
+  `school_year` varchar(9) NOT NULL COMMENT 'e.g. 2026-2027',
+  `semester` enum('1st Semester','2nd Semester') NOT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1 COMMENT '0 hides it without deleting',
+  `sort_order` int(11) NOT NULL DEFAULT 0,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `acct_fees`
+--
+
+INSERT INTO `acct_fees` (`fee_id`, `code`, `name`, `note`, `amount`, `is_required`, `school_year`, `semester`, `is_active`, `sort_order`, `created_at`, `updated_at`) VALUES
+(1, 'TUITION', 'Tuition Fee', 'Per semester', 12000.00, 1, '2026-2027', '1st Semester', 1, 1, '2026-07-23 16:28:09', '2026-07-23 16:28:09'),
+(2, 'MISC', 'Miscellaneous Fee', 'Guidance, athletics, etc.', 3500.00, 1, '2026-2027', '1st Semester', 1, 2, '2026-07-23 16:28:09', '2026-07-23 16:28:09'),
+(3, 'LAB', 'Laboratory Fee', 'Computer & science labs', 1800.00, 1, '2026-2027', '1st Semester', 1, 3, '2026-07-23 16:28:09', '2026-07-23 16:28:09'),
+(4, 'REG', 'Registration Fee', 'One-time this semester', 500.00, 1, '2026-2027', '1st Semester', 1, 4, '2026-07-23 16:28:09', '2026-07-23 16:28:09'),
+(5, 'LIB', 'Library Fee', 'Books & online resources', 400.00, 1, '2026-2027', '1st Semester', 1, 5, '2026-07-23 16:28:09', '2026-07-23 16:28:09'),
+(6, 'MEDDENT', 'Medical & Dental Fee', 'Clinic services', 350.00, 1, '2026-2027', '1st Semester', 1, 6, '2026-07-23 16:28:09', '2026-07-23 16:28:09'),
+(7, 'IDMAT', 'ID & School Materials', 'School ID, modules, handbook', 750.00, 1, '2026-2027', '1st Semester', 1, 7, '2026-07-23 16:28:09', '2026-07-23 16:28:09');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `acct_payments`
+--
+
+CREATE TABLE `acct_payments` (
+  `acct_payment_id` int(11) NOT NULL,
+  `reference` varchar(40) NOT NULL COMMENT 'ours, e.g. SOA-2026-4821-7Q3K',
+  `student_number` varchar(20) NOT NULL,
+  `student_name` varchar(100) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `school_year` varchar(9) NOT NULL,
+  `semester` enum('1st Semester','2nd Semester') NOT NULL,
+  `plan` enum('full','down','custom') NOT NULL DEFAULT 'full',
+  `method` enum('gcash','maya','grabpay','card') DEFAULT NULL,
+  `amount` decimal(10,2) NOT NULL COMMENT 'pesos; PayMongo is billed in centavos',
+  `status` enum('pending','paid','failed','expired','cancelled') NOT NULL DEFAULT 'pending',
+  `checkout_session_id` varchar(100) DEFAULT NULL COMMENT 'PayMongo cs_...',
+  `paid_at` datetime DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `applicants`
+--
 
 CREATE TABLE `applicants` (
   `applicant_id` int(11) NOT NULL,
@@ -69,8 +124,8 @@ CREATE TABLE `applicants` (
 --
 
 INSERT INTO `applicants` (`applicant_id`, `reference_number`, `applicant_type`, `first_name`, `last_name`, `middle_name`, `gender`, `birthdate`, `address`, `contact_number`, `email`, `lrn`, `desired_grade_level`, `desired_strand_id`, `school_year`, `father_name`, `father_contact_number`, `mother_name`, `mother_contact_number`, `guardian_name`, `guardian_relationship`, `guardian_contact_number`, `emergency_contact_name`, `emergency_contact_relationship`, `emergency_contact_number`, `status`, `rejection_reason`, `reviewed_by`, `reviewed_at`, `converted_student_id`, `submitted_at`) VALUES
-(1, 'EMS-2026-938506', 'Transferee', 'Christine', 'Farley', 'Britanney Conner', 'Female', '1994-03-15', 'Irure dolore ullamco', '09999999999', 'jesihebec@mailinator.com', '211222222222', '11', 2, '2026-2027', 'Nigel Rodriquez', '09999999999', 'Idona Sharpe', '09999999999', 'Alden Branch', 'Minima minim tenetur', '09999999999', 'Daniel Lewis', 'Magnam mollit ea mol', '09999999999', 'Pending', NULL, NULL, NULL, NULL, '2026-07-06 00:19:00'),
-(2, 'EMS-2026-072083', 'Transferee', 'Dillon', 'Sampson', 'Denton Wilkerson', 'Female', '2013-09-22', 'Exercitationem disti', '09999999999', 'senylahoni@mailinator.com', '888888888888', '12', 1, '2026-2027', 'Iona Stout', '09999999999', 'Hiroko Mays', '09999999999', 'Caldwell Chen', 'Distinctio Voluptas', '09999999999', 'Yeo Pearson', 'Quo doloribus sapien', '09999999999', 'Pending', NULL, NULL, NULL, NULL, '2026-07-08 18:04:36');
+(1, 'EMS-2026-574324', 'New Student', 'Almario', 'Kristan', 'Stacy Garcia', 'Male', '1995-12-31', 'Anim qui rerum bland', '09999999999', 'pawatytil@mailinator.com', '875554564645', '11', 2, '2026-2027', 'Alexa Vega', '09099999999', 'Kenyon Franks', '09999999999', 'Olivia Henry', 'Aut id est maiores a', '09999999999', 'Leigh Pierce', 'Aliquid praesentium', '09999999999', 'Approved', '', NULL, '2026-07-18 03:10:18', 12, '2026-07-18 03:09:53'),
+(2, 'EMS-2026-936527', 'Transferee', 'Evelyn', 'Wolf', 'Olivia Roach', 'Female', '1984-11-18', 'Sed et aperiam venia', '09999999999', 'hofako@mailinator.com', '099999999999', '12', 6, '2026-2027', 'Rana Davidson', '09999999999', 'Heidi Perry', '09999999999', 'Alfonso Steele', 'Incididunt dolore pr', '09999999999', 'Tanner Benson', 'Nulla laboriosam al', '09999999999', 'Approved', '', NULL, '2026-07-23 16:54:39', 13, '2026-07-23 16:20:53');
 
 -- --------------------------------------------------------
 
@@ -96,16 +151,26 @@ CREATE TABLE `applicant_documents` (
 --
 
 INSERT INTO `applicant_documents` (`document_id`, `applicant_id`, `document_type_id`, `file_path`, `original_filename`, `file_size`, `mime_type`, `status`, `remarks`, `uploaded_at`) VALUES
-(1, 1, 1, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-938506/4c1c7a5827e95a9cf9dbeafe153f2d3f.png', 'Schedule (11).png', 70070, 'image/png', 'Pending', NULL, '2026-07-06 00:19:00'),
-(2, 1, 2, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-938506/66f270d0c51662e0bfe482a7f360b80c.png', 'Schedule (11).png', 70070, 'image/png', 'Pending', NULL, '2026-07-06 00:19:00'),
-(3, 1, 3, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-938506/2e13e44872b0d0eb1533e5adf41ec360.png', 'Schedule (11).png', 70070, 'image/png', 'Pending', NULL, '2026-07-06 00:19:00'),
-(4, 1, 4, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-938506/59d37474dd3a1383ce97591af0e9e89e.png', 'Schedule (11).png', 70070, 'image/png', 'Pending', NULL, '2026-07-06 00:19:00'),
 (5, 1, 5, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-938506/5045393a9434439b74c56d07fcd0cb6a.png', 'Schedule (11).png', 70070, 'image/png', 'Pending', NULL, '2026-07-06 00:19:00'),
-(6, 2, 1, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-072083/ff773c347682430666ea3f3e2612a459.png', 'Schedule (11).png', 70070, 'image/png', 'Pending', NULL, '2026-07-08 18:04:36'),
-(7, 2, 2, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-072083/d16d0148615bf431f8f1ca66e88dfbe4.png', 'Schedule (11).png', 70070, 'image/png', 'Pending', NULL, '2026-07-08 18:04:36'),
-(8, 2, 3, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-072083/52ae21dfdb7730c5c94c8a07b01d2317.png', 'Schedule (11).png', 70070, 'image/png', 'Pending', NULL, '2026-07-08 18:04:36'),
-(9, 2, 4, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-072083/c926b6bcc9f14a927ad97710323921ab.png', 'Schedule (11).png', 70070, 'image/png', 'Pending', NULL, '2026-07-08 18:04:36'),
-(10, 2, 5, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-072083/cfcfad4fa15888e6b9e66b78b2da113d.png', 'Schedule (11).png', 70070, 'image/png', 'Pending', NULL, '2026-07-08 18:04:36');
+(11, 3, 1, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-252879/4f3f58846536f7c899a7da6f0bc2f9ae.pdf', 'COLORED-1-COPY_20260715_135637_0000.pdf', 79141, 'application/pdf', 'Pending', NULL, '2026-07-18 01:18:18'),
+(12, 3, 2, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-252879/45afc257b23a61f939d18613c6073082.pdf', 'COLORED-1-COPY_20260715_135637_0000.pdf', 79141, 'application/pdf', 'Pending', NULL, '2026-07-18 01:18:18'),
+(13, 3, 3, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-252879/5e41b0421bb4e2b917b00ad77b1f1893.pdf', 'COLORED-1-COPY_20260715_135637_0000.pdf', 79141, 'application/pdf', 'Pending', NULL, '2026-07-18 01:18:18'),
+(14, 3, 4, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-252879/947e3d2ef9275e005bbe4aaf7e359f6b.pdf', 'COLORED-1-COPY_20260715_135637_0000.pdf', 79141, 'application/pdf', 'Pending', NULL, '2026-07-18 01:18:18'),
+(15, 3, 5, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-252879/f0ab6f0ef176e590e7f4be9d98a3ed42.pdf', 'COLORED-1-COPY_20260715_135637_0000.pdf', 79141, 'application/pdf', 'Pending', NULL, '2026-07-18 01:18:18'),
+(16, 4, 1, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-574520/122f69968a9575d3da5553105f91e1c3.pdf', 'COLORED-1-COPY_20260715_135637_0000.pdf', 79141, 'application/pdf', 'Pending', NULL, '2026-07-18 01:33:04'),
+(17, 4, 2, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-574520/857602ed6653d65297d2597288aebb96.pdf', 'COLORED-1-COPY_20260715_135637_0000.pdf', 79141, 'application/pdf', 'Pending', NULL, '2026-07-18 01:33:04'),
+(18, 4, 3, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-574520/ac8e1d774819c632dd48c8e8cdb064d3.pdf', 'LEARNING-OUTCOME-FORMAT.pdf', 282750, 'application/pdf', 'Pending', NULL, '2026-07-18 01:33:04'),
+(19, 4, 4, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-574520/6c0ec4391bb2bf842a5925180c070752.pdf', 'COLORED-1-COPY_20260715_135637_0000.pdf', 79141, 'application/pdf', 'Pending', NULL, '2026-07-18 01:33:04'),
+(20, 4, 5, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-574520/ebfcc51a9795cc8913fe81d85970cde2.pdf', 'LEARNING-OUTCOME-FORMAT.pdf', 282750, 'application/pdf', 'Pending', NULL, '2026-07-18 01:33:04'),
+(21, 1, 1, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-574324/af8987961037d1d1f9f9e5fb141c96d6.pdf', 'COLORED-1-COPY_20260715_135637_0000.pdf', 79141, 'application/pdf', 'Pending', NULL, '2026-07-18 03:09:53'),
+(22, 1, 2, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-574324/6e5b6691bd04d3030d1d2abc72cd11cf.pdf', 'COLORED-1-COPY_20260715_135637_0000.pdf', 79141, 'application/pdf', 'Pending', NULL, '2026-07-18 03:09:53'),
+(23, 1, 3, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-574324/0db2dc6366ac99b8c0114e925ae79f57.pdf', 'LEARNING-OUTCOME-FORMAT.pdf', 282750, 'application/pdf', 'Pending', NULL, '2026-07-18 03:09:53'),
+(24, 1, 4, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-574324/f0dff2b19b67b369d003647e1d67fd13.pdf', 'COLORED-1-COPY_20260715_135637_0000.pdf', 79141, 'application/pdf', 'Pending', NULL, '2026-07-18 03:09:53'),
+(25, 2, 1, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-936527/a925050ebfcb316df78e8798cb07781d.jpg', '742324485_1960946938195230_5444947441481501899_n.jpg', 315003, 'image/jpeg', 'Pending', NULL, '2026-07-23 16:20:53'),
+(26, 2, 2, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-936527/9e7cef91b8c524bde8aeec21d159c8bc.jpg', '742324485_1960946938195230_5444947441481501899_n.jpg', 315003, 'image/jpeg', 'Pending', NULL, '2026-07-23 16:20:53'),
+(27, 2, 3, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-936527/ebb16ede6a28756d48bdc8f9f8e90d1d.jpg', '742324485_1960946938195230_5444947441481501899_n.jpg', 315003, 'image/jpeg', 'Pending', NULL, '2026-07-23 16:20:53'),
+(28, 2, 4, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-936527/29364e859339770554a392a727c602ba.jpg', '742324485_1960946938195230_5444947441481501899_n.jpg', 315003, 'image/jpeg', 'Pending', NULL, '2026-07-23 16:20:53'),
+(29, 2, 5, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-936527/166a3ae3d04bf4218d22c6c97237dccd.jpg', '742324485_1960946938195230_5444947441481501899_n.jpg', 315003, 'image/jpeg', 'Pending', NULL, '2026-07-23 16:20:53');
 
 -- --------------------------------------------------------
 
@@ -201,9 +266,7 @@ CREATE TABLE `enrollments` (
 --
 
 INSERT INTO `enrollments` (`enrollment_id`, `student_id`, `section_id`, `school_year`, `school_year_id`, `semester`, `date_enrolled`, `status`) VALUES
-(1, 4, 2, '2026-2027', 1, '1st Semester', '2026-07-04 03:50:16', 'Dropped'),
-(2, 1, 2, '2026-2027', 1, '1st Semester', '2026-07-04 05:29:51', 'Enrolled'),
-(3, 3, 2, '2026-2027', 1, '1st Semester', '2026-07-05 02:13:18', 'Enrolled');
+(8, 10, 5, '2026-2027', 1, '1st Semester', '2026-07-23 17:21:16', 'Enrolled');
 
 -- --------------------------------------------------------
 
@@ -384,7 +447,12 @@ INSERT INTO `students` (`student_id`, `lrn`, `student_number`, `first_name`, `la
 (4, '123456789015', '2026-0004', 'Bianca', 'Torres', 'Mendoza', 'Female', '2008-09-09', '12 Molino Rd., Brgy. Molino III, Bacoor, Cavite', '09171234509', 'bianca.torres@example.com', '12', 'Active', 'Antonio Torres', '09171234510', 'Businessman', 'Grace Torres', '09171234511', 'Accountant', NULL, NULL, NULL, NULL, 'Grace Torres', 'Mother', '09171234511', NULL, NULL, '2026-07-04 03:38:34'),
 (5, '123456789016', '2026-0005', 'Josh', 'Villanueva', 'Cruz', 'Male', '2009-01-30', '89 Governor\'s Dr., Brgy. Malagasang, Imus, Cavite', '09171234512', 'josh.villanueva@example.com', '11', 'Active', 'Nestor Villanueva', '09171234513', 'OFW', 'Rosario Villanueva', '09171234514', 'Housewife', 'Elena Cruz', 'Aunt', '09171234515', '90 Governor\'s Dr., Brgy. Malagasang, Imus, Cavite', 'Rosario Villanueva', 'Mother', '09171234514', NULL, NULL, '2026-07-04 03:38:34'),
 (6, 'Non error al', '762', 'Whoopi', 'Villarreal', 'Arden Stephenson', 'Female', '2011-05-08', 'Cillum nobis do veli', '+1 (517) 876-6398', 'malelimaq@mailinator.com', '12', 'Active', 'Leroy Newton', '+1 (585) 175-3873', 'Et vero impedit fac', 'Clinton Ferguson', '+1 (686) 408-8277', 'Repudiandae necessit', 'Alexander Jones', 'Nihil commodo id nem', '+1 (986) 374-5567', 'Amet officia quae i', 'Stella Frazier', 'Explicabo Facere er', '+1 (339) 397-6779', NULL, NULL, '2026-07-04 04:06:34'),
-(7, 'Maiores dolo', '590', 'Merrill', 'Dotson', 'Nerea Holder', 'Female', '2024-08-30', 'Debitis doloremque q', '+1 (444) 222-8575', 'nofupe@mailinator.com', '11', 'Inactive', 'Yael Quinn', '+1 (645) 754-3951', 'In asperiores beatae', 'Xaviera Stout', '+1 (818) 853-1765', 'Amet officiis illum', 'Caleb Rivas', 'Adipisci ut aspernat', '+1 (275) 194-1103', 'Id accusantium neque', 'Winter Houston', 'Nostrud dolor qui et', '+1 (907) 754-4473', 'Transferred Out', '2026-07-08 17:23:07', '2026-07-04 04:06:53');
+(7, 'Maiores dolo', '590', 'Merrill', 'Dotson', 'Nerea Holder', 'Female', '2024-08-30', 'Debitis doloremque q', '+1 (444) 222-8575', 'nofupe@mailinator.com', '11', 'Inactive', 'Yael Quinn', '+1 (645) 754-3951', 'In asperiores beatae', 'Xaviera Stout', '+1 (818) 853-1765', 'Amet officiis illum', 'Caleb Rivas', 'Adipisci ut aspernat', '+1 (275) 194-1103', 'Id accusantium neque', 'Winter Houston', 'Nostrud dolor qui et', '+1 (907) 754-4473', 'Transferred Out', '2026-07-08 17:23:07', '2026-07-04 04:06:53'),
+(8, '211222222222', '2026-8485', 'Christine', 'Farley', 'Britanney Conner', 'Female', '1994-03-15', 'Irure dolore ullamco', '09999999999', 'jesihebec@mailinator.com', '11', 'Active', 'Nigel Rodriquez', '09999999999', NULL, 'Idona Sharpe', '09999999999', NULL, 'Alden Branch', 'Minima minim tenetur', '09999999999', NULL, 'Daniel Lewis', 'Magnam mollit ea mol', '09999999999', NULL, NULL, '2026-07-17 02:55:57'),
+(9, '888888888888', '2026-2198', 'Dillon', 'Sampson', 'Denton Wilkerson', 'Female', '2013-09-22', 'Exercitationem disti', '09999999999', 'senylahoni@mailinator.com', '12', 'Active', 'Iona Stout', '09999999999', NULL, 'Hiroko Mays', '09999999999', NULL, 'Caldwell Chen', 'Distinctio Voluptas', '09999999999', NULL, 'Yeo Pearson', 'Quo doloribus sapien', '09999999999', NULL, NULL, '2026-07-18 01:15:58'),
+(10, '122222222222', '2026-4246', 'Sybil', 'Delaney', 'Riley Brennan', 'Male', '1982-01-03', 'Occaecat nihil molli', '09999999999', 'kristanalmario@gmail.com', '11', 'Active', 'Kevin Waller', '09999999999', NULL, 'Suki Ball', '09999999999', NULL, 'Salvador Rivas', 'Ad ut aut dolore ten0', '09999999999', NULL, 'Charde Ayers', 'Vitae tempora tempor', '09999999999', NULL, NULL, '2026-07-18 01:18:38'),
+(12, '875554564645', '2026-4161', 'Almario', 'Kristan', 'Stacy Garcia', 'Male', '1995-12-31', 'Anim qui rerum bland', '09999999999', 'pawatytil@mailinator.com', '11', 'Active', 'Alexa Vega', '09099999999', NULL, 'Kenyon Franks', '09999999999', NULL, 'Olivia Henry', 'Aut id est maiores a', '09999999999', NULL, 'Leigh Pierce', 'Aliquid praesentium', '09999999999', NULL, NULL, '2026-07-18 03:10:18'),
+(13, '099999999999', '2026-1571', 'Evelyn', 'Wolf', 'Olivia Roach', 'Female', '1984-11-18', 'Sed et aperiam venia', '09999999999', 'hofako@mailinator.com', '12', 'Active', 'Rana Davidson', '09999999999', NULL, 'Heidi Perry', '09999999999', NULL, 'Alfonso Steele', 'Incididunt dolore pr', '09999999999', NULL, 'Tanner Benson', 'Nulla laboriosam al', '09999999999', NULL, NULL, '2026-07-23 16:54:39');
 
 -- --------------------------------------------------------
 
@@ -530,7 +598,7 @@ CREATE TABLE `users` (
   `password_hash` varchar(255) NOT NULL,
   `full_name` varchar(100) NOT NULL,
   `email` varchar(100) NOT NULL,
-  `role` enum('Admin','Registrar', 'Accounting', 'Student') NOT NULL DEFAULT 'Admin',
+  `role` enum('Admin','Staff','Registrar','Accounting') NOT NULL DEFAULT 'Admin',
   `created_at` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -547,6 +615,24 @@ INSERT INTO `users` (`user_id`, `password_hash`, `full_name`, `email`, `role`, `
 --
 -- Indexes for dumped tables
 --
+
+--
+-- Indexes for table `acct_fees`
+--
+ALTER TABLE `acct_fees`
+  ADD PRIMARY KEY (`fee_id`),
+  ADD UNIQUE KEY `uq_fee_per_term` (`code`,`school_year`,`semester`),
+  ADD KEY `idx_term` (`school_year`,`semester`,`is_active`);
+
+--
+-- Indexes for table `acct_payments`
+--
+ALTER TABLE `acct_payments`
+  ADD PRIMARY KEY (`acct_payment_id`),
+  ADD UNIQUE KEY `uq_reference` (`reference`),
+  ADD KEY `idx_session` (`checkout_session_id`),
+  ADD KEY `idx_student` (`student_number`),
+  ADD KEY `idx_status` (`status`);
 
 --
 -- Indexes for table `applicants`
@@ -671,6 +757,18 @@ ALTER TABLE `users`
 --
 
 --
+-- AUTO_INCREMENT for table `acct_fees`
+--
+ALTER TABLE `acct_fees`
+  MODIFY `fee_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+
+--
+-- AUTO_INCREMENT for table `acct_payments`
+--
+ALTER TABLE `acct_payments`
+  MODIFY `acct_payment_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `applicants`
 --
 ALTER TABLE `applicants`
@@ -680,7 +778,7 @@ ALTER TABLE `applicants`
 -- AUTO_INCREMENT for table `applicant_documents`
 --
 ALTER TABLE `applicant_documents`
-  MODIFY `document_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `document_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
 
 --
 -- AUTO_INCREMENT for table `class_sections`
@@ -698,7 +796,7 @@ ALTER TABLE `document_types`
 -- AUTO_INCREMENT for table `enrollments`
 --
 ALTER TABLE `enrollments`
-  MODIFY `enrollment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `enrollment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `payments`
@@ -734,7 +832,7 @@ ALTER TABLE `strands`
 -- AUTO_INCREMENT for table `students`
 --
 ALTER TABLE `students`
-  MODIFY `student_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `student_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT for table `subjects`
@@ -758,7 +856,7 @@ ALTER TABLE `tracks`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- Constraints for dumped tables
