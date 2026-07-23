@@ -14,7 +14,7 @@ class UserDAO{
     }
 
     public function VerifyUser(Users $user){
-        $query = "SELECT * FROM users WHERE email = :email AND role = 'Admin'";
+        $query = "SELECT * FROM users WHERE email = :email";
 
         $stmt = $this->conn->prepare($query);
 

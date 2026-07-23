@@ -128,7 +128,7 @@
             if($result){
                 // Check if password from database matches the user input.
                 if(verifyPassword($account->getPassword(), $result['password_hash'])){
-                    $account = setNewHashedPassword($user, $_POST['newPassReset']);
+                    $account = setNewHashedPassword($user, $_POST['newpassReset']);
                     $result = $dao->ChangePassword($account);
                     
                     if($result){
