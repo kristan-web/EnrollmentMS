@@ -68,7 +68,7 @@
         <div class="tabs">
           <button class="tab is-active" data-status="Pending">Pending <span class="tab__count" id="pendingCount">0</span></button>
           <button class="tab" data-status="Approved">Approved <span class="tab__count" id="approvedCount">0</span></button>
-          <button class="tab" data-status="Refused">Refused <span class="tab__count" id="refusedCount">0</span></button>
+          <button class="tab" data-status="Rejected">Rejected <span class="tab__count" id="rejectedCount">0</span></button>  <!-- Changed from "Refused" -->
           <a class="tab" href="student.php">Students</a>
         </div>
         <div class="search-box">
@@ -147,12 +147,12 @@
               <span>Status <span style="color:red;">*</span></span>
               <select name="status" id="statusSelect" required>
                 <option value="Approved">Approve</option>
-                <option value="Refused">Refuse</option>
+                <option value="Rejected">Reject</option>  <!-- Changed from "Refused" -->
               </select>
             </label>
-            <label class="field field--wide" id="refusalReasonField" hidden>
-              <span>Refusal Reason <span style="color:red;">*</span></span>
-              <textarea name="refusal_reason" id="refusalReasonInput" rows="3" placeholder="Explain why this application is being refused."></textarea>
+            <label class="field field--wide" id="rejectionReasonField" hidden>  <!-- Changed from refusalReasonField -->
+              <span>Rejection Reason <span style="color:red;">*</span></span>  <!-- Changed from "Refusal Reason" -->
+              <textarea name="rejection_reason" id="rejectionReasonInput" rows="3" placeholder="Explain why this application is being rejected."></textarea>  <!-- Changed from refusal_reason -->
             </label>
           </div>
 

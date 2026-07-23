@@ -155,7 +155,7 @@ if (!class_exists('Applicant')) {
         }
 
         public static function allowedStatuses() {
-            return ["Pending", "Approved", "Refused"];
+            return ["Pending", "Approved", "Rejected"];  // Changed from "Refused"
         }
 
         // ===== Validation =====

@@ -158,6 +158,10 @@ form.elements.applicantType.addEventListener("change", () => {
 });
 
 function goTo(step) {
+  // Clamp step to valid range
+  if (step < 1) step = 1;
+  if (step > TOTAL_STEPS) step = TOTAL_STEPS;
+  
   current = step;
   steps.forEach((s) => { s.hidden = Number(s.dataset.step) !== step; });
   stepperItems.forEach((item, i) => {
@@ -166,8 +170,18 @@ function goTo(step) {
   });
   backBtn.hidden = false;
   backBtn.textContent = step === 1 ? "Back to Home" : "Back";
-  nextBtn.hidden = step === TOTAL_STEPS;
-  submitBtn.hidden = step !== TOTAL_STEPS;
+  
+  // FIX: Explicitly control button visibility
+  if (step === TOTAL_STEPS) {
+    // Last step - show Submit, hide Next
+    nextBtn.style.display = 'none';
+    submitBtn.style.display = 'inline-flex';
+  } else {
+    // Not last step - show Next, hide Submit
+    nextBtn.style.display = 'inline-flex';
+    submitBtn.style.display = 'none';
+  }
+  
   stepChip.textContent = `Step ${step} of ${TOTAL_STEPS}`;
   progressBar.style.width = `${(step / TOTAL_STEPS) * 100}%`;
   setMsg("");
@@ -364,6 +378,10 @@ reviewBody.addEventListener("click", (e) => {
 });
 
 nextBtn.addEventListener("click", () => {
+  // Prevent going past the last step
+  if (current >= TOTAL_STEPS) {
+    return;
+  }
   if (validateStep(current)) goTo(current + 1);
 });
 

@@ -4,7 +4,7 @@ const statusResult = document.getElementById("statusResult");
 const submitBtn = statusForm.querySelector("button[type=submit]");
 
 // Adjust if your controller lives somewhere else relative to this view.
-const CONTROLLER_URL = "../Controller/applicants_controllers.php";
+const CONTROLLER_URL = "../Controller/status_controller.php";
 
 const STATUS_CLASS = {
   "Pending": "pending",
@@ -60,7 +60,6 @@ function setLoading(isLoading) {
 
 function formatDate(value) {
   if (!value) return "—";
-  // MySQL datetimes ("2026-07-16 10:23:00") need a "T" for reliable Date parsing.
   const d = new Date(String(value).replace(" ", "T"));
   if (isNaN(d.getTime())) return value;
   return d.toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" });
@@ -102,11 +101,16 @@ function normalizeApplicant(raw) {
     submittedAt: raw.submitted_at,
     status: raw.status,
     rejectionReason: raw.rejection_reason,
-    // Not returned by findByReferenceAndEmail() yet — stays empty until a
-    // documents endpoint/DAO method is added. Rendering below skips the
-    // documents block gracefully if this is empty.
     documents: Array.isArray(raw.documents) ? raw.documents : []
   };
+}
+
+function formatFileSize(bytes) {
+    if (!bytes || bytes === 0) return '—';
+    const units = ['B', 'KB', 'MB', 'GB'];
+    const k = 1024;
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + units[i];
 }
 
 statusForm.addEventListener("submit", async (e) => {
@@ -155,21 +159,177 @@ statusForm.addEventListener("submit", async (e) => {
       </li>`).join("")}
   </ol>`;
 
+  // Add click handler for image previews
+document.addEventListener('click', function(e) {
+    const img = e.target.closest('.doc-preview-img');
+    if (img) {
+        // Create modal for full-size view
+        const modal = document.createElement('div');
+        modal.className = 'image-modal';
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            cursor: pointer;
+            padding: 20px;
+        `;
+        
+        const fullImg = document.createElement('img');
+        fullImg.src = img.src;
+        fullImg.style.cssText = `
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+            border-radius: 8px;
+        `;
+        
+        modal.appendChild(fullImg);
+        modal.addEventListener('click', function() {
+            modal.remove();
+        });
+        
+        // Close on escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && document.body.contains(modal)) {
+                modal.remove();
+            }
+        });
+        
+        document.body.appendChild(modal);
+    }
+});
+
   const docsHtml = docs.length
     ? `<p class="status-docs__title">Submitted Documents</p>
       <div class="status-docs">
-        ${docs.map((d) => `
-          <div class="status-doc">
-            <span class="status-doc__name">${esc(d.documentTypeName)}</span>
-            <span class="badge ${DOC_BADGE[d.status] || "badge--pending"}">${esc(d.status)}</span>
-            ${d.status === "Rejected" && d.remarks ? `<span class="status-doc__remarks">Remarks: ${esc(d.remarks)}</span>` : ""}
-          </div>`).join("")}
+        ${docs.map((d) => {
+          // Determine file icon
+          let fileIcon = '📄';
+          let previewHtml = '';
+          
+          if (d.is_image) {
+            fileIcon = '🖼️';
+            previewHtml = `
+              <div class="status-doc__preview">
+                <img src="${d.preview_url}" alt="${esc(d.original_filename)}" 
+                     class="doc-preview-img" 
+                     loading="lazy"
+                     onerror="this.style.display='none'" />
+              </div>
+            `;
+          } else if (d.is_pdf) {
+            fileIcon = '📕';
+            previewHtml = `
+              <div class="status-doc__preview pdf-preview">
+                <a href="${d.preview_url}" target="_blank" class="doc-preview-link">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="32" height="32">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                    <polyline points="10 9 9 9 8 9"/>
+                  </svg>
+                  <span>View PDF</span>
+                </a>
+              </div>
+            `;
+          } else {
+            fileIcon = '📄';
+            previewHtml = `
+              <div class="status-doc__preview">
+                <a href="${d.preview_url}" target="_blank" class="doc-preview-link">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                    <polyline points="10 9 9 9 8 9"/>
+                  </svg>
+                  <span>View Document</span>
+                </a>
+              </div>
+            `;
+          }
+          
+          return `
+            <div class="status-doc">
+              <div class="status-doc__header">
+                <span class="status-doc__name">${esc(d.document_type_name || d.documentTypeName || 'Untitled')}</span>
+                <span class="badge ${DOC_BADGE[d.status] || "badge--pending"}">${esc(d.status)}</span>
+              </div>
+              ${d.original_filename ? `
+                <div class="status-doc__file">
+                  <span class="status-doc__filename">${fileIcon} ${esc(d.original_filename)}</span>
+                  ${d.file_size ? `<span class="status-doc__filesize">(${formatFileSize(d.file_size)})</span>` : ''}
+                </div>
+              ` : ''}
+              ${previewHtml}
+              ${d.uploaded_at ? `
+                <div class="status-doc__meta">
+                  Uploaded: ${formatDate(d.uploaded_at)}
+                </div>
+              ` : ''}
+              ${d.status === "Rejected" && d.remarks ? `
+                <div class="status-doc__remarks">Remarks: ${esc(d.remarks)}</div>
+              ` : ''}
+            </div>
+          `;
+        }).join("")}
       </div>`
-    : "";
+    : "<p class=\"status-docs__empty\">No documents have been uploaded yet.</p>";
 
   const rejectionHtml = status === "Rejected" && app.rejectionReason
     ? `<p class="status-note status-note--rejected"><strong>Reason:</strong> ${esc(app.rejectionReason)}</p>`
     : "";
+
+  // ============ ACTION BUTTONS BASED ON STATUS ============
+  let actionButtonsHtml = '';
+  
+  if (status === "Rejected") {
+    actionButtonsHtml = `
+      <div class="status-actions">
+        <a href="/EnrollmentMS/app/Admission/View/apply.php" class="btn btn--primary btn--large">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="20" height="20" style="margin-right:8px;">
+            <path d="M5 12h14"/>
+            <path d="M12 5v14"/>
+          </svg>
+          Submit New Application
+        </a>
+        <p class="status-actions__note">Start a fresh application. Your previous information will not be carried over.</p>
+      </div>
+    `;
+  } else if (status === "Approved") {
+    actionButtonsHtml = `
+      <div class="status-actions">
+        <a href="/EnrollmentMS/app/Admission/View/enroll.php" class="btn btn--primary btn--large">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20" style="margin-right:8px;">
+            <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+            <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+          </svg>
+          Proceed to Enrollment
+        </a>
+      </div>
+    `;
+  } else if (status === "Enrolled") {
+    actionButtonsHtml = `
+      <div class="status-actions">
+        <a href="/EnrollmentMS/app/Dashboard/View/index.php" class="btn btn--primary btn--large">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20" style="margin-right:8px;">
+            <path d="M3 12h18"/>
+            <path d="M12 3v18"/>
+          </svg>
+          Go to Dashboard
+        </a>
+      </div>
+    `;
+  }
 
   statusResult.innerHTML = `
     <div class="status-hero status-hero--${STATUS_CLASS[status] || "pending"}">
@@ -183,6 +343,7 @@ statusForm.addEventListener("submit", async (e) => {
     ${timelineHtml}
     <p class="status-note">${STATUS_NOTE[status] || ""}</p>
     ${rejectionHtml}
-    ${docsHtml}`;
+    ${docsHtml}
+    ${actionButtonsHtml}`;
   statusResult.hidden = false;
 });
