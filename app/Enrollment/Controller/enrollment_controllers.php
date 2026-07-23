@@ -30,6 +30,17 @@ try {
                 "semester" => isset($_GET["semester"]) ? $_GET["semester"] : null
             ];
             echo json_encode($dao->getEnrollments($filters));
+         
+         // Get inactive students (for enrollment)
+        } else if ($action == "inactive_students") {
+            $filters = [
+                "keyword" => isset($_GET["keyword"]) ? $_GET["keyword"] : null
+            ];
+            
+            $result = $dao->getInactiveStudents($filters);
+            echo json_encode($result);
+         
+
             // Reactivate enrollment
         } else if ($action == "reactivate") {
             $id = isset($_POST["enrollment_id"]) ? $_POST["enrollment_id"] : null;

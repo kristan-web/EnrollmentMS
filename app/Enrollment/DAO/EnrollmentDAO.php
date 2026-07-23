@@ -22,6 +22,68 @@ class EnrollmentDAO {
 
     // ============ STUDENT QUERIES ============
     
+    // GET INACTIVE STUDENTS (for enrollment from the inactive list)
+public function getInactiveStudents($filters = []) {
+    $params = [];
+    
+    $query = "
+    SELECT 
+        s.student_id,
+        s.student_number,
+        s.first_name,
+        s.last_name,
+        s.middle_name,
+        s.gender,
+        s.status AS student_status,
+        'Inactive' AS enrollment_status,
+        NULL AS enrollment_id,
+        NULL AS school_year,
+        NULL AS semester,
+        NULL AS date_enrolled,
+        NULL AS enrollment_status_value,
+        NULL AS section_id,
+        NULL AS section_name,
+        NULL AS grade_level,
+        NULL AS strand_code,
+        NULL AS strand_name
+    FROM students s
+    WHERE s.status = 'Inactive'
+    ";
+
+    // Search filter
+    if (!empty($filters["keyword"])) {
+        $query .= " AND (
+            s.first_name LIKE :kw1
+            OR s.last_name LIKE :kw2
+            OR s.student_number LIKE :kw3
+        ) ";
+        $likeKeyword = "%" . $filters["keyword"] . "%";
+        $params[":kw1"] = $likeKeyword;
+        $params[":kw2"] = $likeKeyword;
+        $params[":kw3"] = $likeKeyword;
+    }
+
+    $query .= " ORDER BY s.last_name, s.first_name ";
+    $query .= " LIMIT 1000 ";
+
+    try {
+        $stmt = $this->conn->prepare($query);
+        foreach ($params as $key => $value) {
+            $stmt->bindValue($key, $value);
+        }
+        $stmt->execute();
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        error_log('getInactiveStudents returned ' . count($result) . ' records');
+        return $result;
+    } catch (PDOException $e) {
+        error_log('SQL Error in getInactiveStudents: ' . $e->getMessage());
+        error_log('Query: ' . $query);
+        error_log('Params: ' . print_r($params, true));
+        return [];
+    }
+}
+
+
     // GET UNENROLLED STUDENTS (students not yet enrolled for a specific school year and semester)
     public function getUnenrolledStudents($filters = []) {
         // If no school_year_id is provided, use the active one
@@ -40,13 +102,6 @@ class EnrollmentDAO {
         ];
 
         // Semester belongs in the JOIN's ON clause, not the WHERE clause.
-        // If it were a WHERE condition, it would evaluate against e.semester,
-        // which is NULL for a LEFT JOIN non-match (i.e. every genuinely
-        // unenrolled student) - "NULL = :semester" is never true in SQL, so
-        // any semester filter would silently wipe out the entire unenrolled
-        // list. Putting it in the ON clause instead scopes what counts as
-        // "already enrolled" to that specific school year + semester, and
-        // leaves unmatched (unenrolled) rows alone.
         $semesterJoinClause = "";
         if (!empty($filters["semester"])) {
             $semesterJoinClause = " AND e.semester = :semester ";
@@ -83,15 +138,15 @@ class EnrollmentDAO {
             $semesterJoinClause
         LEFT JOIN class_sections cs ON cs.section_id = e.section_id
         LEFT JOIN strands st ON st.strand_id = cs.strand_id
-        WHERE s.status IN ('Active', 'Inactive')
+        WHERE 1=1
         ";
 
-        // Show either enrolled or unenrolled based on filter
+        // FIXED: Show either enrolled or unenrolled based on filter
         if ($showEnrolled) {
             // Show only enrolled students
             $query .= " AND e.enrollment_id IS NOT NULL";
         } else {
-            // Show only unenrolled students
+            // Show only unenrolled students (including inactive ones)
             $query .= " AND e.enrollment_id IS NULL";
         }
 
