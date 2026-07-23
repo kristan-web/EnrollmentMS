@@ -2098,6 +2098,13 @@ body::after {
   text-transform: uppercase;
 }
 
+.login .form .btn.btn--compact {
+  align-self: center;
+  width: min(100%, 220px);
+  padding-left: 30px;
+  padding-right: 30px;
+}
+
 .login .auth-divider {
   width: 100%;
   margin: 18px 0 12px;
@@ -2434,4 +2441,137 @@ body::after {
   .btn:hover, .btn:active, .topbar__login:hover, .lang__btn:hover, .topbar__cta:hover, .portal-card:hover, .portal-card:hover .portal-card__icon, .doc-slot.is-drag { transform: none; }
   .btn--submit:hover::before, .portal-card:hover::after { animation: none; }
   .success__icon::after, .tl-item.is-current .tl-dot, .hero__eyebrow i, .lang.is-loading .lang__btn > svg:first-child { animation: none; }
+}
+
+/* ---- Admission wizard polish ------------------------------------------- */
+/* Scoped to .apply-shell so only app/Admission/View/apply.php changes; every
+   other page on portal.css keeps its current look. Visual only — no grid,
+   flex-direction or breakpoint is touched, so the layout is unchanged. */
+
+.apply-shell .card {
+  border-radius: 26px;
+  background:
+    radial-gradient(130% 80% at 50% -20%, rgba(96, 145, 255, 0.09), transparent 62%),
+    var(--card);
+  box-shadow:
+    0 2px 4px rgba(24, 47, 110, 0.05),
+    0 30px 64px rgba(24, 47, 110, 0.17),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+.apply-shell .card::before {
+  height: 6px;
+  background: linear-gradient(90deg, var(--blue), var(--cyan) 50%, #6f5cff);
+}
+
+.apply-shell .wizard-head { margin-bottom: 26px; }
+.apply-shell .step-chip {
+  padding: 7px 15px;
+  color: #fff;
+  background: linear-gradient(135deg, var(--blue-deep), var(--blue) 55%, var(--cyan));
+  box-shadow: 0 7px 16px rgba(47, 95, 208, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+.apply-shell .progress {
+  height: 8px;
+  background: rgba(22, 36, 79, 0.07);
+  box-shadow: inset 0 1px 2px rgba(22, 36, 79, 0.09);
+}
+.apply-shell .progress__bar {
+  background: linear-gradient(90deg, var(--blue-deep), var(--blue) 45%, var(--cyan));
+  box-shadow: 0 0 14px rgba(55, 205, 255, 0.6);
+}
+
+.apply-shell .step__icon {
+  border-radius: 16px;
+  background: linear-gradient(150deg, #4a7bf0, var(--blue-deep) 60%, var(--navy));
+  box-shadow: 0 12px 24px rgba(47, 95, 208, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+
+.apply-shell .form-section {
+  gap: 12px;
+  color: var(--blue-deep);
+}
+.apply-shell .form-section::before {
+  content: "";
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: linear-gradient(150deg, var(--cyan), var(--blue));
+  box-shadow: 0 0 0 4px rgba(47, 95, 208, 0.12);
+}
+
+.apply-shell .field > span {
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+  color: rgba(22, 36, 79, 0.52);
+  transition: color 0.15s var(--ease);
+}
+
+.apply-shell .field input,
+.apply-shell .field select,
+.apply-shell .field textarea {
+  padding: 13px 15px;
+  border: 1.5px solid rgba(22, 36, 79, 0.1);
+  border-radius: 13px;
+  background-color: #f6f9fe;
+  box-shadow: inset 0 1px 2px rgba(22, 36, 79, 0.045);
+  transition: border-color 0.16s var(--ease), box-shadow 0.16s var(--ease),
+              background-color 0.16s var(--ease);
+}
+.apply-shell .field input::placeholder,
+.apply-shell .field textarea::placeholder { color: rgba(22, 36, 79, 0.32); }
+
+.apply-shell .field input:hover,
+.apply-shell .field select:hover,
+.apply-shell .field textarea:hover {
+  background-color: #fff;
+  border-color: rgba(47, 95, 208, 0.32);
+}
+.apply-shell .field input:focus,
+.apply-shell .field select:focus,
+.apply-shell .field textarea:focus {
+  background-color: #fff;
+  border-color: var(--blue);
+  box-shadow: 0 0 0 4px rgba(47, 95, 208, 0.13), 0 8px 20px rgba(47, 95, 208, 0.13);
+}
+
+/* Keep the states portal.css already defines — the rules above would
+   otherwise out-rank them and flatten read-only and error fields. */
+.apply-shell .field input[readonly] {
+  background-color: rgba(22, 36, 79, 0.04);
+  color: var(--ink-2);
+  box-shadow: none;
+}
+.apply-shell .field input.is-invalid,
+.apply-shell .field select.is-invalid,
+.apply-shell .field textarea.is-invalid {
+  background-color: #fffafa;
+  border-color: var(--red);
+  box-shadow: 0 0 0 4px rgba(194, 42, 58, 0.1);
+}
+
+.apply-shell .field__hint { line-height: 1.5; }
+
+.apply-shell .rail-card {
+  border-radius: 22px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.35)),
+    var(--card);
+  border-color: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 1px 2px rgba(24, 47, 110, 0.05), 0 16px 36px rgba(24, 47, 110, 0.09);
+}
+.apply-shell .stepper__item.is-current .stepper__dot {
+  box-shadow: 0 10px 22px rgba(47, 95, 208, 0.38), 0 0 0 5px rgba(47, 95, 208, 0.12);
+}
+.apply-shell .stepper__item.is-done .stepper__dot {
+  box-shadow: 0 8px 18px rgba(22, 163, 74, 0.3), 0 0 0 4px rgba(34, 197, 94, 0.13);
+}
+.apply-shell .tips li { line-height: 1.55; }
+
+@media (prefers-reduced-motion: reduce) {
+  .apply-shell .field input,
+  .apply-shell .field select,
+  .apply-shell .field textarea { transition: none; }
 }

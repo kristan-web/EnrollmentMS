@@ -257,3 +257,19 @@ if(changePassword){
         }
     });
 }
+
+// Show / hide password. Delegated so it covers every .field__toggle on the page.
+document.addEventListener('click', (e) => {
+    const toggle = e.target.closest('.field__toggle');
+    if(!toggle) return;
+
+    const scope = toggle.closest('.field__inner') || toggle.parentElement;
+    const input = scope && scope.querySelector('input[type="password"], input[type="text"]');
+    if(!input) return;
+
+    const show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    toggle.classList.toggle('is-visible', show);
+    toggle.setAttribute('aria-pressed', String(show));
+    toggle.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+});

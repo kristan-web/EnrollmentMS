@@ -2,13 +2,10 @@
 const menuDash = document.getElementById('dashMenu');
 
 // Functions
-// Check if sessionRole exists, if not use default
-if (typeof sessionRole === 'undefined') {
-    console.warn('sessionRole is not defined, using default');
-    var sessionRole = 'guest';
-} else {
-    console.log('Session role:', sessionRole);
-}
+// Read the role the page declared. Never redeclare `sessionRole` here: the
+// pages define it with `const`, so a `var` of the same name is a SyntaxError
+// that stops this whole file from running.
+const dashRole = (typeof sessionRole === 'undefined' || !sessionRole) ? 'guest' : sessionRole;
 
 function showDashMenu(role){
     // If role is 'guest' or undefined, show default menu
@@ -59,7 +56,7 @@ function showDashMenu(role){
     if(role === 'Admin'){
         return `
         <li>
-            <a href="/EnrollmentMS/app/Dashboards/Views/RegistrarSide/records.php">
+            <a href="/EnrollmentMS/app/Dashboards/Views/RegistrarSide/data-entry.php">
                 <span class="submenu__icon" aria-hidden="true">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
                 </span>
@@ -118,6 +115,42 @@ function showDashMenu(role){
     `;
 }
 
+function currentPath() {
+    return window.location.pathname.replace(/\/+$/, '').toLowerCase();
+}
+
+function setActiveLink(link) {
+    menuDash.querySelectorAll('a').forEach((a) => {
+        a.classList.remove('is-active');
+        a.removeAttribute('aria-current');
+    });
+    link.classList.add('is-active');
+    link.setAttribute('aria-current', 'page');
+}
+
+function markActiveFromUrl() {
+    const here = currentPath();
+    const match = Array.from(menuDash.querySelectorAll('a[href]')).find((a) => {
+        return new URL(a.getAttribute('href'), window.location.origin)
+            .pathname.replace(/\/+$/, '').toLowerCase() === here;
+    });
+
+    if (match) setActiveLink(match);
+
+    const onDashboardPage = /\/dashboard\.(?:html|php)$/.test(here);
+    if (!match && !onDashboardPage) return;
+
+    menuDash.classList.add('is-open');
+    const toggle = document.getElementById('dashToggle');
+    if (toggle) toggle.setAttribute('aria-expanded', 'true');
+}
+
 if (menuDash) {
-    menuDash.innerHTML = showDashMenu(sessionRole);
+    menuDash.innerHTML = showDashMenu(dashRole);
+    markActiveFromUrl();
+
+    menuDash.addEventListener('click', (e) => {
+        const link = e.target.closest('a[href]');
+        if (link) setActiveLink(link);
+    });
 }
