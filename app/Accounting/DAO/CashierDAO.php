@@ -178,13 +178,12 @@ class CashierDAO {
     // email on their portal account. Lets the cashier verify manual uploads.
     public function getProofsForEmail($email) {
         $query = "
-            SELECT pp.proof_id, pp.reference_number, pp.amount, pp.method,
-                   pp.payment_reference, pp.original_filename, pp.status,
-                   pp.remarks, pp.uploaded_at
-            FROM payment_proofs pp
-            JOIN student_accounts sa ON sa.account_id = pp.account_id
-            WHERE sa.email = :email
-            ORDER BY pp.uploaded_at DESC
+            SELECT proof_id, reference_number, amount, method,
+                   payment_reference, original_filename, status,
+                   remarks, uploaded_at
+            FROM payment_proofs
+            WHERE email = :email
+            ORDER BY uploaded_at DESC
         ";
         $stmt = $this->conn->prepare($query);
         $stmt->bindValue(":email", $email);

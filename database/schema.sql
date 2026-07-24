@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 23, 2026 at 07:10 PM
+-- Generation Time: Jul 24, 2026 at 05:26 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -125,7 +125,9 @@ CREATE TABLE `applicants` (
 
 INSERT INTO `applicants` (`applicant_id`, `reference_number`, `applicant_type`, `first_name`, `last_name`, `middle_name`, `gender`, `birthdate`, `address`, `contact_number`, `email`, `lrn`, `desired_grade_level`, `desired_strand_id`, `school_year`, `father_name`, `father_contact_number`, `mother_name`, `mother_contact_number`, `guardian_name`, `guardian_relationship`, `guardian_contact_number`, `emergency_contact_name`, `emergency_contact_relationship`, `emergency_contact_number`, `status`, `rejection_reason`, `reviewed_by`, `reviewed_at`, `converted_student_id`, `submitted_at`) VALUES
 (1, 'EMS-2026-574324', 'New Student', 'Almario', 'Kristan', 'Stacy Garcia', 'Male', '1995-12-31', 'Anim qui rerum bland', '09999999999', 'pawatytil@mailinator.com', '875554564645', '11', 2, '2026-2027', 'Alexa Vega', '09099999999', 'Kenyon Franks', '09999999999', 'Olivia Henry', 'Aut id est maiores a', '09999999999', 'Leigh Pierce', 'Aliquid praesentium', '09999999999', 'Approved', '', NULL, '2026-07-18 03:10:18', 12, '2026-07-18 03:09:53'),
-(2, 'EMS-2026-936527', 'Transferee', 'Evelyn', 'Wolf', 'Olivia Roach', 'Female', '1984-11-18', 'Sed et aperiam venia', '09999999999', 'hofako@mailinator.com', '099999999999', '12', 6, '2026-2027', 'Rana Davidson', '09999999999', 'Heidi Perry', '09999999999', 'Alfonso Steele', 'Incididunt dolore pr', '09999999999', 'Tanner Benson', 'Nulla laboriosam al', '09999999999', 'Approved', '', NULL, '2026-07-23 16:54:39', 13, '2026-07-23 16:20:53');
+(2, 'EMS-2026-936527', 'Transferee', 'Evelyn', 'Wolf', 'Olivia Roach', 'Female', '1984-11-18', 'Sed et aperiam venia', '09999999999', 'hofako@mailinator.com', '099999999999', '12', 6, '2026-2027', 'Rana Davidson', '09999999999', 'Heidi Perry', '09999999999', 'Alfonso Steele', 'Incididunt dolore pr', '09999999999', 'Tanner Benson', 'Nulla laboriosam al', '09999999999', 'Approved', '', NULL, '2026-07-23 16:54:39', 13, '2026-07-23 16:20:53'),
+(3, 'EMS-2026-243983', 'Transferee', 'Sawyer', 'Wilkinson', 'Ferdinand Kidd', 'Female', '1970-02-10', 'Eos iusto obcaecati', '09999999999', 'mewy@mailinator.com', '099999999999', '11', 1, '2026-2027', 'Quemby Christensen', '09999999999', '09999999999999999999', '09999999999', 'Nissim Weber', 'Officia necessitatib', '09999999999', 'Wylie Tyler', 'Odio magnam quo moll+1 (947) 595-7124', '09999999999', '', 'Ang pangit talaga pre', NULL, '2026-07-24 01:43:09', NULL, '2026-07-24 01:42:24'),
+(4, 'EMS-2026-737235', 'Transferee', 'Brenda', 'Kent', 'Florence Nielsen', 'Male', '1992-03-22', 'Consequatur digniss', '09999999999', 'fatotyqojy@mailinator.com', '999999999999', '11', 2, '2026-2027', 'Oliver Clark', '09999999999', 'Ina Franks', '09999999999', 'Desirae Strong', 'Dolores provident i', '09999999999', 'Irene Blake', 'Possimus laborum A', '09999999999', 'Rejected', 'pangit', NULL, '2026-07-24 02:00:04', NULL, '2026-07-24 01:47:02');
 
 -- --------------------------------------------------------
 
@@ -152,16 +154,6 @@ CREATE TABLE `applicant_documents` (
 
 INSERT INTO `applicant_documents` (`document_id`, `applicant_id`, `document_type_id`, `file_path`, `original_filename`, `file_size`, `mime_type`, `status`, `remarks`, `uploaded_at`) VALUES
 (5, 1, 5, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-938506/5045393a9434439b74c56d07fcd0cb6a.png', 'Schedule (11).png', 70070, 'image/png', 'Pending', NULL, '2026-07-06 00:19:00'),
-(11, 3, 1, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-252879/4f3f58846536f7c899a7da6f0bc2f9ae.pdf', 'COLORED-1-COPY_20260715_135637_0000.pdf', 79141, 'application/pdf', 'Pending', NULL, '2026-07-18 01:18:18'),
-(12, 3, 2, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-252879/45afc257b23a61f939d18613c6073082.pdf', 'COLORED-1-COPY_20260715_135637_0000.pdf', 79141, 'application/pdf', 'Pending', NULL, '2026-07-18 01:18:18'),
-(13, 3, 3, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-252879/5e41b0421bb4e2b917b00ad77b1f1893.pdf', 'COLORED-1-COPY_20260715_135637_0000.pdf', 79141, 'application/pdf', 'Pending', NULL, '2026-07-18 01:18:18'),
-(14, 3, 4, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-252879/947e3d2ef9275e005bbe4aaf7e359f6b.pdf', 'COLORED-1-COPY_20260715_135637_0000.pdf', 79141, 'application/pdf', 'Pending', NULL, '2026-07-18 01:18:18'),
-(15, 3, 5, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-252879/f0ab6f0ef176e590e7f4be9d98a3ed42.pdf', 'COLORED-1-COPY_20260715_135637_0000.pdf', 79141, 'application/pdf', 'Pending', NULL, '2026-07-18 01:18:18'),
-(16, 4, 1, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-574520/122f69968a9575d3da5553105f91e1c3.pdf', 'COLORED-1-COPY_20260715_135637_0000.pdf', 79141, 'application/pdf', 'Pending', NULL, '2026-07-18 01:33:04'),
-(17, 4, 2, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-574520/857602ed6653d65297d2597288aebb96.pdf', 'COLORED-1-COPY_20260715_135637_0000.pdf', 79141, 'application/pdf', 'Pending', NULL, '2026-07-18 01:33:04'),
-(18, 4, 3, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-574520/ac8e1d774819c632dd48c8e8cdb064d3.pdf', 'LEARNING-OUTCOME-FORMAT.pdf', 282750, 'application/pdf', 'Pending', NULL, '2026-07-18 01:33:04'),
-(19, 4, 4, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-574520/6c0ec4391bb2bf842a5925180c070752.pdf', 'COLORED-1-COPY_20260715_135637_0000.pdf', 79141, 'application/pdf', 'Pending', NULL, '2026-07-18 01:33:04'),
-(20, 4, 5, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-574520/ebfcc51a9795cc8913fe81d85970cde2.pdf', 'LEARNING-OUTCOME-FORMAT.pdf', 282750, 'application/pdf', 'Pending', NULL, '2026-07-18 01:33:04'),
 (21, 1, 1, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-574324/af8987961037d1d1f9f9e5fb141c96d6.pdf', 'COLORED-1-COPY_20260715_135637_0000.pdf', 79141, 'application/pdf', 'Pending', NULL, '2026-07-18 03:09:53'),
 (22, 1, 2, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-574324/6e5b6691bd04d3030d1d2abc72cd11cf.pdf', 'COLORED-1-COPY_20260715_135637_0000.pdf', 79141, 'application/pdf', 'Pending', NULL, '2026-07-18 03:09:53'),
 (23, 1, 3, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-574324/0db2dc6366ac99b8c0114e925ae79f57.pdf', 'LEARNING-OUTCOME-FORMAT.pdf', 282750, 'application/pdf', 'Pending', NULL, '2026-07-18 03:09:53'),
@@ -170,7 +162,17 @@ INSERT INTO `applicant_documents` (`document_id`, `applicant_id`, `document_type
 (26, 2, 2, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-936527/9e7cef91b8c524bde8aeec21d159c8bc.jpg', '742324485_1960946938195230_5444947441481501899_n.jpg', 315003, 'image/jpeg', 'Pending', NULL, '2026-07-23 16:20:53'),
 (27, 2, 3, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-936527/ebb16ede6a28756d48bdc8f9f8e90d1d.jpg', '742324485_1960946938195230_5444947441481501899_n.jpg', 315003, 'image/jpeg', 'Pending', NULL, '2026-07-23 16:20:53'),
 (28, 2, 4, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-936527/29364e859339770554a392a727c602ba.jpg', '742324485_1960946938195230_5444947441481501899_n.jpg', 315003, 'image/jpeg', 'Pending', NULL, '2026-07-23 16:20:53'),
-(29, 2, 5, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-936527/166a3ae3d04bf4218d22c6c97237dccd.jpg', '742324485_1960946938195230_5444947441481501899_n.jpg', 315003, 'image/jpeg', 'Pending', NULL, '2026-07-23 16:20:53');
+(29, 2, 5, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-936527/166a3ae3d04bf4218d22c6c97237dccd.jpg', '742324485_1960946938195230_5444947441481501899_n.jpg', 315003, 'image/jpeg', 'Pending', NULL, '2026-07-23 16:20:53'),
+(30, 3, 1, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-243983/02f077a6e9479890efc0adb903c9df62.jpg', '742324485_1960946938195230_5444947441481501899_n.jpg', 315003, 'image/jpeg', 'Pending', NULL, '2026-07-24 01:42:24'),
+(31, 3, 2, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-243983/1e614eaad16b8f05827a83865be0a8b6.jpg', '742324485_1960946938195230_5444947441481501899_n.jpg', 315003, 'image/jpeg', 'Pending', NULL, '2026-07-24 01:42:24'),
+(32, 3, 3, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-243983/0ca51116ebef15ca18080595f79fe690.jpg', '742324485_1960946938195230_5444947441481501899_n.jpg', 315003, 'image/jpeg', 'Pending', NULL, '2026-07-24 01:42:24'),
+(33, 3, 4, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-243983/be0fb11ba78cd0cffaf745e50c440be1.jpg', '742324485_1960946938195230_5444947441481501899_n.jpg', 315003, 'image/jpeg', 'Pending', NULL, '2026-07-24 01:42:25'),
+(34, 3, 5, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-243983/8ede501653b2a334cd9aa604599375b4.jpg', '742324485_1960946938195230_5444947441481501899_n.jpg', 315003, 'image/jpeg', 'Pending', NULL, '2026-07-24 01:42:25'),
+(35, 4, 1, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-737235/695ab64968b5e3cf54374e0c22943f24.jpg', '742324485_1960946938195230_5444947441481501899_n.jpg', 315003, 'image/jpeg', 'Pending', NULL, '2026-07-24 01:47:02'),
+(36, 4, 2, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-737235/39348646cbe8201362298b0004a2ab0a.jpg', '742324485_1960946938195230_5444947441481501899_n.jpg', 315003, 'image/jpeg', 'Pending', NULL, '2026-07-24 01:47:02'),
+(37, 4, 3, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-737235/2244aa4e908991582987b2b4ffb52503.jpg', '742324485_1960946938195230_5444947441481501899_n.jpg', 315003, 'image/jpeg', 'Pending', NULL, '2026-07-24 01:47:02'),
+(38, 4, 4, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-737235/39d35c5003db241faad2eb7cae90ce35.jpg', '742324485_1960946938195230_5444947441481501899_n.jpg', 315003, 'image/jpeg', 'Pending', NULL, '2026-07-24 01:47:02'),
+(39, 4, 5, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-737235/d46713695033839823b091913ae6fbde.jpg', '742324485_1960946938195230_5444947441481501899_n.jpg', 315003, 'image/jpeg', 'Pending', NULL, '2026-07-24 01:47:02');
 
 -- --------------------------------------------------------
 
@@ -282,6 +284,34 @@ CREATE TABLE `payments` (
   `paymongo_reference_id` varchar(100) DEFAULT NULL,
   `payment_status` enum('Pending','Paid','Failed','Refunded') NOT NULL DEFAULT 'Pending',
   `payment_date` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `payments`
+--
+
+INSERT INTO `payments` (`payment_id`, `enrollment_id`, `amount`, `payment_method`, `paymongo_reference_id`, `payment_status`, `payment_date`) VALUES
+(1, 8, 19300.00, 'Cash', NULL, 'Paid', '2026-07-24 11:03:02');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `payment_proofs`
+--
+
+CREATE TABLE `payment_proofs` (
+  `proof_id` int(11) NOT NULL,
+  `student_number` varchar(20) DEFAULT NULL,
+  `email` varchar(100) NOT NULL,
+  `reference_number` varchar(100) DEFAULT NULL,
+  `amount` decimal(10,2) NOT NULL,
+  `method` varchar(50) DEFAULT NULL,
+  `payment_reference` varchar(100) DEFAULT NULL,
+  `original_filename` varchar(255) DEFAULT NULL,
+  `file_path` varchar(255) DEFAULT NULL,
+  `status` enum('Pending','Verified','Rejected') NOT NULL DEFAULT 'Pending',
+  `remarks` varchar(255) DEFAULT NULL,
+  `uploaded_at` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -610,7 +640,9 @@ INSERT INTO `users` (`user_id`, `password_hash`, `full_name`, `email`, `role`, `
 (1, '$2y$10$Y1vIULsMyjnhyUvOlJTku.IDLoR7mvehiLsT2uaNKGwQaocuqe8SC', 'Flavia Hunter', 'kadesu@mailinator.com', 'Staff', '2026-07-04 03:08:41'),
 (2, '$2y$10$qa4TqzVvxse8TfjH.YnZq.cVYSB5yACk8fQj726GBR35gk9ky6pki', 'Cooper Meadows', 'vupusyfuk@mailinator.com', 'Staff', '2026-07-04 03:08:50'),
 (3, '$2y$10$opj5udUgP27IsWmNJeDaMuxKaopL5XNK6FSMwE.PJ5WoLNDuiPfyS', 'kristan charles almario', 'kristan@gmail.com', 'Staff', '2026-07-04 03:09:23'),
-(4, '$2y$10$E1c4ZhJ319I9NG1up5loWepxXI8PIIMSTidDfdnYwW/ullPoTNCoe', 'Alvin Rhodes', 'fawybeciw@mailinator.com', 'Staff', '2026-07-08 18:52:43');
+(4, '$2y$10$E1c4ZhJ319I9NG1up5loWepxXI8PIIMSTidDfdnYwW/ullPoTNCoe', 'Alvin Rhodes', 'fawybeciw@mailinator.com', 'Staff', '2026-07-08 18:52:43'),
+(7, '$2y$10$IS7FOPPUli/Al5VNG5pAguAnvgLMoJBoJsHIxRUyrXBN7NBLjFQT6', 'Lance', 'lance@gmail.com', 'Admin', '2026-07-24 09:53:01'),
+(8, '$2y$10$dydVp8/3aJts5SdW2y5TpeOwp248DsTqNOyjYzWvBB4sIs5H4YyjK', 'Alexis', 'alexis@gmail.com', 'Accounting', '2026-07-24 10:00:43');
 
 --
 -- Indexes for dumped tables
@@ -681,6 +713,14 @@ ALTER TABLE `enrollments`
 ALTER TABLE `payments`
   ADD PRIMARY KEY (`payment_id`),
   ADD KEY `enrollment_id` (`enrollment_id`);
+
+--
+-- Indexes for table `payment_proofs`
+--
+ALTER TABLE `payment_proofs`
+  ADD PRIMARY KEY (`proof_id`),
+  ADD KEY `idx_email` (`email`),
+  ADD KEY `idx_status` (`status`);
 
 --
 -- Indexes for table `rooms`
@@ -772,13 +812,13 @@ ALTER TABLE `acct_payments`
 -- AUTO_INCREMENT for table `applicants`
 --
 ALTER TABLE `applicants`
-  MODIFY `applicant_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `applicant_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `applicant_documents`
 --
 ALTER TABLE `applicant_documents`
-  MODIFY `document_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
+  MODIFY `document_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=40;
 
 --
 -- AUTO_INCREMENT for table `class_sections`
@@ -802,7 +842,13 @@ ALTER TABLE `enrollments`
 -- AUTO_INCREMENT for table `payments`
 --
 ALTER TABLE `payments`
-  MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `payment_proofs`
+--
+ALTER TABLE `payment_proofs`
+  MODIFY `proof_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `rooms`
@@ -856,7 +902,7 @@ ALTER TABLE `tracks`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- Constraints for dumped tables

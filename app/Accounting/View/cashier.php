@@ -2,7 +2,18 @@
   $projectFilePath = 'C:/xampp/htdocs/EnrollmentMS';
   include_once "$projectFilePath/config/session.php";
   safeStartSession();
-  // echo $_SESSION['role'];
+
+  echo $_SESSION['role'];
+  // if(!isset($_SESSION['role'])){
+  //   header("Location: index.php");
+  //     exit();
+  // }
+  
+  // Redirect if not logged in or not a cashier
+  // if(!isset($_SESSION['role']) || $_SESSION['role'] !== 'Accounting'){
+  //     header("Location: index.php");
+  //     exit();
+  // }
 ?>
 
 <!DOCTYPE html>
@@ -61,7 +72,7 @@
       </ul>
     </nav>
 
-    <div class="sidebar__who" id="cashierWho" data-no-translate></div>
+    <!-- <div class="sidebar__who" id="cashierWho" data-no-translate></div> -->
 
     <a class="sidebar__logout" href="#" id="logoutBtn">
       <span class="nav__icon" aria-hidden="true">
@@ -136,7 +147,19 @@
   <div class="receipt-print" id="receiptPrint" aria-hidden="true"></div>
 
   <script>
-    const sessionRole = <?php echo json_encode($_SESSION['role'] ?? null); ?>;
+    // Pass session data from PHP to JavaScript
+
+
+    const sessionData = {
+      authenticated: true,
+      cashier: {
+        full_name: <?php echo json_encode($_SESSION['name'] ?? ''); ?>,
+        email: <?php echo json_encode($_SESSION['email'] ?? ''); ?>,
+        role: <?php echo json_encode($_SESSION['role'] ?? ''); ?>
+      }
+    };
+
+    const sessionRole = <?php echo json_encode($_SESSION['role']); ?>
   </script>
   <script src="/EnrollmentMS/public/assets/js/shared/sidebar.js"></script>
 

@@ -98,7 +98,7 @@
           <div id="detailsMsg" class="form-msg" role="alert"></div>
 
           <div class="wizard-nav">
-            <a class="btn btn--ghost" href="index.php">Cancel</a>
+            <a class="btn btn--ghost" href="/EnrollmentMS/app/Admission/View/index.php">Cancel</a>
             <div class="wizard-nav__spacer"></div>
             <button type="submit" class="btn btn--primary">
               Continue

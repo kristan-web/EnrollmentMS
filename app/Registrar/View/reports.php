@@ -66,7 +66,7 @@
       </ul>
     </nav>
 
-    <div class="sidebar__who" id="registrarWho" data-no-translate></div>
+    <!-- <div class="sidebar__who" id="registrarWho" data-no-translate></div> -->
 
     <a class="sidebar__logout" href="#" id="logoutBtn">
       <span class="nav__icon" aria-hidden="true">

@@ -113,14 +113,7 @@ function showDashMenu(role){
                 </span>
                 <span>Records &amp; reports</span>
             </a>
-        </li>
-
-        <li><a href="/EnrollmentMS/app/Registrar/View/admission.php">
-          <span class="submenu__icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="m9 15 2 2 4-4"/></svg>
-          </span>
-          <span>Review queue</span>
-        </a></li>
+        </li>   
 
         <li><a href="/EnrollmentMS/app/Registrar/View/reports.php">
           <span class="submenu__icon" aria-hidden="true">
