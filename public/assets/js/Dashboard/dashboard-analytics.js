@@ -110,7 +110,7 @@ function renderDashboard(container, data) {
         <div class="charts-grid">
             <!-- Strand Distribution Chart -->
             <div class="chart-card">
-                <h3 class="chart-card__title">📈 Strand Distribution</h3>
+                <h3 class="chart-card__title"> Strand Distribution</h3>
                 <div class="chart-container">
                     <canvas id="strandChart"></canvas>
                 </div>
@@ -118,7 +118,7 @@ function renderDashboard(container, data) {
 
             <!-- Gender Distribution Chart -->
             <div class="chart-card">
-                <h3 class="chart-card__title">👤 Gender Distribution</h3>
+                <h3 class="chart-card__title"> Gender Distribution</h3>
                 <div class="chart-container">
                     <canvas id="genderChart"></canvas>
                 </div>
@@ -126,7 +126,7 @@ function renderDashboard(container, data) {
 
             <!-- Enrollment Trend Chart -->
             <div class="chart-card chart-card--full">
-                <h3 class="chart-card__title">📅 Enrollment Trend (Last 30 Days)</h3>
+                <h3 class="chart-card__title"> Enrollment Trend (Last 30 Days)</h3>
                 <div class="chart-container chart-container--tall">
                     <canvas id="trendChart"></canvas>
                 </div>
@@ -134,7 +134,7 @@ function renderDashboard(container, data) {
 
             <!-- Section Capacity Chart -->
             <div class="chart-card chart-card--full">
-                <h3 class="chart-card__title">📚 Section Capacity Overview</h3>
+                <h3 class="chart-card__title"> Section Capacity Overview</h3>
                 <div class="chart-container chart-container--tall">
                     <canvas id="capacityChart"></canvas>
                 </div>
@@ -142,7 +142,7 @@ function renderDashboard(container, data) {
 
             <!-- School Year Comparison -->
             <div class="chart-card chart-card--full">
-                <h3 class="chart-card__title">📊 Enrollment by School Year</h3>
+                <h3 class="chart-card__title"> Enrollment by School Year</h3>
                 <div class="chart-container">
                     <canvas id="comparisonChart"></canvas>
                 </div>
@@ -151,7 +151,7 @@ function renderDashboard(container, data) {
 
         <!-- Recent Enrollments -->
         <div class="chart-card" style="margin-top:24px;">
-            <h3 class="chart-card__title">🕐 Recent Enrollments</h3>
+            <h3 class="chart-card__title"> Recent Enrollments</h3>
             ${recent_enrollments && recent_enrollments.length > 0 ? `
                 <div class="recent-table-wrap">
                     <table class="recent-table">
