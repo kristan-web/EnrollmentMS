@@ -29,7 +29,7 @@
   var statusTabs = document.getElementById("statusTabs");
   var schoolYearFilter = document.getElementById("schoolYearFilter");
   var detailPanel = document.getElementById("detailPanel");
-  var registrarWho = document.getElementById("registrarWho");
+  // var registrarWho = document.getElementById("registrarWho");
   var logoutBtn = document.getElementById("logoutBtn");
 
   var noteModal = document.getElementById("noteModal");

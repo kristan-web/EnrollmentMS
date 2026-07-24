@@ -146,9 +146,9 @@
   }
 
   // ---- Boot ----
-  M.requireAuth("/EnrollmentMS/app/Registrar/View/index.php").then(function (user) {
-    if (!user) return;
-    registrarWho.innerHTML = whoHtml(user.full_name, user.role);
-    loadYears().then(loadReport);
-  });
+  // M.requireAuth("/EnrollmentMS/app/Registrar/View/index.php").then(function (user) {
+  //   if (!user) return;
+  //   registrarWho.innerHTML = whoHtml(user.full_name, user.role);
+  //   loadYears().then(loadReport);
+  // });
 })();

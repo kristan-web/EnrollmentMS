@@ -3,6 +3,7 @@
   include_once "$projectFilePath/config/session.php";
 
   safeStartSession();
+  redirectToLoginPage();
   // echo $_SESSION['role'];
 ?>
 
@@ -17,6 +18,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../../../public/assets/css/shared/dashboard.css" />
+  <link rel="stylesheet" href="../../../public/assets/css/shared/schedule.css" />
 </head>
 <body>
   <aside class="sidebar" id="sidebar">
@@ -124,6 +126,35 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
           Add Schedule
         </button>
+        <button class="btn btn--secondary" id="bulkSchedBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+            <rect x="3" y="3" width="7" height="7" rx="1"/>
+            <rect x="14" y="3" width="7" height="7" rx="1"/>
+            <rect x="3" y="14" width="7" height="7" rx="1"/>
+            <rect x="14" y="14" width="7" height="7" rx="1"/>
+          </svg>
+          Bulk Add
+        </button>
+      </div>
+      <div class="view-toggle">
+        <button class="btn btn--ghost btn--sm is-active" id="tableViewBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+            <rect x="3" y="3" width="7" height="7" rx="1"/>
+            <rect x="14" y="3" width="7" height="7" rx="1"/>
+            <rect x="3" y="14" width="7" height="7" rx="1"/>
+            <rect x="14" y="14" width="7" height="7" rx="1"/>
+          </svg>
+          Table View
+        </button>
+        <button class="btn btn--ghost btn--sm" id="calendarViewBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          Calendar View
+        </button>
       </div>
 
       <div class="panel">
@@ -143,6 +174,60 @@
             <tbody id="schedRows"></tbody>
           </table>
         </div>
+
+<!-- Calendar View -->
+<div class="calendar-view-container" id="calendarView" style="display:none;">
+    <!-- Section Selection Row -->
+    <div class="calendar-controls-top">
+        <div class="calendar-controls-left">
+            <label class="calendar-label">
+                <span class="label-icon">📚</span>
+                <select class="filter-select" id="calendarSectionFilter" style="min-width:220px;">
+                    <option value="">Select Section</option>
+                </select>
+            </label>
+            <label class="calendar-label">
+                <span class="label-icon">📅</span>
+                <select class="filter-select" id="calendarTermFilter">
+                    <option value="1st Semester">1st Semester</option>
+                    <option value="2nd Semester">2nd Semester</option>
+                </select>
+            </label>
+        </div>
+        <div class="calendar-controls-right">
+            <button class="btn btn--ghost btn--sm" id="prevWeekBtn">← Previous</button>
+            <span id="weekRange" class="week-range-badge">Jul 20 - Jul 26</span>
+            <button class="btn btn--ghost btn--sm" id="nextWeekBtn">Next →</button>
+            <button class="btn btn--primary btn--sm" id="todayBtn">Today</button>
+        </div>
+    </div>
+
+    <!-- Section Info Bar -->
+    <div id="calendarSectionInfo" class="calendar-section-info">
+        <div class="section-info-left">
+            <span class="section-name" id="sectionNameDisplay">ABM 11-A</span>
+            <span class="section-grade" id="sectionGradeDisplay">Grade 11</span>
+        </div>
+        <div class="section-info-right">
+            <span class="info-badge" id="subjectCountDisplay">📚 7 subjects</span>
+            <span class="info-badge" id="termDisplay">📅 1st Semester</span>
+        </div>
+    </div>
+
+    <!-- Calendar Grid -->
+    <div class="calendar-grid" id="calendarGrid"></div>
+    
+    <!-- Empty State -->
+    <div id="calendarEmpty" style="display:none;text-align:center;padding:3rem 2rem;color:var(--text-muted);">
+        <div class="empty-icon">📋</div>
+        <div class="empty-title">No Schedules Found</div>
+        <div class="empty-desc">No schedules found for this section and term.</div>
+        <button class="btn btn--primary btn--sm" onclick="document.getElementById('addSchedBtn').click()" style="margin-top:1rem;">
+            + Add Schedule
+        </button>
+    </div>
+</div>
+
         <p class="empty" id="emptyState" hidden>No schedules yet. Click "Add Schedule" to get started.</p>
         <div class="pagination" id="pagination" hidden>
           <span class="pagination__info" id="pageInfo"></span>
@@ -231,6 +316,91 @@
           <div class="form-actions">
             <button type="button" class="btn btn--ghost" id="cancelSchedBtn">Cancel</button>
             <button type="submit" class="btn btn--primary">Save Schedule</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bulk Schedule Modal -->
+  <div class="modal-overlay" id="bulkSchedModal" hidden>
+    <div class="modal modal--wide" role="dialog" aria-modal="true" aria-labelledby="bulkModalTitle">
+      <div class="modal__head">
+        <h2 id="bulkModalTitle">Bulk Add Schedules</h2>
+        <button class="modal__close" id="closeBulkModal" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal__body">
+        <form id="bulkSchedForm" novalidate>
+          <div id="bulkFormError" style="display:none;background:#fee;color:#c00;padding:0.75rem;border-radius:6px;margin-bottom:1rem;"></div>
+          
+          <div class="form-row">
+            <label class="field">
+              <span>Section <span class="required">*</span></span>
+              <select name="bulkSectionId" id="bulkSectionSelect" required>
+                <option value="" disabled selected>Select section</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Term <span class="required">*</span></span>
+              <select name="bulkTerm" id="bulkTermSelect" required>
+                <option value="" disabled selected>Select term</option>
+                <option value="1st Semester">1st Semester</option>
+                <option value="2nd Semester">2nd Semester</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="form-row">
+            <label class="field">
+              <span>Day of Week <span class="required">*</span></span>
+              <select name="bulkDayOfWeek" id="bulkDaySelect" required>
+                <option value="" disabled selected>Select day</option>
+                <option value="Monday">Monday</option>
+                <option value="Tuesday">Tuesday</option>
+                <option value="Wednesday">Wednesday</option>
+                <option value="Thursday">Thursday</option>
+                <option value="Friday">Friday</option>
+                <option value="Saturday">Saturday</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Room <span class="required">*</span></span>
+              <select name="bulkRoomId" id="bulkRoomSelect" required>
+                <option value="" disabled selected>Select room</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="form-row">
+            <label class="field">
+              <span>Start Time <span class="required">*</span></span>
+              <input type="time" name="bulkStartTime" id="bulkStartTime" required min="09:00" max="16:30" />
+              <small class="field-hint">School hours: 9:00 AM - 5:00 PM</small>
+            </label>
+            <label class="field">
+              <span>End Time <span class="required">*</span></span>
+              <input type="time" name="bulkEndTime" id="bulkEndTime" required min="10:00" max="17:00" />
+              <small class="field-hint">School hours: 9:00 AM - 5:00 PM</small>
+            </label>
+          </div>
+
+          <div class="form-row">
+            <label class="field field--wide">
+              <span>Subjects <span class="required">*</span></span>
+              <div id="bulkSubjectCheckboxes" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:0.5rem;padding:0.5rem;border:1px solid var(--border-light);border-radius:6px;max-height:200px;overflow-y:auto;">
+                <p style="color:var(--text-muted);grid-column:1/-1;">Select a section first to load subjects</p>
+              </div>
+              <small class="field-hint">Select multiple subjects to schedule them back-to-back</small>
+            </label>
+          </div>
+
+          <div id="bulkConflictWarning" class="conflict-warning" hidden>
+            <p class="form-msg is-error" id="bulkConflictMsg"></p>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn--ghost" id="cancelBulkBtn">Cancel</button>
+            <button type="submit" class="btn btn--primary" id="saveBulkBtn">Create Schedules</button>
           </div>
         </form>
       </div>

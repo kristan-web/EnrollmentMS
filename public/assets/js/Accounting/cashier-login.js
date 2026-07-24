@@ -4,6 +4,9 @@
 // credentials are checked against the staff `users` table; on a valid account a
 // PHP cashier session is started and the user is sent to View/cashier.php.
 // Mirrors the student-portal login flow.
+//
+// Note: PHP session check at the top of index.php already redirects authenticated
+// users to cashier.php, so we don't need to call redirectIfAuthed() here.
 (function () {
   "use strict";
 
@@ -14,8 +17,13 @@
   var pwWrap = document.getElementById("pwWrap");
   var pwToggle = document.getElementById("pwToggle");
 
-  // Already signed in? Go straight to the console.
-  M.redirectIfAuthed("cashier.php");
+  // PHP already handles the redirect if authenticated (see index.php)
+  // The JavaScript redirect is kept as a fallback for cases where PHP redirect
+  // might not work (e.g., cached page, or if session check was bypassed)
+  if (window.sessionData && window.sessionData.authenticated) {
+    window.location.href = "cashier.php";
+    return;
+  }
 
   function setMsg(text, type) {
     loginMsg.textContent = text || "";
@@ -63,6 +71,7 @@
     M.login(email, password).then(function (data) {
       if (data && data.success) {
         setMsg(data.message || "Signed in. Redirecting…", "is-success");
+        // Use the redirect from the server if provided, otherwise go to cashier.php
         window.location.href = data.redirect || "cashier.php";
         return;
       }

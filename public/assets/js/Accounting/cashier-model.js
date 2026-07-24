@@ -60,6 +60,14 @@
   }
 
   function me() {
+    // Check if session data is available from PHP
+    if (window.sessionData && window.sessionData.authenticated) {
+      return Promise.resolve({
+        authenticated: true,
+        cashier: window.sessionData.cashier
+      });
+    }
+    // Fallback to API call if session data not injected
     return getJson("?action=me");
   }
 

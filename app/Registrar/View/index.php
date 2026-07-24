@@ -1,3 +1,12 @@
+<?php 
+  $projectFilePath = 'C:/xampp/htdocs/EnrollmentMS';
+  include_once "$projectFilePath/config/session.php";
+
+  safeStartSession();
+  redirectToLoginPage();
+  // echo $_SESSION['role'];
+?>
+
 <!DOCTYPE html>
 <!-- Registrar module entry point: the registrar login (flowchart: START ->
      Login Page -> Input credentials -> click login). Staff sign in with their

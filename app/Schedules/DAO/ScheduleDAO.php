@@ -235,6 +235,33 @@ class ScheduleDAO {
         return $stmt->fetchColumn() > 0;
     }
 
+    /**
+     * Check if a section already has the same subject on the same day
+     * This prevents duplicate subjects for the same section on the same day
+     */
+    public function checkDuplicateSubject($sectionId, $subjectId, $dayOfWeek, $excludeId = null) {
+        $query = "
+        SELECT COUNT(*) FROM schedules
+        WHERE section_id = :section_id
+        AND subject_id = :subject_id
+        AND day_of_week = :day_of_week
+        ";
+
+        if ($excludeId) {
+            $query .= " AND schedule_id != :exclude_id ";
+        }
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindValue(':section_id', $sectionId);
+        $stmt->bindValue(':subject_id', $subjectId);
+        $stmt->bindValue(':day_of_week', $dayOfWeek);
+        if ($excludeId) {
+            $stmt->bindValue(':exclude_id', $excludeId);
+        }
+        $stmt->execute();
+        return $stmt->fetchColumn() > 0;
+    }
+
     // INSERT SCHEDULE
     public function insert(Schedule $schedule) {
         $query = "
@@ -320,7 +347,7 @@ class ScheduleDAO {
     }
 
     // GET SUBJECTS APPLICABLE TO A SECTION
-    public function getSubjectsForSection($sectionId, $term = null) {
+        public function getSubjectsForSection($sectionId, $term = null) {
         $section = $this->getSectionInfo($sectionId);
         if (!$section) {
             return [];
@@ -339,7 +366,8 @@ class ScheduleDAO {
             ':strand_id' => $section['strand_id'],
         ];
 
-        if ($term) {
+        // Only filter by term if provided
+        if ($term && $term !== 'null' && $term !== '') {
             $query .= " AND semester = :term ";
             $params[':term'] = $term;
         }

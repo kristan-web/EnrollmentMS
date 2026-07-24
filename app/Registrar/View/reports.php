@@ -2,6 +2,7 @@
   $projectFilePath = 'C:/xampp/htdocs/EnrollmentMS';
   include_once "$projectFilePath/config/session.php";
   safeStartSession();
+  redirectToLoginPage();
   // echo $_SESSION['role'];
 ?>
 
@@ -66,9 +67,9 @@
       </ul>
     </nav>
 
-    <div class="sidebar__who" id="registrarWho" data-no-translate></div>
+    <!-- <div class="sidebar__who" id="registrarWho" data-no-translate></div> -->
 
-    <a class="sidebar__logout" href="#" id="logoutBtn">
+    <a class="sidebar__logout" onclick="window.location.href='/EnrollmentMS/config/destroysession.php'">
       <span class="nav__icon" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
       </span>

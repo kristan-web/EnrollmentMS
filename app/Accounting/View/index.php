@@ -1,3 +1,15 @@
+<?php 
+  $projectFilePath = 'C:/xampp/htdocs/EnrollmentMS';
+  include_once "$projectFilePath/config/session.php";
+  safeStartSession();
+  
+  // Redirect to cashier.php if already logged in as cashier
+  if(isset($_SESSION['role']) && $_SESSION['role'] === 'Accounting'){
+      header("Location: cashier.php");
+      exit();
+  }
+?>
+
 <!DOCTYPE html>
 <!-- Accounting module entry point: the cashier login (flowchart: START -> Login).
      Staff sign in with their existing account; cashier-login.js sends them to

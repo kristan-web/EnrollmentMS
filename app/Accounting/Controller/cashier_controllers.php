@@ -6,8 +6,7 @@
 //
 // Cashiers sign in with an existing staff account from the `users` table, so
 // this reuses the same credential check pattern as the admin app. The session
-// keys are namespaced (cashier_*) so a cashier session never mixes with the
-// student-portal or admin sessions.
+// is managed through the shared session.php configuration.
 //
 //   GET  ?action=me                       -> session lookup (page guard)
 //   POST form_type=login                  -> validate staff credentials
@@ -17,10 +16,15 @@
 //   POST action=record_payment            -> record a payment, recompute status
 //   POST action=verify_proof              -> Verify/Reject an uploaded proof
 
-session_start();
-
 $projectFilePath = "C:/xampp/htdocs/EnrollmentMS";
 
+// Include session configuration
+require_once "$projectFilePath/config/session.php";
+
+// Start session using the safe method
+safeStartSession();
+
+// Include required files
 require_once "$projectFilePath/app/Accounting/DAO/CashierDAO.php";
 // FeeSchedule is the single source of truth for the assessment breakdown/total.
 // It is self-contained (no PayMongo constants used at load time).
@@ -51,11 +55,30 @@ function receiptNo($paymentId) {
     return 'OR-' . str_pad((string) $paymentId, 6, '0', STR_PAD_LEFT);
 }
 
+// Check if user has accounting/cashier role
+function isAccountingRole($role) {
+    $allowedRoles = ['accounting', 'cashier', 'Accounting', 'Cashier'];
+    return in_array(strtolower($role), array_map('strtolower', $allowedRoles));
+}
+
 // Guard the members-only actions.
 function requireCashier() {
     if (empty($_SESSION['user_id'])) {
         http_response_code(401);
-        echo json_encode(["authenticated" => false, "message" => "Please log in to use the cashier console."]);
+        echo json_encode([
+            "authenticated" => false, 
+            "message" => "Please log in to use the cashier console."
+        ]);
+        exit;
+    }
+    
+    // Check if user has accounting/cashier role
+    if (!isAccountingRole($_SESSION['role'] ?? '')) {
+        http_response_code(403);
+        echo json_encode([
+            "authenticated" => false, 
+            "message" => "You do not have cashier privileges. Please contact administrator."
+        ]);
         exit;
     }
 }
@@ -92,12 +115,13 @@ if ($method === 'GET') {
     $action = $_GET['action'] ?? 'me';
 
     if ($action === 'me') {
-        if (!empty($_SESSION['user_id'])) {
+        if (!empty($_SESSION['user_id']) && isAccountingRole($_SESSION['role'] ?? '')) {
             echo json_encode([
                 "authenticated" => true,
                 "cashier" => [
                     "user_id"   => $_SESSION['user_id'],
                     "full_name" => $_SESSION['name'] ?? '',
+                    "email"     => $_SESSION['email'] ?? '',
                     "role"      => $_SESSION['role'] ?? ''
                 ]
             ]);
@@ -186,15 +210,36 @@ if ($method === 'POST') {
             exit;
         }
 
+        // Check if user has accounting/cashier role (case-insensitive)
+        if (!isAccountingRole($user['role'] ?? '')) {
+            echo json_encode([
+                "success" => false, 
+                "message" => "You do not have cashier privileges. Please contact administrator."
+            ]);
+            exit;
+        }
+
+        // Regenerate session ID for security
         session_regenerate_id(true);
+        
+        // Set session values using the same pattern as user_controllers.php
         $_SESSION['user_id'] = $user['user_id'];
         $_SESSION['name']    = $user['full_name'];
+        $_SESSION['email']   = $user['email'];
         $_SESSION['role']    = $user['role'];
 
         // Additive: record the staff sign-in in the admin audit log.
         require_once "$projectFilePath/app/Accounts/DAO/AuditDAO.php";
-        (new AuditDAO())->record($user['user_id'], $user['full_name'], $user['role'],
-            'login', 'session', null, 'Signed in to the cashier console', $_SERVER['REMOTE_ADDR'] ?? null);
+        (new AuditDAO())->record(
+            $user['user_id'], 
+            $user['full_name'], 
+            $user['role'],
+            'login', 
+            'session', 
+            null, 
+            'Signed in to the cashier console', 
+            $_SERVER['REMOTE_ADDR'] ?? null
+        );
 
         // Absolute, so it does not depend on which View/ page posted here.
         echo json_encode([
@@ -207,10 +252,31 @@ if ($method === 'POST') {
 
     // ---- Log out
     if ($formType === 'logout') {
-        $_SESSION = [];
+        // Clear session data
+        $_SESSION = array();
+        
+        // Delete session cookie if it exists
+        if (ini_get("session.use_cookies")) {
+            $params = session_get_cookie_params();
+            setcookie(
+                session_name(), 
+                '', 
+                time() - 42000,
+                $params["path"], 
+                $params["domain"],
+                $params["secure"], 
+                $params["httponly"]
+            );
+        }
+        
+        // Destroy session
         session_destroy();
+        
         // Absolute, so it does not depend on which View/ page logged out.
-        echo json_encode(["success" => true, "redirect" => "/EnrollmentMS/app/Accounting/View/index.php"]);
+        echo json_encode([
+            "success" => true, 
+            "redirect" => "/EnrollmentMS/app/Accounting/View/index.php"
+        ]);
         exit;
     }
 
@@ -250,7 +316,10 @@ if ($method === 'POST') {
             exit;
         }
         if ($amount > $balance) {
-            echo json_encode(["success" => false, "message" => "Amount is more than the remaining balance of PHP " . number_format($balance, 2) . "."]);
+            echo json_encode([
+                "success" => false, 
+                "message" => "Amount is more than the remaining balance of PHP " . number_format($balance, 2) . "."
+            ]);
             exit;
         }
 
@@ -273,6 +342,19 @@ if ($method === 'POST') {
             $dao->markEnrolledOnFullPayment($enrollmentId, (int) $detail['student_id']);
         }
 
+        // Record audit log for the payment
+        require_once "$projectFilePath/app/Accounts/DAO/AuditDAO.php";
+        (new AuditDAO())->record(
+            $_SESSION['user_id'],
+            $_SESSION['name'],
+            $_SESSION['role'],
+            'payment',
+            'enrollment',
+            $enrollmentId,
+            'Recorded payment of PHP ' . number_format($amount, 2) . ' for ' . trim($detail['first_name'] . ' ' . $detail['last_name']),
+            $_SERVER['REMOTE_ADDR'] ?? null
+        );
+
         echo json_encode([
             "success"    => true,
             "message"    => $fullyPaid
@@ -291,7 +373,7 @@ if ($method === 'POST') {
                 "paid_total"     => $paidAfter,
                 "balance"        => $newBalance,
                 "status"         => $status,
-                "cashier"        => $_SESSION['cashier_name'] ?? '',
+                "cashier"        => $_SESSION['name'] ?? '',
                 "date"           => date('Y-m-d H:i')
             ],
             "paid"       => $paidAfter,
@@ -320,6 +402,19 @@ if ($method === 'POST') {
         }
 
         if ($dao->updateProofStatus($proofId, $decision, $remarks ?: null)) {
+            // Record audit log for the proof verification
+            require_once "$projectFilePath/app/Accounts/DAO/AuditDAO.php";
+            (new AuditDAO())->record(
+                $_SESSION['user_id'],
+                $_SESSION['name'],
+                $_SESSION['role'],
+                'verify_proof',
+                'proof',
+                $proofId,
+                'Proof ' . $proofId . ' marked as ' . $decision . ($remarks ? ': ' . $remarks : ''),
+                $_SERVER['REMOTE_ADDR'] ?? null
+            );
+
             echo json_encode([
                 "success" => true,
                 "message" => $decision === 'Verified'

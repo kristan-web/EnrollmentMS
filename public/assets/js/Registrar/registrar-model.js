@@ -66,15 +66,15 @@
 
   // Guard the console: bounce to the login (View/index.php) if there is
   // no registrar session.
-  function requireAuth(loginPage) {
-    return me().then(function (data) {
-      if (!data || !data.authenticated) {
-        window.location.href = loginPage || (VIEWS + "/index.php");
-        return null;
-      }
-      return data.user;
-    });
-  }
+  // function requireAuth(loginPage) {
+  //   return me().then(function (data) {
+  //     if (!data || !data.authenticated) {
+  //       window.location.href = loginPage || (VIEWS + "/index.php");
+  //       return null;
+  //     }
+  //     return data.user;
+  //   });
+  // }
 
   // For the login page: skip straight to the console if already signed in.
   function redirectIfAuthed(dest) {
@@ -168,7 +168,6 @@
     login: login,
     logout: logout,
     me: me,
-    requireAuth: requireAuth,
     redirectIfAuthed: redirectIfAuthed,
     queue: queue,
     detail: detail,

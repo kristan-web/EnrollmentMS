@@ -38,6 +38,35 @@ let editingId = null;
 let archivingId = null;
 let searchDebounce = null;
 
+// ============ LRN Validation Functions ============
+
+/**
+ * Validate LRN - only numbers, exactly 12 digits
+ */
+function validateLRN(lrn) {
+    // Remove any non-digit characters
+    const cleaned = lrn.replace(/\D/g, '');
+    
+    // Check if it's exactly 12 digits
+    if (cleaned.length !== 12) {
+        return { valid: false, message: 'LRN must be exactly 12 digits.' };
+    }
+    
+    // Check if all characters are digits
+    if (!/^\d{12}$/.test(cleaned)) {
+        return { valid: false, message: 'LRN can only contain numbers.' };
+    }
+    
+    return { valid: true, message: '' };
+}
+
+/**
+ * Format LRN - remove non-digits and limit to 12
+ */
+function formatLRN(value) {
+    return value.replace(/\D/g, '').slice(0, 12);
+}
+
 // ============ API Functions ============
 
 /**
@@ -100,6 +129,69 @@ function fetchArchivedStudents() {
 }
 
 /**
+ * Debug version of saveStudent to see what's being returned
+ */
+function saveStudentDebug(studentData, isEdit = false) {
+    const formData = new FormData();
+    
+    Object.keys(studentData).forEach(key => {
+        if (studentData[key] !== null && studentData[key] !== undefined) {
+            formData.append(key, studentData[key]);
+        }
+    });
+
+    if (isEdit && editingId) {
+        formData.append("action", "update");
+        formData.append("student_id", editingId);
+        formData.append("status", studentData.status || "Active");
+    } else {
+        formData.append("action", "create");
+    }
+
+    saveStudentBtn.disabled = true;
+    saveStudentBtn.textContent = "Saving...";
+
+    fetch(STUDENTS_API_URL, {
+        method: "POST",
+        body: formData
+    })
+    .then(response => {
+        console.log("Response status:", response.status);
+        console.log("Response headers:", response.headers);
+        return response.text(); // Get raw text instead of JSON
+    })
+    .then(text => {
+        console.log("Raw server response:", text);
+        // Try to parse as JSON
+        try {
+            const result = JSON.parse(text);
+            console.log("Parsed JSON:", result);
+            if (result.success) {
+                hideModals();
+                refreshList();
+                showToast(result.message || "Student saved successfully!", "success");
+            } else {
+                showFormError(result.message || "Failed to save student.");
+            }
+        } catch (e) {
+            console.error("Failed to parse JSON:", e);
+            showFormError("Server returned invalid response. Check console for details.");
+        }
+    })
+    .catch(error => {
+        console.error("Error saving student:", error);
+        showFormError("Network error: " + error.message);
+    })
+    .finally(() => {
+        saveStudentBtn.disabled = false;
+        saveStudentBtn.textContent = isEdit ? "Update Student" : "Save Student";
+    });
+}
+
+// Replace the saveStudent call in form submission with:
+// saveStudentDebug(studentData, !!editingId);
+
+/**
  * Save student (create or update)
  */
 function saveStudent(studentData, isEdit = false) {
@@ -126,7 +218,24 @@ function saveStudent(studentData, isEdit = false) {
         method: "POST",
         body: formData
     })
-    .then(response => response.json())
+    .then(async response => {
+        // Check if response is OK
+        if (!response.ok) {
+            const text = await response.text();
+            console.error("Server response (non-OK):", text);
+            throw new Error(`Server error: ${response.status} ${response.statusText}`);
+        }
+        
+        // Check content type
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            const text = await response.text();
+            console.error("Server response (non-JSON):", text);
+            throw new Error('Server returned non-JSON response. Check PHP error logs.');
+        }
+        
+        return response.json();
+    })
     .then(result => {
         if (result.success) {
             hideModals();
@@ -138,7 +247,7 @@ function saveStudent(studentData, isEdit = false) {
     })
     .catch(error => {
         console.error("Error saving student:", error);
-        showFormError("Network error: " + error.message);
+        showFormError("Error: " + error.message);
     })
     .finally(() => {
         saveStudentBtn.disabled = false;
@@ -297,6 +406,39 @@ function getFullName(student) {
     return name;
 }
 
+function fetchApplicationCounts() {
+    const APPLICATIONS_API_URL = "/EnrollmentMS/app/Students/Controller/applicants_controllers.php";
+    
+    fetch(`${APPLICATIONS_API_URL}?action=list`)
+        .then(response => response.json())
+        .then(data => {
+            if (Array.isArray(data)) {
+                const counts = {
+                    Pending: 0,
+                    Approved: 0,
+                    Rejected: 0
+                };
+                
+                data.forEach(app => {
+                    if (counts[app.status] !== undefined) {
+                        counts[app.status]++;
+                    }
+                });
+                
+                const pendingEl = document.getElementById("appPendingCount");
+                const approvedEl = document.getElementById("appApprovedCount");
+                const rejectedEl = document.getElementById("appRejectedCount");
+                
+                if (pendingEl) pendingEl.textContent = counts.Pending;
+                if (approvedEl) approvedEl.textContent = counts.Approved;
+                if (rejectedEl) rejectedEl.textContent = counts.Rejected;
+            }
+        })
+        .catch(error => {
+            console.error("Error fetching application counts:", error);
+        });
+}
+
 function renderStudents(students) {
     if (!students || students.length === 0) {
         studentRows.innerHTML = "";
@@ -304,12 +446,12 @@ function renderStudents(students) {
         emptyState.textContent = currentTab === "archived" 
             ? "No archived students." 
             : 'No students yet. Click "Add Student" to get started.';
-        updateCounts(students || []);
+        updateCounts();
         return;
     }
 
     emptyState.hidden = true;
-    updateCounts(students);
+    updateCounts();
 
     let html = "";
     students.forEach(student => {
@@ -330,7 +472,6 @@ function renderStudents(students) {
             `;
         }
 
-        // FIXED: Added student_number column and fixed column order
         html += `
             <tr>
                 <td><span class="cell-name">${escapeHtml(student.lrn || "—")}</span></td>
@@ -348,20 +489,28 @@ function renderStudents(students) {
     studentRows.innerHTML = html;
 }
 
-function updateCounts(students) {
-    if (currentTab === "archived") {
-        archivedCountEl.textContent = students.filter(s => 
-            s.status === "Inactive" || s.status === "Archived"
-        ).length;
-        activeCountEl.textContent = students.filter(s => 
-            s.status === "Active"
-        ).length;
-    } else {
-        const active = students.filter(s => s.status === "Active").length;
-        const archived = students.filter(s => s.status === "Inactive" || s.status === "Archived").length;
-        activeCountEl.textContent = active;
-        archivedCountEl.textContent = archived;
-    }
+function updateCounts() {
+    fetch(`${STUDENTS_API_URL}?action=list`)
+        .then(response => response.json())
+        .then(activeStudents => {
+            const activeCount = Array.isArray(activeStudents) 
+                ? activeStudents.filter(s => s.status === "Active").length 
+                : 0;
+            activeCountEl.textContent = activeCount;
+        })
+        .catch(error => console.error("Error fetching active count:", error));
+
+    fetch(`${STUDENTS_API_URL}?action=archived`)
+        .then(response => response.json())
+        .then(archivedStudents => {
+            const archivedCount = Array.isArray(archivedStudents) 
+                ? archivedStudents.filter(s => s.status === "Inactive" || s.status === "Archived").length 
+                : 0;
+            archivedCountEl.textContent = archivedCount;
+        })
+        .catch(error => console.error("Error fetching archived count:", error));
+
+    fetchApplicationCounts();
 }
 
 function refreshList() {
@@ -379,6 +528,85 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+// ============ LRN Input Setup ============
+
+function setupLRNValidation() {
+    const lrnInput = document.getElementById('lrnInput');
+    const lrnHint = document.getElementById('lrnHint');
+    
+    if (!lrnInput) return;
+    
+    // Real-time input filtering
+    lrnInput.addEventListener('input', function() {
+        const cursorPosition = this.selectionStart;
+        const oldValue = this.value;
+        
+        // Remove non-digits and limit to 12
+        const newValue = formatLRN(this.value);
+        
+        if (newValue !== oldValue) {
+            this.value = newValue;
+            // Restore cursor position
+            const newCursor = Math.min(cursorPosition, newValue.length);
+            this.setSelectionRange(newCursor, newCursor);
+        }
+        
+        // Update hint
+        if (lrnHint) {
+            if (this.value.length === 12) {
+                lrnHint.style.color = '#28a745';
+                lrnHint.textContent = '✓ Valid 12-digit LRN';
+                this.style.borderColor = '#28a745';
+            } else if (this.value.length > 0) {
+                lrnHint.style.color = '#dc3545';
+                lrnHint.textContent = `Need ${12 - this.value.length} more digit(s) (12 total)`;
+                this.style.borderColor = '#dc3545';
+            } else {
+                lrnHint.style.color = '#6c757d';
+                lrnHint.textContent = 'Enter 12 digits only (0-9)';
+                this.style.borderColor = '';
+            }
+        }
+    });
+    
+    // Block invalid key presses
+    lrnInput.addEventListener('keydown', function(e) {
+        // Allow: backspace, delete, tab, escape, enter
+        if ([46, 8, 9, 27, 13].indexOf(e.keyCode) !== -1 ||
+            // Allow: Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+            (e.keyCode === 65 && e.ctrlKey === true) ||
+            (e.keyCode === 67 && e.ctrlKey === true) ||
+            (e.keyCode === 86 && e.ctrlKey === true) ||
+            (e.keyCode === 88 && e.ctrlKey === true) ||
+            // Allow: home, end, left, right
+            (e.keyCode >= 35 && e.keyCode <= 39)) {
+            return;
+        }
+        // Ensure only number keys are pressed
+        if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && 
+            (e.keyCode < 96 || e.keyCode > 105)) {
+            e.preventDefault();
+        }
+    });
+    
+    // Validate on blur
+    lrnInput.addEventListener('blur', function() {
+        if (this.value.length > 0 && this.value.length !== 12) {
+            this.style.borderColor = '#dc3545';
+            if (lrnHint) {
+                lrnHint.style.color = '#dc3545';
+                lrnHint.textContent = `LRN must be exactly 12 digits. Current: ${this.value.length}`;
+            }
+        } else if (this.value.length === 12) {
+            this.style.borderColor = '#28a745';
+            if (lrnHint) {
+                lrnHint.style.color = '#28a745';
+                lrnHint.textContent = '✓ Valid 12-digit LRN';
+            }
+        }
+    });
+}
+
 // ============ Modal Functions ============
 
 function openStudentModal(student = null) {
@@ -390,7 +618,6 @@ function openStudentModal(student = null) {
     formError.style.display = "none";
 
     if (student) {
-        // Populate form fields (student_number is not editable, so we skip it)
         const fields = [
             "lrn", "first_name", "middle_name", "last_name",
             "gender", "birthdate", "address", "contact_number", "email",
@@ -408,6 +635,20 @@ function openStudentModal(student = null) {
                 el.value = student[field];
             }
         });
+        
+        // Validate LRN on edit
+        const lrnInput = document.getElementById('lrnInput');
+        if (lrnInput && lrnInput.value) {
+            const validation = validateLRN(lrnInput.value);
+            const hint = document.getElementById('lrnHint');
+            if (validation.valid) {
+                lrnInput.style.borderColor = '#28a745';
+                if (hint) {
+                    hint.style.color = '#28a745';
+                    hint.textContent = '✓ Valid 12-digit LRN';
+                }
+            }
+        }
     }
 
     studentModal.hidden = false;
@@ -493,8 +734,21 @@ studentForm.addEventListener("submit", (e) => {
         }
     });
     
+    // Validate LRN
+    const lrnInput = document.getElementById('lrnInput');
+    if (lrnInput) {
+        const lrnValidation = validateLRN(lrnInput.value);
+        if (!lrnValidation.valid) {
+            showFormError(lrnValidation.message);
+            lrnInput.style.borderColor = "#dc3545";
+            isValid = false;
+        } else {
+            lrnInput.style.borderColor = "#28a745";
+        }
+    }
+    
     if (!isValid) {
-        showFormError("Please fill in all required fields.");
+        showFormError("Please fill in all required fields correctly.");
         return;
     }
     
@@ -563,9 +817,10 @@ confirmArchiveBtn.addEventListener("click", () => {
     }
 });
 
-// ============ Initial Load ============
+// ============ Initialize ============
 document.addEventListener("DOMContentLoaded", () => {
     fetchStudents();
+    setupLRNValidation();
 });
 
 // Add CSS animation for toast

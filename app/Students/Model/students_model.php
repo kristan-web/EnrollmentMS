@@ -291,23 +291,31 @@ class Student {
     public static function validate($data) {
         $errors = [];
 
-        $lrn                              = trim($data["lrn"] ?? "");
-        $student_number                   = trim($data["student_number"] ?? "");
-        $first_name                       = trim($data["first_name"] ?? "");
-        $last_name                        = trim($data["last_name"] ?? "");
-        $gender                           = $data["gender"] ?? "";
-        $birthdate                        = trim($data["birthdate"] ?? "");
-        $email                            = trim($data["email"] ?? "");
-        $grade_level                      = $data["grade_level"] ?? "";
-        $address                         = trim($data["address"] ?? "");
-        $emergency_contact_name           = trim($data["emergency_contact_name"] ?? "");
-        $emergency_contact_relationship   = trim($data["emergency_contact_relationship"] ?? "");
-        $emergency_contact_number         = trim($data["emergency_contact_number"] ?? "");
+        $lrn = trim($data["lrn"] ?? "");
+        $student_number = trim($data["student_number"] ?? "");
+        $first_name = trim($data["first_name"] ?? "");
+        $last_name = trim($data["last_name"] ?? "");
+        $gender = $data["gender"] ?? "";
+        $birthdate = trim($data["birthdate"] ?? "");
+        $email = trim($data["email"] ?? "");
+        $grade_level = $data["grade_level"] ?? "";
+        $address = trim($data["address"] ?? "");
+        $emergency_contact_name = trim($data["emergency_contact_name"] ?? "");
+        $emergency_contact_relationship = trim($data["emergency_contact_relationship"] ?? "");
+        $emergency_contact_number = trim($data["emergency_contact_number"] ?? "");
 
+        // LRN validation - ONLY digits allowed
         if ($lrn === "") {
             $errors[] = "LRN is required.";
-        } elseif (!ctype_digit($lrn) || strlen($lrn) !== 12) {
-            $errors[] = "LRN must be exactly 12 digits.";
+        } else {
+            // Remove any non-digit characters for validation
+            $cleanedLrn = preg_replace('/\D/', '', $lrn);
+            
+            if (!ctype_digit($cleanedLrn)) {
+                $errors[] = "LRN must contain only numbers (0-9).";
+            } elseif (strlen($cleanedLrn) !== 12) {
+                $errors[] = "LRN must be exactly 12 digits.";
+            }
         }
 
         if ($student_number === "") {
