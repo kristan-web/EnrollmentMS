@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 24, 2026 at 05:26 AM
+-- Generation Time: Jul 24, 2026 at 10:56 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -17,165 +17,15 @@ SET time_zone = "+00:00";
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!40101 SET NAMES utf8mb4 */;
 
---
--- Database: `enrollment_management_system`
---
 
--- --------------------------------------------------------
+-- =============================================
+-- CREATE DATABASE IF NOT EXISTS
+-- =============================================
+CREATE DATABASE IF NOT EXISTS `enrollment_management_system` 
+  DEFAULT CHARACTER SET utf8mb4 
+  COLLATE utf8mb4_unicode_ci;
 
---
--- Table structure for table `acct_fees`
---
-
-CREATE DATABASE  `enrollment_management_system`;
 USE `enrollment_management_system`;
-
-CREATE TABLE `acct_fees` (
-  `fee_id` int(11) NOT NULL,
-  `code` varchar(20) NOT NULL COMMENT 'TUITION, MISC, LAB ...',
-  `name` varchar(100) NOT NULL,
-  `note` varchar(255) DEFAULT NULL COMMENT 'small grey line under the name',
-  `amount` decimal(10,2) NOT NULL,
-  `is_required` tinyint(1) NOT NULL DEFAULT 1,
-  `school_year` varchar(9) NOT NULL COMMENT 'e.g. 2026-2027',
-  `semester` enum('1st Semester','2nd Semester') NOT NULL,
-  `is_active` tinyint(1) NOT NULL DEFAULT 1 COMMENT '0 hides it without deleting',
-  `sort_order` int(11) NOT NULL DEFAULT 0,
-  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
-  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `acct_fees`
---
-
-INSERT INTO `acct_fees` (`fee_id`, `code`, `name`, `note`, `amount`, `is_required`, `school_year`, `semester`, `is_active`, `sort_order`, `created_at`, `updated_at`) VALUES
-(1, 'TUITION', 'Tuition Fee', 'Per semester', 12000.00, 1, '2026-2027', '1st Semester', 1, 1, '2026-07-23 16:28:09', '2026-07-23 16:28:09'),
-(2, 'MISC', 'Miscellaneous Fee', 'Guidance, athletics, etc.', 3500.00, 1, '2026-2027', '1st Semester', 1, 2, '2026-07-23 16:28:09', '2026-07-23 16:28:09'),
-(3, 'LAB', 'Laboratory Fee', 'Computer & science labs', 1800.00, 1, '2026-2027', '1st Semester', 1, 3, '2026-07-23 16:28:09', '2026-07-23 16:28:09'),
-(4, 'REG', 'Registration Fee', 'One-time this semester', 500.00, 1, '2026-2027', '1st Semester', 1, 4, '2026-07-23 16:28:09', '2026-07-23 16:28:09'),
-(5, 'LIB', 'Library Fee', 'Books & online resources', 400.00, 1, '2026-2027', '1st Semester', 1, 5, '2026-07-23 16:28:09', '2026-07-23 16:28:09'),
-(6, 'MEDDENT', 'Medical & Dental Fee', 'Clinic services', 350.00, 1, '2026-2027', '1st Semester', 1, 6, '2026-07-23 16:28:09', '2026-07-23 16:28:09'),
-(7, 'IDMAT', 'ID & School Materials', 'School ID, modules, handbook', 750.00, 1, '2026-2027', '1st Semester', 1, 7, '2026-07-23 16:28:09', '2026-07-23 16:28:09');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `acct_payments`
---
-
-CREATE TABLE `acct_payments` (
-  `acct_payment_id` int(11) NOT NULL,
-  `reference` varchar(40) NOT NULL COMMENT 'ours, e.g. SOA-2026-4821-7Q3K',
-  `student_number` varchar(20) NOT NULL,
-  `student_name` varchar(100) NOT NULL,
-  `email` varchar(100) NOT NULL,
-  `school_year` varchar(9) NOT NULL,
-  `semester` enum('1st Semester','2nd Semester') NOT NULL,
-  `plan` enum('full','down','custom') NOT NULL DEFAULT 'full',
-  `method` enum('gcash','maya','grabpay','card') DEFAULT NULL,
-  `amount` decimal(10,2) NOT NULL COMMENT 'pesos; PayMongo is billed in centavos',
-  `status` enum('pending','paid','failed','expired','cancelled') NOT NULL DEFAULT 'pending',
-  `checkout_session_id` varchar(100) DEFAULT NULL COMMENT 'PayMongo cs_...',
-  `paid_at` datetime DEFAULT NULL,
-  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
-  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `applicants`
---
-
-CREATE TABLE `applicants` (
-  `applicant_id` int(11) NOT NULL,
-  `reference_number` varchar(20) NOT NULL,
-  `applicant_type` enum('New Student','Transferee') NOT NULL DEFAULT 'New Student',
-  `first_name` varchar(50) NOT NULL,
-  `last_name` varchar(50) NOT NULL,
-  `middle_name` varchar(50) DEFAULT NULL,
-  `gender` enum('Male','Female','Other') NOT NULL,
-  `birthdate` date NOT NULL,
-  `address` varchar(255) NOT NULL,
-  `contact_number` varchar(20) DEFAULT NULL,
-  `email` varchar(100) NOT NULL,
-  `lrn` varchar(12) DEFAULT NULL,
-  `desired_grade_level` enum('11','12') NOT NULL,
-  `desired_strand_id` int(11) NOT NULL,
-  `school_year` varchar(9) NOT NULL,
-  `father_name` varchar(100) DEFAULT NULL,
-  `father_contact_number` varchar(20) DEFAULT NULL,
-  `mother_name` varchar(100) DEFAULT NULL,
-  `mother_contact_number` varchar(20) DEFAULT NULL,
-  `guardian_name` varchar(100) DEFAULT NULL,
-  `guardian_relationship` varchar(50) DEFAULT NULL,
-  `guardian_contact_number` varchar(20) DEFAULT NULL,
-  `emergency_contact_name` varchar(100) NOT NULL,
-  `emergency_contact_relationship` varchar(50) NOT NULL,
-  `emergency_contact_number` varchar(20) NOT NULL,
-  `status` enum('Pending','Under Review','Approved','Rejected','Enrolled') NOT NULL DEFAULT 'Pending',
-  `rejection_reason` varchar(255) DEFAULT NULL,
-  `reviewed_by` int(11) DEFAULT NULL,
-  `reviewed_at` datetime DEFAULT NULL,
-  `converted_student_id` int(11) DEFAULT NULL,
-  `submitted_at` datetime DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `applicants`
---
-
-INSERT INTO `applicants` (`applicant_id`, `reference_number`, `applicant_type`, `first_name`, `last_name`, `middle_name`, `gender`, `birthdate`, `address`, `contact_number`, `email`, `lrn`, `desired_grade_level`, `desired_strand_id`, `school_year`, `father_name`, `father_contact_number`, `mother_name`, `mother_contact_number`, `guardian_name`, `guardian_relationship`, `guardian_contact_number`, `emergency_contact_name`, `emergency_contact_relationship`, `emergency_contact_number`, `status`, `rejection_reason`, `reviewed_by`, `reviewed_at`, `converted_student_id`, `submitted_at`) VALUES
-(1, 'EMS-2026-574324', 'New Student', 'Almario', 'Kristan', 'Stacy Garcia', 'Male', '1995-12-31', 'Anim qui rerum bland', '09999999999', 'pawatytil@mailinator.com', '875554564645', '11', 2, '2026-2027', 'Alexa Vega', '09099999999', 'Kenyon Franks', '09999999999', 'Olivia Henry', 'Aut id est maiores a', '09999999999', 'Leigh Pierce', 'Aliquid praesentium', '09999999999', 'Approved', '', NULL, '2026-07-18 03:10:18', 12, '2026-07-18 03:09:53'),
-(2, 'EMS-2026-936527', 'Transferee', 'Evelyn', 'Wolf', 'Olivia Roach', 'Female', '1984-11-18', 'Sed et aperiam venia', '09999999999', 'hofako@mailinator.com', '099999999999', '12', 6, '2026-2027', 'Rana Davidson', '09999999999', 'Heidi Perry', '09999999999', 'Alfonso Steele', 'Incididunt dolore pr', '09999999999', 'Tanner Benson', 'Nulla laboriosam al', '09999999999', 'Approved', '', NULL, '2026-07-23 16:54:39', 13, '2026-07-23 16:20:53'),
-(3, 'EMS-2026-243983', 'Transferee', 'Sawyer', 'Wilkinson', 'Ferdinand Kidd', 'Female', '1970-02-10', 'Eos iusto obcaecati', '09999999999', 'mewy@mailinator.com', '099999999999', '11', 1, '2026-2027', 'Quemby Christensen', '09999999999', '09999999999999999999', '09999999999', 'Nissim Weber', 'Officia necessitatib', '09999999999', 'Wylie Tyler', 'Odio magnam quo moll+1 (947) 595-7124', '09999999999', '', 'Ang pangit talaga pre', NULL, '2026-07-24 01:43:09', NULL, '2026-07-24 01:42:24'),
-(4, 'EMS-2026-737235', 'Transferee', 'Brenda', 'Kent', 'Florence Nielsen', 'Male', '1992-03-22', 'Consequatur digniss', '09999999999', 'fatotyqojy@mailinator.com', '999999999999', '11', 2, '2026-2027', 'Oliver Clark', '09999999999', 'Ina Franks', '09999999999', 'Desirae Strong', 'Dolores provident i', '09999999999', 'Irene Blake', 'Possimus laborum A', '09999999999', 'Rejected', 'pangit', NULL, '2026-07-24 02:00:04', NULL, '2026-07-24 01:47:02');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `applicant_documents`
---
-
-CREATE TABLE `applicant_documents` (
-  `document_id` int(11) NOT NULL,
-  `applicant_id` int(11) NOT NULL,
-  `document_type_id` int(11) NOT NULL,
-  `file_path` varchar(255) NOT NULL,
-  `original_filename` varchar(255) NOT NULL,
-  `file_size` int(11) NOT NULL,
-  `mime_type` varchar(100) NOT NULL,
-  `status` enum('Pending','Verified','Rejected') NOT NULL DEFAULT 'Pending',
-  `remarks` varchar(255) DEFAULT NULL,
-  `uploaded_at` datetime DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `applicant_documents`
---
-
-INSERT INTO `applicant_documents` (`document_id`, `applicant_id`, `document_type_id`, `file_path`, `original_filename`, `file_size`, `mime_type`, `status`, `remarks`, `uploaded_at`) VALUES
-(5, 1, 5, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-938506/5045393a9434439b74c56d07fcd0cb6a.png', 'Schedule (11).png', 70070, 'image/png', 'Pending', NULL, '2026-07-06 00:19:00'),
-(21, 1, 1, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-574324/af8987961037d1d1f9f9e5fb141c96d6.pdf', 'COLORED-1-COPY_20260715_135637_0000.pdf', 79141, 'application/pdf', 'Pending', NULL, '2026-07-18 03:09:53'),
-(22, 1, 2, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-574324/6e5b6691bd04d3030d1d2abc72cd11cf.pdf', 'COLORED-1-COPY_20260715_135637_0000.pdf', 79141, 'application/pdf', 'Pending', NULL, '2026-07-18 03:09:53'),
-(23, 1, 3, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-574324/0db2dc6366ac99b8c0114e925ae79f57.pdf', 'LEARNING-OUTCOME-FORMAT.pdf', 282750, 'application/pdf', 'Pending', NULL, '2026-07-18 03:09:53'),
-(24, 1, 4, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-574324/f0dff2b19b67b369d003647e1d67fd13.pdf', 'COLORED-1-COPY_20260715_135637_0000.pdf', 79141, 'application/pdf', 'Pending', NULL, '2026-07-18 03:09:53'),
-(25, 2, 1, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-936527/a925050ebfcb316df78e8798cb07781d.jpg', '742324485_1960946938195230_5444947441481501899_n.jpg', 315003, 'image/jpeg', 'Pending', NULL, '2026-07-23 16:20:53'),
-(26, 2, 2, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-936527/9e7cef91b8c524bde8aeec21d159c8bc.jpg', '742324485_1960946938195230_5444947441481501899_n.jpg', 315003, 'image/jpeg', 'Pending', NULL, '2026-07-23 16:20:53'),
-(27, 2, 3, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-936527/ebb16ede6a28756d48bdc8f9f8e90d1d.jpg', '742324485_1960946938195230_5444947441481501899_n.jpg', 315003, 'image/jpeg', 'Pending', NULL, '2026-07-23 16:20:53'),
-(28, 2, 4, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-936527/29364e859339770554a392a727c602ba.jpg', '742324485_1960946938195230_5444947441481501899_n.jpg', 315003, 'image/jpeg', 'Pending', NULL, '2026-07-23 16:20:53'),
-(29, 2, 5, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-936527/166a3ae3d04bf4218d22c6c97237dccd.jpg', '742324485_1960946938195230_5444947441481501899_n.jpg', 315003, 'image/jpeg', 'Pending', NULL, '2026-07-23 16:20:53'),
-(30, 3, 1, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-243983/02f077a6e9479890efc0adb903c9df62.jpg', '742324485_1960946938195230_5444947441481501899_n.jpg', 315003, 'image/jpeg', 'Pending', NULL, '2026-07-24 01:42:24'),
-(31, 3, 2, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-243983/1e614eaad16b8f05827a83865be0a8b6.jpg', '742324485_1960946938195230_5444947441481501899_n.jpg', 315003, 'image/jpeg', 'Pending', NULL, '2026-07-24 01:42:24'),
-(32, 3, 3, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-243983/0ca51116ebef15ca18080595f79fe690.jpg', '742324485_1960946938195230_5444947441481501899_n.jpg', 315003, 'image/jpeg', 'Pending', NULL, '2026-07-24 01:42:24'),
-(33, 3, 4, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-243983/be0fb11ba78cd0cffaf745e50c440be1.jpg', '742324485_1960946938195230_5444947441481501899_n.jpg', 315003, 'image/jpeg', 'Pending', NULL, '2026-07-24 01:42:25'),
-(34, 3, 5, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-243983/8ede501653b2a334cd9aa604599375b4.jpg', '742324485_1960946938195230_5444947441481501899_n.jpg', 315003, 'image/jpeg', 'Pending', NULL, '2026-07-24 01:42:25'),
-(35, 4, 1, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-737235/695ab64968b5e3cf54374e0c22943f24.jpg', '742324485_1960946938195230_5444947441481501899_n.jpg', 315003, 'image/jpeg', 'Pending', NULL, '2026-07-24 01:47:02'),
-(36, 4, 2, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-737235/39348646cbe8201362298b0004a2ab0a.jpg', '742324485_1960946938195230_5444947441481501899_n.jpg', 315003, 'image/jpeg', 'Pending', NULL, '2026-07-24 01:47:02'),
-(37, 4, 3, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-737235/2244aa4e908991582987b2b4ffb52503.jpg', '742324485_1960946938195230_5444947441481501899_n.jpg', 315003, 'image/jpeg', 'Pending', NULL, '2026-07-24 01:47:02'),
-(38, 4, 4, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-737235/39d35c5003db241faad2eb7cae90ce35.jpg', '742324485_1960946938195230_5444947441481501899_n.jpg', 315003, 'image/jpeg', 'Pending', NULL, '2026-07-24 01:47:02'),
-(39, 4, 5, 'C:/xampp/enrollment_uploads/applicants/EMS-2026-737235/d46713695033839823b091913ae6fbde.jpg', '742324485_1960946938195230_5444947441481501899_n.jpg', 315003, 'image/jpeg', 'Pending', NULL, '2026-07-24 01:47:02');
 
 -- --------------------------------------------------------
 
@@ -224,34 +74,6 @@ INSERT INTO `class_sections` (`section_id`, `strand_id`, `adviser_id`, `grade_le
 -- --------------------------------------------------------
 
 --
--- Table structure for table `document_types`
---
-
-CREATE TABLE `document_types` (
-  `document_type_id` int(11) NOT NULL,
-  `name` varchar(150) NOT NULL,
-  `description` varchar(255) DEFAULT NULL,
-  `applicant_type` enum('New Student','Transferee','All') NOT NULL DEFAULT 'All',
-  `is_required` tinyint(1) NOT NULL DEFAULT 1,
-  `is_active` tinyint(1) NOT NULL DEFAULT 1,
-  `sort_order` int(11) NOT NULL DEFAULT 0,
-  `created_at` datetime DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `document_types`
---
-
-INSERT INTO `document_types` (`document_type_id`, `name`, `description`, `applicant_type`, `is_required`, `is_active`, `sort_order`, `created_at`) VALUES
-(1, 'Form 138 (Report Card)', 'Proof of previous academic performance / Grade 10 completion', 'All', 1, 1, 1, '2026-07-05 23:27:06'),
-(2, 'Certificate of Good Moral Character', 'Behavioral clearance from previous school', 'All', 1, 1, 2, '2026-07-05 23:27:06'),
-(3, 'PSA Birth Certificate (photocopy)', 'Identity & age verification', 'All', 1, 1, 3, '2026-07-05 23:27:06'),
-(4, '2x2 ID Photo', 'School ID, records', 'All', 1, 1, 4, '2026-07-05 23:27:06'),
-(5, 'Certificate of Transfer / Honorable Dismissal', 'Confirms clearance from the previous school', 'Transferee', 1, 1, 5, '2026-07-05 23:27:06');
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `enrollments`
 --
 
@@ -295,27 +117,6 @@ CREATE TABLE `payments` (
 
 INSERT INTO `payments` (`payment_id`, `enrollment_id`, `amount`, `payment_method`, `paymongo_reference_id`, `payment_status`, `payment_date`) VALUES
 (1, 8, 19300.00, 'Cash', NULL, 'Paid', '2026-07-24 11:03:02');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `payment_proofs`
---
-
-CREATE TABLE `payment_proofs` (
-  `proof_id` int(11) NOT NULL,
-  `student_number` varchar(20) DEFAULT NULL,
-  `email` varchar(100) NOT NULL,
-  `reference_number` varchar(100) DEFAULT NULL,
-  `amount` decimal(10,2) NOT NULL,
-  `method` varchar(50) DEFAULT NULL,
-  `payment_reference` varchar(100) DEFAULT NULL,
-  `original_filename` varchar(255) DEFAULT NULL,
-  `file_path` varchar(255) DEFAULT NULL,
-  `status` enum('Pending','Verified','Rejected') NOT NULL DEFAULT 'Pending',
-  `remarks` varchar(255) DEFAULT NULL,
-  `uploaded_at` datetime DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -380,30 +181,13 @@ CREATE TABLE `schedules` (
 --
 
 INSERT INTO `schedules` (`schedule_id`, `section_id`, `subject_id`, `teacher_id`, `room_id`, `day_of_week`, `start_time`, `end_time`, `created_at`) VALUES
-(1, 5, 5, 4, 1, 'Monday', '01:00:00', '09:00:00', '2026-07-14 03:17:12'),
-(2, 5, 6, 4, 14, 'Monday', '10:00:00', '11:00:00', '2026-07-14 03:26:05'),
-(3, 5, 6, 4, 13, 'Monday', '11:00:00', '12:00:00', '2026-07-14 03:38:00');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `school_years`
---
-
-CREATE TABLE `school_years` (
-  `school_year_id` int(11) NOT NULL,
-  `year` varchar(9) NOT NULL,
-  `status` enum('active','closed') NOT NULL DEFAULT 'closed',
-  `created_at` datetime DEFAULT current_timestamp(),
-  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `school_years`
---
-
-INSERT INTO `school_years` (`school_year_id`, `year`, `status`, `created_at`, `updated_at`) VALUES
-(1, '2026-2027', 'active', '2026-07-05 02:32:50', '2026-07-05 02:32:50');
+(10, 5, 5, 1, 18, 'Monday', '09:00:00', '10:00:00', '2026-07-25 04:27:26'),
+(11, 5, 8, 1, 18, 'Monday', '10:00:00', '11:00:00', '2026-07-25 04:27:26'),
+(12, 5, 4, 1, 18, 'Monday', '11:00:00', '12:00:00', '2026-07-25 04:27:26'),
+(13, 5, 3, 1, 18, 'Monday', '12:00:00', '13:00:00', '2026-07-25 04:27:26'),
+(14, 5, 7, 1, 18, 'Monday', '13:00:00', '14:00:00', '2026-07-25 04:27:26'),
+(15, 5, 9, 1, 18, 'Monday', '14:00:00', '15:00:00', '2026-07-25 04:27:26'),
+(16, 5, 6, 4, 11, 'Thursday', '09:00:00', '10:00:00', '2026-07-25 04:29:10');
 
 -- --------------------------------------------------------
 
@@ -652,54 +436,12 @@ INSERT INTO `users` (`user_id`, `password_hash`, `full_name`, `email`, `role`, `
 --
 
 --
--- Indexes for table `acct_fees`
---
-ALTER TABLE `acct_fees`
-  ADD PRIMARY KEY (`fee_id`),
-  ADD UNIQUE KEY `uq_fee_per_term` (`code`,`school_year`,`semester`),
-  ADD KEY `idx_term` (`school_year`,`semester`,`is_active`);
-
---
--- Indexes for table `acct_payments`
---
-ALTER TABLE `acct_payments`
-  ADD PRIMARY KEY (`acct_payment_id`),
-  ADD UNIQUE KEY `uq_reference` (`reference`),
-  ADD KEY `idx_session` (`checkout_session_id`),
-  ADD KEY `idx_student` (`student_number`),
-  ADD KEY `idx_status` (`status`);
-
---
--- Indexes for table `applicants`
---
-ALTER TABLE `applicants`
-  ADD PRIMARY KEY (`applicant_id`),
-  ADD UNIQUE KEY `reference_number` (`reference_number`),
-  ADD KEY `desired_strand_id` (`desired_strand_id`),
-  ADD KEY `reviewed_by` (`reviewed_by`),
-  ADD KEY `converted_student_id` (`converted_student_id`);
-
---
--- Indexes for table `applicant_documents`
---
-ALTER TABLE `applicant_documents`
-  ADD PRIMARY KEY (`document_id`),
-  ADD KEY `applicant_id` (`applicant_id`),
-  ADD KEY `document_type_id` (`document_type_id`);
-
---
 -- Indexes for table `class_sections`
 --
 ALTER TABLE `class_sections`
   ADD PRIMARY KEY (`section_id`),
   ADD KEY `strand_id` (`strand_id`),
   ADD KEY `adviser_id` (`adviser_id`);
-
---
--- Indexes for table `document_types`
---
-ALTER TABLE `document_types`
-  ADD PRIMARY KEY (`document_type_id`);
 
 --
 -- Indexes for table `enrollments`
@@ -718,14 +460,6 @@ ALTER TABLE `payments`
   ADD KEY `enrollment_id` (`enrollment_id`);
 
 --
--- Indexes for table `payment_proofs`
---
-ALTER TABLE `payment_proofs`
-  ADD PRIMARY KEY (`proof_id`),
-  ADD KEY `idx_email` (`email`),
-  ADD KEY `idx_status` (`status`);
-
---
 -- Indexes for table `rooms`
 --
 ALTER TABLE `rooms`
@@ -741,13 +475,6 @@ ALTER TABLE `schedules`
   ADD KEY `subject_id` (`subject_id`),
   ADD KEY `teacher_id` (`teacher_id`),
   ADD KEY `room_id` (`room_id`);
-
---
--- Indexes for table `school_years`
---
-ALTER TABLE `school_years`
-  ADD PRIMARY KEY (`school_year_id`),
-  ADD UNIQUE KEY `year` (`year`);
 
 --
 -- Indexes for table `strands`
@@ -800,40 +527,10 @@ ALTER TABLE `users`
 --
 
 --
--- AUTO_INCREMENT for table `acct_fees`
---
-ALTER TABLE `acct_fees`
-  MODIFY `fee_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
-
---
--- AUTO_INCREMENT for table `acct_payments`
---
-ALTER TABLE `acct_payments`
-  MODIFY `acct_payment_id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `applicants`
---
-ALTER TABLE `applicants`
-  MODIFY `applicant_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
-
---
--- AUTO_INCREMENT for table `applicant_documents`
---
-ALTER TABLE `applicant_documents`
-  MODIFY `document_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=40;
-
---
 -- AUTO_INCREMENT for table `class_sections`
 --
 ALTER TABLE `class_sections`
   MODIFY `section_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
-
---
--- AUTO_INCREMENT for table `document_types`
---
-ALTER TABLE `document_types`
-  MODIFY `document_type_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `enrollments`
@@ -848,12 +545,6 @@ ALTER TABLE `payments`
   MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
--- AUTO_INCREMENT for table `payment_proofs`
---
-ALTER TABLE `payment_proofs`
-  MODIFY `proof_id` int(11) NOT NULL AUTO_INCREMENT;
-
---
 -- AUTO_INCREMENT for table `rooms`
 --
 ALTER TABLE `rooms`
@@ -863,13 +554,7 @@ ALTER TABLE `rooms`
 -- AUTO_INCREMENT for table `schedules`
 --
 ALTER TABLE `schedules`
-  MODIFY `schedule_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
-
---
--- AUTO_INCREMENT for table `school_years`
---
-ALTER TABLE `school_years`
-  MODIFY `school_year_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `schedule_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT for table `strands`
@@ -910,21 +595,6 @@ ALTER TABLE `users`
 --
 -- Constraints for dumped tables
 --
-
---
--- Constraints for table `applicants`
---
-ALTER TABLE `applicants`
-  ADD CONSTRAINT `applicants_ibfk_1` FOREIGN KEY (`desired_strand_id`) REFERENCES `strands` (`strand_id`) ON UPDATE CASCADE,
-  ADD CONSTRAINT `applicants_ibfk_2` FOREIGN KEY (`reviewed_by`) REFERENCES `users` (`user_id`) ON DELETE SET NULL ON UPDATE CASCADE,
-  ADD CONSTRAINT `applicants_ibfk_3` FOREIGN KEY (`converted_student_id`) REFERENCES `students` (`student_id`) ON DELETE SET NULL ON UPDATE CASCADE;
-
---
--- Constraints for table `applicant_documents`
---
-ALTER TABLE `applicant_documents`
-  ADD CONSTRAINT `applicant_documents_ibfk_1` FOREIGN KEY (`applicant_id`) REFERENCES `applicants` (`applicant_id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `applicant_documents_ibfk_2` FOREIGN KEY (`document_type_id`) REFERENCES `document_types` (`document_type_id`) ON UPDATE CASCADE;
 
 --
 -- Constraints for table `class_sections`

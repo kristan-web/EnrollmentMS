@@ -124,8 +124,20 @@
           <div class="form-grid">
             <label class="field">
               <span>LRN <span style="color:red;">*</span></span>
-              <input type="text" name="lrn" required placeholder="12-digit LRN" maxlength="12" pattern="[0-9]{12}" />
-            </label>
+              <input 
+                  type="text" 
+                  name="lrn" 
+                  required 
+                  placeholder="12-digit LRN" 
+                  maxlength="12" 
+                  pattern="[0-9]{12}" 
+                  title="Please enter exactly 12 digits (0-9) for LRN"
+                  id="lrnInput"
+                  oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 12)"
+                  onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+              />
+              <small class="field-hint" id="lrnHint">Enter 12 digits only (0-9)</small>
+          </label>
             <!-- Student Number field removed - will be auto-generated -->
             <label class="field">
               <span>First Name <span style="color:red;">*</span></span>

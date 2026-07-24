@@ -134,9 +134,15 @@ if ($method == "GET") {
         $dayOfWeek = isset($_GET["day_of_week"]) ? $_GET["day_of_week"] : null;
         $startTime = isset($_GET["start_time"]) ? $_GET["start_time"] : null;
         $endTime = isset($_GET["end_time"]) ? $_GET["end_time"] : null;
+        $subjectId = isset($_GET["subject_id"]) ? $_GET["subject_id"] : null;
         $excludeId = isset($_GET["exclude_id"]) ? $_GET["exclude_id"] : null;
 
         $conflicts = [];
+
+        // Check duplicate subject for the same section on the same day
+        if ($sectionId && $subjectId && $dayOfWeek) {
+            $conflicts['duplicate_subject'] = $dao->checkDuplicateSubject($sectionId, $subjectId, $dayOfWeek, $excludeId);
+        }
 
         if ($sectionId) {
             $conflicts['section'] = $dao->checkSectionConflict($sectionId, $dayOfWeek, $startTime, $endTime, $excludeId);
@@ -192,11 +198,33 @@ if ($method == "GET") {
             ]);
             exit;
         }
+        // After the school hours validation
+        $start = new DateTime($startTime);
+        $end = new DateTime($endTime);
+        $diff = $start->diff($end);
+        $minutes = $diff->h * 60 + $diff->i;
+
+        if ($minutes < 60) {
+            echo json_encode([
+                "success" => false,
+                "message" => "Class duration must be at least 1 hour (60 minutes)."
+            ]);
+            exit;
+        }
 
         // Check for conflicts
         $excludeId = ($action == "update" && !empty($_POST["schedule_id"])) ? $_POST["schedule_id"] : null;
 
-        // Check section conflict
+        // Check duplicate subject for the same section on the same day
+        if ($dao->checkDuplicateSubject($sectionId, $subjectId, $dayOfWeek, $excludeId)) {
+            echo json_encode([
+                "success" => false,
+                "message" => "This section already has this subject scheduled on $dayOfWeek. A section cannot have the same subject twice on the same day."
+            ]);
+            exit;
+        }
+
+        // Check section conflict (time overlap)
         if ($dao->checkSectionConflict($sectionId, $dayOfWeek, $startTime, $endTime, $excludeId)) {
             echo json_encode([
                 "success" => false,
