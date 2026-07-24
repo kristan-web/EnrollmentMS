@@ -1,3 +1,12 @@
+<?php 
+  $projectFilePath = 'C:/xampp/htdocs/EnrollmentMS';
+  include_once "$projectFilePath/config/session.php";
+
+  safeStartSession();
+
+  // echo $_SESSION['role'];
+?>
+
 <!DOCTYPE html>
 <!-- Registrar-side admission console. Guarded by admission.js: no session -> login.
      Shares the admin ("Admission") shell: shared/dashboard.css supplies the navy
@@ -41,28 +50,11 @@
       <!-- Only what this module actually has, so every link stays inside the
            registrar session. -->
       <ul class="nav__submenu is-open" id="dashMenu">
-        <li><a href="admission.php" class="is-active">
-          <span class="submenu__icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="m9 15 2 2 4-4"/></svg>
-          </span>
-          <span>Review queue</span>
-        </a></li>
-        <li><a href="#walkin" id="walkinNavBtn">
-          <span class="submenu__icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6"/><path d="M22 11h-6"/></svg>
-          </span>
-          <span>Walk-in enrollment</span>
-        </a></li>
-        <li><a href="reports.php">
-          <span class="submenu__icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
-          </span>
-          <span>Reports</span>
-        </a></li>
+        
       </ul>
     </nav>
 
-    <div class="sidebar__who" id="registrarWho" data-no-translate></div>
+    <!-- <div class="sidebar__who" id="registrarWho" data-no-translate></div> -->
 
     <a class="sidebar__logout" href="#" id="logoutBtn">
       <span class="nav__icon" aria-hidden="true">
@@ -257,6 +249,10 @@
     </div>
   </div>
 
+  <script>
+    const sessionRole = <?php echo json_encode($_SESSION['role'] ?? null); ?>;
+  </script>
+  <script src="/EnrollmentMS/public/assets/js/shared/sidebar.js"></script>
   <script src="/EnrollmentMS/public/assets/js/sweetalert2/sweetalert2.min.js"></script>
   <script src="/EnrollmentMS/public/assets/js/Registrar/alerts.js"></script>
   <script src="/EnrollmentMS/public/assets/js/Registrar/sidebar.js"></script>

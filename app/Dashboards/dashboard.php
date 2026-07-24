@@ -3,7 +3,7 @@
   include_once "$projectFilePath/config/session.php";
 
   safeStartSession();
-  echo $_SESSION['role'];
+  // echo $_SESSION['role'];
 ?>
 
 <!DOCTYPE html>
@@ -17,6 +17,22 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../../public/assets/css/shared/dashboard.css"/>
+
+  <style>
+    .sidebar__who {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: auto 14px 12px;
+    padding: 12px 14px;
+    border-radius: 16px;
+    color: #fff;
+    background: linear-gradient(150deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 10px 26px rgba(5, 12, 34, 0.34);
+    transition: transform 0.22s var(--ease), border-color 0.22s var(--ease), box-shadow 0.22s var(--ease);
+    }
+  </style>
 </head>
 <body>
   <aside class="sidebar" id="sidebar">
@@ -42,6 +58,8 @@
         <!-- Dash Menu Goes Here -->
       </ul>
     </nav>
+
+    <!-- <div class="sidebar__who" id="registrarWho" data-no-translate></div> -->
 
     <a class="sidebar__logout" onclick="window.location.href='/EnrollmentMS/config/destroysession.php'">
       <span class="nav__icon" aria-hidden="true">
@@ -69,7 +87,7 @@
   <script>
     const sessionRole = <?php echo json_encode($_SESSION['role'] ?? null); ?>;
   </script>
-  <script src="../../public/assets/js/shared/sidebar.js"></script>
+  <script src="/EnrollmentMS/public/assets/js/shared/sidebar.js"></script>
   <script src="../../public/assets/js/shared/dashboard.js"></script>
 </body>
 </html>

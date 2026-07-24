@@ -53,7 +53,7 @@ function receiptNo($paymentId) {
 
 // Guard the members-only actions.
 function requireCashier() {
-    if (empty($_SESSION['cashier_user_id'])) {
+    if (empty($_SESSION['user_id'])) {
         http_response_code(401);
         echo json_encode(["authenticated" => false, "message" => "Please log in to use the cashier console."]);
         exit;
@@ -92,13 +92,13 @@ if ($method === 'GET') {
     $action = $_GET['action'] ?? 'me';
 
     if ($action === 'me') {
-        if (!empty($_SESSION['cashier_user_id'])) {
+        if (!empty($_SESSION['user_id'])) {
             echo json_encode([
                 "authenticated" => true,
                 "cashier" => [
-                    "user_id"   => $_SESSION['cashier_user_id'],
-                    "full_name" => $_SESSION['cashier_name'] ?? '',
-                    "role"      => $_SESSION['cashier_role'] ?? ''
+                    "user_id"   => $_SESSION['user_id'],
+                    "full_name" => $_SESSION['name'] ?? '',
+                    "role"      => $_SESSION['role'] ?? ''
                 ]
             ]);
         } else {
@@ -187,9 +187,9 @@ if ($method === 'POST') {
         }
 
         session_regenerate_id(true);
-        $_SESSION['cashier_user_id'] = $user['user_id'];
-        $_SESSION['cashier_name']    = $user['full_name'];
-        $_SESSION['cashier_role']    = $user['role'];
+        $_SESSION['user_id'] = $user['user_id'];
+        $_SESSION['name']    = $user['full_name'];
+        $_SESSION['role']    = $user['role'];
 
         // Additive: record the staff sign-in in the admin audit log.
         require_once "$projectFilePath/app/Accounts/DAO/AuditDAO.php";
