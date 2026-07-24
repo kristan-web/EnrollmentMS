@@ -168,7 +168,6 @@
     login: login,
     logout: logout,
     me: me,
-    requireAuth: requireAuth,
     redirectIfAuthed: redirectIfAuthed,
     queue: queue,
     detail: detail,

@@ -18,7 +18,7 @@
   var pwToggle = document.getElementById("pwToggle");
 
   // Already signed in? Go straight to the console.
-  M.redirectIfAuthed("/EnrollmentMS/app/Registrar/View/admission.php");
+  // M.redirectIfAuthed("/EnrollmentMS/app/Registrar/View/admission.php");
 
   function setMsg(text, type) {
     loginMsg.textContent = text || "";

@@ -13,11 +13,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" type="image/png" href="/EnrollmentMS/public/assets/images/logo.png" />
-  <title>Teacher &middot; Enrollment Management System</title>
+  <title>Rooms &middot; Enrollment Management System</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../../../public/assets/css/shared/dashboard.css" />
+  <link rel="stylesheet" href="../../../public/assets/css/shared/enrollment.css" />
 </head>
 <body>
   <aside class="sidebar" id="sidebar">
@@ -40,7 +41,7 @@
       </button>
 
       <ul class="nav__submenu is-open" id="dashMenu">
-        <!-- Dashboard Menu Goes Here -->
+        <!-- Dynamically populated by sidebar.js -->
       </ul>
     </nav>
 
@@ -61,122 +62,101 @@
       </span>
     </button>
 
-    <h1 class="main__title">Teacher</h1>
+    <h1 class="main__title">Room Management</h1>
 
     <section class="content">
       <div class="toolbar">
         <div class="search-box">
           <svg class="search-box__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-          <input type="search" id="searchInput" class="search" placeholder="Search by name, email, or specialization..." />
+          <input type="search" id="searchInput" class="search" placeholder="Search by room name or building..." />
           <button type="button" class="search-clear" aria-label="Clear search" hidden>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
           </button>
         </div>
-        <button class="btn btn--primary" id="addTeacherBtn">
+        <button class="btn btn--primary" id="addRoomBtn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-          Add Teacher
+          Add Room
         </button>
       </div>
 
       <div class="panel">
         <div class="table-wrap">
-          <table class="data-table">
+          <table class="data-table data-table--wide">
             <thead>
               <tr>
-                <th>Teacher ID</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Contact Number</th>
-                <th>Specialization</th>
-                <th>Actions</th>
+                <th>Room ID</th>
+                <th>Room Name</th>
+                <th>Building</th>
+                <th>Capacity</th>
+                <th class="no-print">Actions</th>
               </tr>
             </thead>
-            <tbody id="teacherRows"></tbody>
+            <tbody id="roomRows"></tbody>
           </table>
         </div>
-        <p class="empty" id="emptyState" hidden>No teachers yet. Click "Add Teacher" to get started.</p>
+        <p class="empty" id="emptyState" hidden>No rooms found. Click "Add Room" to begin.</p>
       </div>
     </section>
 
     <footer class="main__footer">&copy; 2026 Enrollment Management System</footer>
   </div>
 
-  <div class="modal-overlay" id="teacherModal" hidden>
-    <div class="modal modal--small" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <!-- Add / Edit Room Modal -->
+  <div class="modal-overlay" id="roomModal" hidden>
+    <div class="modal modal--small" role="dialog" aria-modal="true" aria-labelledby="roomModalTitle">
       <div class="modal__head">
-        <h2 id="modalTitle">Add Teacher</h2>
-        <button class="modal__close" id="closeTeacherModal" aria-label="Close">&times;</button>
+        <h2 id="roomModalTitle">Add Room</h2>
+        <button class="modal__close" id="closeRoomModal" aria-label="Close">&times;</button>
       </div>
       <div class="modal__body">
-        <form id="teacherForm" class="settings-form" novalidate>
-          <input type="hidden" name="id" id="editId" />
+        <input type="hidden" id="roomId" value="" />
+        <div class="form-grid">
           <label class="field">
-            <span>First Name</span>
-            <input type="text" name="firstName" id="firstName" required />
-            <small class="field-error" id="firstNameError"></small>
+            <span>Room Name <span class="required">*</span></span>
+            <input type="text" id="roomName" placeholder="e.g. SHS-101" autocomplete="off" />
           </label>
           <label class="field">
-            <span>Last Name</span>
-            <input type="text" name="lastName" id="lastName" required />
-            <small class="field-error" id="lastNameError"></small>
+            <span>Building <span class="required">*</span></span>
+            <input type="text" id="roomBuilding" placeholder="e.g. Main Building" autocomplete="off" />
           </label>
           <label class="field">
-            <span>Email</span>
-            <input type="email" name="email" id="email" placeholder="name@school.edu.ph" />
-            <small class="field-error" id="emailError"></small>
+            <span>Capacity <span class="required">*</span></span>
+            <input type="number" id="roomCapacity" min="1" step="1" placeholder="e.g. 40" />
           </label>
-          <label class="field">
-            <span>Contact Number</span>
-            <input type="tel" name="contact" id="contact" placeholder="09XXXXXXXXX" />
-            <small class="field-error" id="contactError"></small>
-          </label>
-          <label class="field">
-            <span>Specialization</span>
-            <input type="text" name="specialization" id="specialization" list="specializations" placeholder="e.g. Mathematics" />
-            <datalist id="specializations">
-              <option>Mathematics</option>
-              <option>Science</option>
-              <option>English</option>
-              <option>Filipino</option>
-              <option>Social Studies</option>
-              <option>Physical Education</option>
-              <option>TLE / ICT</option>
-              <option>Values Education</option>
-            </datalist>
-            <small class="field-error" id="specializationError"></small>
-          </label>
-          <p class="form-msg" id="teacherMsg" role="status"></p>
-          <div class="form-actions">
-            <button type="button" class="btn btn--ghost" id="cancelTeacherBtn">Cancel</button>
-            <button type="submit" class="btn btn--primary" id="saveTeacherBtn">Save Teacher</button>
-          </div>
-        </form>
+        </div>
+
+        <p class="form-msg" id="roomMsg" role="status"></p>
+        <div class="form-actions">
+          <button type="button" class="btn btn--ghost" id="cancelRoomBtn">Cancel</button>
+          <button type="button" class="btn btn--primary" id="saveRoomBtn">Save Room</button>
+        </div>
       </div>
     </div>
   </div>
 
-  <div class="modal-overlay" id="deleteModal" hidden>
-    <div class="modal modal--small" role="dialog" aria-modal="true" aria-labelledby="deleteTitle">
+  <!-- Confirm Delete Modal -->
+  <div class="modal-overlay" id="confirmModal" hidden>
+    <div class="modal modal--small" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
       <div class="modal__head">
-        <h2 id="deleteTitle">Delete Teacher</h2>
-        <button class="modal__close" id="closeDeleteModal" aria-label="Close">&times;</button>
+        <h2 id="confirmTitle">Delete Room</h2>
+        <button class="modal__close" id="closeConfirmModal" aria-label="Close">&times;</button>
       </div>
       <div class="modal__body">
-        <p class="archive-name" id="deleteName"></p>
-        <p class="archive-note">This permanently removes the teacher record. This cannot be undone.</p>
+        <p class="archive-name" id="confirmName"></p>
+        <p class="archive-note" id="confirmNote">This action cannot be undone.</p>
         <div class="form-actions">
-          <button type="button" class="btn btn--ghost" id="cancelDeleteBtn">Cancel</button>
-          <button type="button" class="btn btn--danger" id="confirmDeleteBtn">Delete</button>
+          <button type="button" class="btn btn--ghost" id="cancelConfirmBtn">Cancel</button>
+          <button type="button" class="btn btn--danger" id="confirmActionBtn">Delete</button>
         </div>
       </div>
     </div>
   </div>
 
   <script>
-    const sessionRole = <?php echo json_encode($_SESSION['role']); ?>
+    const sessionRole = <?php echo isset($_SESSION['role']) ? json_encode($_SESSION['role']) : json_encode('guest'); ?>;
   </script>
   <script src="/EnrollmentMS/public/assets/js/shared/sidebar.js"></script>
   <script src="../../../public/assets/js/shared/dashboard.js"></script>
-  <script src="../../../public/assets/js/Teachers/teacher.js"></script>
+  <script src="../../../public/assets/js/Rooms/rooms.js"></script>
 </body>
 </html>

@@ -3,7 +3,7 @@
   include_once "$projectFilePath/config/session.php";
 
   safeStartSession();
-
+  redirectToLoginPage();
   // echo $_SESSION['role'];
 ?>
 

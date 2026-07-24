@@ -27,6 +27,9 @@ SET time_zone = "+00:00";
 -- Table structure for table `acct_fees`
 --
 
+CREATE DATABASE  `enrollment_management_system`;
+USE `enrollment_management_system`;
+
 CREATE TABLE `acct_fees` (
   `fee_id` int(11) NOT NULL,
   `code` varchar(20) NOT NULL COMMENT 'TUITION, MISC, LAB ...',

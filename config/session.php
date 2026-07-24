@@ -17,7 +17,7 @@
 
     function redirectToLoginPage(){
         if(!isset($_SESSION['role'])){
-            header("Location: $loginPageFilePath/public/index.php ");
+            // header("Location: /EnrollmentMS/app/Admission/View/index.php");
         }
     }
     

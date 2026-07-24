@@ -2,8 +2,9 @@
   $projectFilePath = 'C:/xampp/htdocs/EnrollmentMS';
   include_once "$projectFilePath/config/session.php";
   safeStartSession();
+  redirectToLoginPage();
 
-  echo $_SESSION['role'];
+  // echo $_SESSION['role'];
   // if(!isset($_SESSION['role'])){
   //   header("Location: index.php");
   //     exit();
